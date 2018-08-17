@@ -5,6 +5,7 @@ namespace TACTLib.Container {
         private const uint FnvPrime32 = 16777619;
         private const uint FnvOffset32 = 2166136261;
         
+        /// <summary>Static instance</summary>
         public static CASCKeyComparer Instance = new CASCKeyComparer();
         
         public unsafe bool Equals(EKey x, EKey y) {

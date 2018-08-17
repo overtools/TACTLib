@@ -3,22 +3,53 @@ using System.IO;
 
 namespace TACTLib {
     public enum Product {
+        /// <summary>agent</summary>
         Agent,
+        
+        /// <summary>bna</summary>
         BattleNetApp,
+        
+        /// <summary>catalogs</summary>
         Catalog,
+        
+        /// <summary>d3, d3b, d3cn, d3t</summary>
         Diablo3,
+        
+        /// <summary>dst2, dst2a, dst2dev, dst2e1, dst2t</summary>
         Destiny2,
+        
+        /// <summary>hero, heroc, herot</summary>
         HeroesOfTheStorm,
+        
+        /// <summary>hsb, hst</summary>
         Hearthstone,
+        
+        /// <summary>pro, prot, proc*, proc2*, proc3, prodev, prov</summary>
         Overwatch,
+        
+        /// <summary>s1, s1a, s1t</summary>
         StarCraft1,
+        
+        /// <summary>s2, s2b, s2t, sc2</summary>
         StarCraft2,
+        
+        /// <summary>viper, viperdev</summary>
         BlackOps4,
+        
+        /// <summary>w3, w3t, war3</summary>
         Warcraft3,
+        
+        /// <summary>wow, wow_beta, wowdev, wowe1, wowe2, wowe3, wowt, wowv, wowz</summary>
         WorldOfWarcraft
     }
 
     public static class ProductHelpers {
+        /// <summary>
+        /// Get <see cref="Product"/> from product uid
+        /// </summary>
+        /// <param name="uid">Product uid</param>
+        /// <returns>Product type</returns>
+        /// <exception cref="NotImplementedException">Product is unknown</exception>
         public static Product ProductFromUID(string uid)
         {
             if (uid.StartsWith("hero"))
@@ -60,6 +91,10 @@ namespace TACTLib {
             throw new NotImplementedException($"unsupported product \"{uid}\"");
         }
 
+        /// <summary>Get <see cref="Product"/> from install directory</summary>
+        /// <param name="path">Container base path</param>
+        /// <returns>Detected product</returns>
+        /// <exception cref="NotImplementedException">Unable to recognise product type</exception>
         public static Product ProductFromLocalInstall(string path) {
             if (Directory.Exists(Path.Combine(path, "HeroesData")))
                 return Product.HeroesOfTheStorm;

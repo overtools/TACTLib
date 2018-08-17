@@ -13,15 +13,27 @@ using static TACTLib.Helpers.Utils;
 namespace TACTLib.Container {
     public class ContainerHandler {
         // ReSharper disable once InconsistentNaming
+        /// <summary>Number of index files</summary>
         public const int CASC_INDEX_COUNT = 0x10;
 
+        /// <summary>
+        /// Container directory. Where the data, config, indices etc subdirectories are located.
+        /// </summary>
         public readonly string ContainerDirectory;
 
+        /// <summary>Data directory name</summary>
         public const string DataDirectory = "data";
+        
+        /// <summary>Config directory name</summary>
         public const string ConfigDirectory = "config";
+        
+        /// <summary>Indices directory name</summary>
         public const string CDNIndicesDirectory = "indices";
+        
+        /// <summary>Patch directory name</summary>
         public const string PatchDirectory = "patch";
 
+        /// <summary>Local index map</summary>
         private Dictionary<EKey, IndexEntry> _indexEntries;
 
         public ContainerHandler(ClientHandler client) {
@@ -56,6 +68,12 @@ namespace TACTLib.Container {
             }
         }
 
+        /// <summary>
+        /// Load an index file
+        /// </summary>
+        /// <param name="file">File path</param>
+        /// <param name="bucketIndex">Index</param>
+        /// <exception cref="InvalidDataException">Index file is invalid</exception>
         private unsafe void LoadIndexFile(string file, int bucketIndex) {
             using (Stream stream = File.OpenRead(file))
             using (BinaryReader reader = new BinaryReader(stream)) {
@@ -83,6 +101,11 @@ namespace TACTLib.Container {
             }
         }
 
+        /// <summary>
+        /// Open a file from Encoding Key
+        /// </summary>
+        /// <param name="key">The Encoding Key</param>
+        /// <returns>Loaded file</returns>
         internal Stream OpenEKey(EKey key) {
             if (!_indexEntries.TryGetValue(key, out IndexEntry indexEntry)) {
                 Debugger.Log(0, "ContainerHandler", $"Missing local index {key.ToHexString()}");
@@ -91,6 +114,11 @@ namespace TACTLib.Container {
             return OpenIndexEntry(indexEntry);
         }
 
+        /// <summary>
+        /// Open an index entry and get data
+        /// </summary>
+        /// <param name="indexEntry">Source index entry</param>
+        /// <returns>Encoded stream</returns>
         private Stream OpenIndexEntry(IndexEntry indexEntry) {
             using (Stream dataStream = OpenDataFile(indexEntry.Index))
             using (BinaryReader reader = new BinaryReader(dataStream, Encoding.Default, false)) {
@@ -107,12 +135,21 @@ namespace TACTLib.Container {
             }
         }
 
+        /// <summary>Open a data file</summary>
+        /// <param name="index">Data file index ("data.{index}")</param>
+        /// <returns>Data stream</returns>
         private Stream OpenDataFile(int index) {
             string file = Path.Combine(ContainerDirectory, DataDirectory, $"data.{index:D3}");
 
             return new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read);
         }
         
+        /// <summary>
+        /// Get container directory from product type
+        /// </summary>
+        /// <param name="product">Target product</param>
+        /// <returns>Container directory</returns>
+        /// <exception cref="NotImplementedException">Product is unsupported</exception>
         public static string GetContainerDirectory(Product product) {
             if (product == Product.HeroesOfTheStorm)
                 return "HeroesData";
@@ -149,19 +186,28 @@ namespace TACTLib.Container {
 
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
         public struct BlockSizeAndHash {
+            /// <summary>
+            /// Block size, in bytes
+            /// </summary>
             public int BlockSize;
             public int BlockHash;  // hashlittle2 on the following BlockSize bytes of the file with an initial value of 0 for pb and pc.
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public unsafe struct EKeyEntry {
+            /// <summary>Encoding Key</summary>
             public EKey EKey;                   // The first 9 bytes of the encoded key
             public fixed byte FileOffsetBE[5];  // Index of data file and offset within (big endian).
+            
+            /// <summary>Size of the encoded file</summary>
             public int EncodedSize;             // Encoded size (little endian). This is the size of encoded header, all file frame headers and all file frames
         }
         
         public struct IndexEntry {
+            /// <summary>Data file index</summary>
             public int Index;
+            
+            /// <summary>Offset to data, in bytes</summary>
             public int Offset;
 
             public unsafe IndexEntry(EKeyEntry entry) {

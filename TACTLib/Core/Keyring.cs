@@ -4,6 +4,9 @@ using TACTLib.Helpers;
 
 namespace TACTLib.Core {
     public class Keyring : Config.Config {
+        /// <summary>
+        /// Keyring keys
+        /// </summary>
         public readonly Dictionary<ulong, byte[]> Keys;
 
         public Keyring(string containerPath, string key) : base(containerPath, key) {
@@ -20,6 +23,11 @@ namespace TACTLib.Core {
             }
         }
         
+        /// <summary>
+        /// Get encryption key value
+        /// </summary>
+        /// <param name="keyID">Target key id</param>
+        /// <returns>Key value</returns>
         public byte[] GetKey(ulong keyID) {
             Keys.TryGetValue(keyID, out byte[] key);
             return key;

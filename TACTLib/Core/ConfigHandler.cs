@@ -4,9 +4,14 @@ using TACTLib.Config;
 
 namespace TACTLib.Core {
     public class ConfigHandler {
+        /// <summary>Build config</summary>
         public readonly BuildConfig BuildConfig;
         //public readonly PatchConfig PatchConfig;
+        
+        /// <summary>CDN config</summary>
         public readonly CDNConfig CDNConfig;
+        
+        /// <summary>Keyring config</summary>
         public readonly Keyring Keyring;
         
         public ConfigHandler(ClientHandler client) {

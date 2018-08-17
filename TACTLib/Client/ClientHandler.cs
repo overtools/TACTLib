@@ -7,22 +7,39 @@ using TACTLib.Helpers;
 
 namespace TACTLib.Client {
     public class ClientHandler {
-        public readonly InstallationInfo InstallationInfo;
+        /// <summary>
+        /// The <see cref="Product"/> that this container belongs to.
+        /// </summary>
         public readonly Product Product;
+
+        /// <summary>
+        /// The installation info of the container
+        /// </summary>
+        /// <seealso cref="InstallInfoFileName"/>
+        public readonly InstallationInfo InstallationInfo;
+        
+        /// <summary>Container handler</summary>
         public readonly ContainerHandler ContainerHandler;
+        
+        /// <summary>Encoding table handler</summary>
         public readonly EncodingHandler EncodingHandler;
+        
+        /// <summary>Configuration handler</summary>
         public readonly ConfigHandler ConfigHandler;
 
+        /// <summary>The base path of the container. E.g where the game executables are.</summary>
         public readonly string BasePath;
 
-        public const string InstallationInfoFile = ".build.info";
+        /// <summary>Name of the installation info file</summary>
+        /// <seealso cref="InstallationInfo"/>
+        public const string InstallInfoFileName = ".build.info";
 
         public ClientHandler(string basePath) {
             BasePath = basePath;
             
             Product = ProductHelpers.ProductFromLocalInstall(basePath);
             
-            string installationInfoPath = Path.Combine(basePath, InstallationInfoFile);
+            string installationInfoPath = Path.Combine(basePath, InstallInfoFileName);
             if (!File.Exists(installationInfoPath)) {
                 throw new FileNotFoundException(installationInfoPath);
             }
@@ -40,6 +57,11 @@ namespace TACTLib.Client {
             }
         }
 
+        /// <summary>
+        /// Open a file from Content Key
+        /// </summary>
+        /// <param name="key">Content Key of the file</param>
+        /// <returns>Loaded file</returns>
         public Stream OpenCKey(CKey key) {
             if (EncodingHandler.TryGetEncodingEntry(key, out EncodingHandler.CKeyEntry entry)) {
                 return OpenEKey(entry.EKey);
@@ -48,6 +70,11 @@ namespace TACTLib.Client {
             return null;
         }
 
+        /// <summary>
+        /// Open a file from Encoding Key
+        /// </summary>
+        /// <param name="key">The Encoding Key</param>
+        /// <returns>Loaded file</returns>
         public Stream OpenEKey(EKey key) {  // ekey = value of ckey in encoding table
             var stream = ContainerHandler.OpenEKey(key);
             return stream == null ? null : new BLTEStream(this, stream);

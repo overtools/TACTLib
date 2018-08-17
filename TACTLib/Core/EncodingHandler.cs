@@ -9,6 +9,7 @@ using static TACTLib.Helpers.Utils;
 
 namespace TACTLib.Core {
     public class EncodingHandler {
+        /// <summary>Encoding table</summary>
         private readonly Dictionary<CKey, CKeyEntry> _encodingEntries;
         
         public EncodingHandler(ClientHandler client) {
@@ -62,25 +63,44 @@ namespace TACTLib.Core {
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public struct Header {
+            /// <summary>Encoding signature, "EN"</summary>
             public short Signature;
+            
+            /// <summary>Version number</summary>
             public byte Version;
+            
+            /// <summary>Number of bytes in a CKey</summary>
             public byte CKeySize;
+            
+            /// <summary>Number of bytes in a EKey</summary>
             public byte EKeySize;
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
         public struct PageHeader {
+            /// <summary>First key in the page</summary>
             public CKey FirstKey;
+            
+            /// <summary>MD5 of the page</summary>
             public CKey PageHash;
         }
         
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public unsafe struct CKeyEntry {
-            public ushort EKeyCount;                 // Number of EKeys
-            public fixed byte ContentSize[4];        // Content file size (big endian)
+            /// <summary>Number of EKeys</summary>
+            public ushort EKeyCount;
+            
+            /// <summary>Content file size (big endian)</summary>
+            public fixed byte ContentSize[4];
+            
+            /// <summary>Content Key. MD5 of the file content.</summary>
             public CKey CKey;  // Content key. This is MD5 of the file content
-            public EKey EKey;  // Encoded key. This is (trimmed) MD5 hash of the file header, containing MD5 hashes of all the logical blocks of the file
+            
+            /// <summary>Encoding Key. This is (trimmed) MD5 hash of the file header, containing MD5 hashes of all the logical blocks of the file</summary>
+            public EKey EKey;
 
+            /// <summary>Get content size</summary>
+            /// <returns>Content size</returns>
             public int GetSize() {
                 fixed (byte* b = ContentSize)
                     return Int32FromPtrBE(b);

@@ -4,6 +4,9 @@ namespace TACTLib.Container {
     public class ClientPatchManifest {
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public unsafe struct Header {
+            /// <summary>
+            /// Patch signature, "PA"
+            /// </summary>
             public short Signature;
             public byte Version;
             public byte CKeySize;
