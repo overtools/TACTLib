@@ -1,0 +1,33 @@
+version: 0.1.{build}
+image: Visual Studio 2017
+configuration: Release
+platform: Any CPU
+assembly_info:
+  patch: true
+  file: '**\AssemblyInfo.*'
+  assembly_version: '{version}'
+  assembly_file_version: '{version}'
+  assembly_informational_version: $(appveyor_repo_commit)
+before_build:
+- ps: '[System.IO.File]::AppendAllText("C:\Windows\System32\drivers\etc\hosts", "`n93.184.221.200  api.nuget.org")'
+- cmd: >-
+    git submodule update --init --recursive
+
+    nuget restore TACTLib.sln
+build:
+  project: TACTLib.sln
+  verbosity: minimal
+before_package:
+- cmd: >-
+    del /F /Q TACTLibTest\bin\Release\*.pdb
+    del /F /Q TACTLibTest\bin\Release\*.xml
+
+    del /F /Q TACTLib\bin\Release\*.pdb
+    del /F /Q TACTLib\bin\Release\*.xml
+artifacts:
+- path: TACTLibTest\bin\Release\TACTLibTest.exe
+  name: TACTLibTest
+- path: TACTLib\bin\Release\TACTLib.dll
+  name: TACTLib
+cache:
+  - packages -> **\packages.config 
