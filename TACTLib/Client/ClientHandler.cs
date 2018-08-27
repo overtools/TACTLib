@@ -3,6 +3,8 @@ using System.IO;
 using TACTLib.Config;
 using TACTLib.Container;
 using TACTLib.Core;
+using TACTLib.Core.Product;
+using TACTLib.Core.Product.Tank;
 using TACTLib.Helpers;
 
 namespace TACTLib.Client {
@@ -27,6 +29,12 @@ namespace TACTLib.Client {
         /// <summary>Configuration handler</summary>
         public readonly ConfigHandler ConfigHandler;
 
+        /// <summary>Virtual File System</summary>
+        public readonly VFSFileTree VFS;
+
+        /// <summary>Product specific Root File handler</summary>
+        public readonly IProductHandler ProductHandler;
+
         /// <summary>The base path of the container. E.g where the game executables are.</summary>
         public readonly string BasePath;
 
@@ -34,8 +42,11 @@ namespace TACTLib.Client {
         /// <seealso cref="InstallationInfo"/>
         public const string InstallInfoFileName = ".build.info";
 
-        public ClientHandler(string basePath) {
+        public readonly ClientCreateArgs CreateArgs;
+
+        public ClientHandler(string basePath, ClientCreateArgs createArgs) {
             BasePath = basePath;
+            CreateArgs = createArgs;
             
             Product = ProductHelpers.ProductFromLocalInstall(basePath);
             
@@ -43,17 +54,25 @@ namespace TACTLib.Client {
             if (!File.Exists(installationInfoPath)) {
                 throw new FileNotFoundException(installationInfoPath);
             }
-            InstallationInfo = new InstallationInfo(installationInfoPath);
+            using (var _ = new PerfCounter("InstallationInfo::ctor"))
+                InstallationInfo = new InstallationInfo(installationInfoPath);
             
-            ContainerHandler = new ContainerHandler(this);
-            ConfigHandler = new ConfigHandler(this);
+            using (var _ = new PerfCounter("ContainerHandler::ctor"))
+                ContainerHandler = new ContainerHandler(this);
+            using (var _ = new PerfCounter("ConfigHandler::ctor"))
+                ConfigHandler = new ConfigHandler(this);
     
-            using (var _ = new PerfCounter("EncodingHandler::ctor")) {
+            using (var _ = new PerfCounter("EncodingHandler::ctor"))
                 EncodingHandler = new EncodingHandler(this);
+
+            if (ConfigHandler.BuildConfig.VFSRoot != null) {
+                using (var _ = new PerfCounter("VFSFileTree::ctor"))
+                    VFS = new VFSFileTree(this);
             }
-            
-            using (Stream rootStream = OpenCKey(ConfigHandler.BuildConfig.Root.ContentKey)) {
-                
+
+            if (Product == Product.Overwatch) {
+                using (var _ = new PerfCounter("ProductHandler_Tank::ctor"))
+                    ProductHandler = new ProductHandler_Tank(this, OpenCKey(ConfigHandler.BuildConfig.Root.ContentKey));
             }
         }
 

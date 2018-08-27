@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace TACTLib.Helpers {
+namespace TACTLib {
     public static class Utils {
         public static unsafe byte[] PtrToByteArray(byte* ptr, int len) {
             byte[] buf = new byte[len];

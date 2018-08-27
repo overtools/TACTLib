@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using TACTLib.Client;
 using TACTLib.Helpers;
-using static TACTLib.Helpers.Utils;
+using static TACTLib.Utils;
 
 namespace TACTLib.Container {
     public class ContainerHandler {
@@ -40,9 +40,7 @@ namespace TACTLib.Container {
             if (client.BasePath == null) throw new Exception("no 'BasePath' specified");
             ContainerDirectory = Path.Combine(client.BasePath, GetContainerDirectory(client.Product));
 
-            using (PerfCounter _ = new PerfCounter("ContainerHandler::LoadIndexFiles")) {
-                LoadIndexFiles();
-            }
+            LoadIndexFiles();
         }
 
         private void LoadIndexFiles() {
@@ -102,7 +100,7 @@ namespace TACTLib.Container {
         }
 
         /// <summary>
-        /// Open a file from Encoding Key
+        /// Open an encoded file from Encoding Key
         /// </summary>
         /// <param name="key">The Encoding Key</param>
         /// <returns>Loaded file</returns>
@@ -121,12 +119,15 @@ namespace TACTLib.Container {
         /// <returns>Encoded stream</returns>
         private Stream OpenIndexEntry(IndexEntry indexEntry) {
             using (Stream dataStream = OpenDataFile(indexEntry.Index))
-            using (BinaryReader reader = new BinaryReader(dataStream, Encoding.Default, false)) {
+            using (BinaryReader reader = new BinaryReader(dataStream, Encoding.ASCII, false)) {  // ASCII = important. one byte per char
                 dataStream.Position = indexEntry.Offset;
 
-                CKey cKey = reader.Read<CKey>();
+                //CKey cKey = reader.Read<CKey>();
+                dataStream.Position += 16;
+                
                 int size = reader.ReadInt32();
                 
+                // 2+8 byte block of something?
                 dataStream.Position += 10;
                 
                 byte[] data = reader.ReadBytes(size - 30);
@@ -190,17 +191,23 @@ namespace TACTLib.Container {
             /// Block size, in bytes
             /// </summary>
             public int BlockSize;
-            public int BlockHash;  // hashlittle2 on the following BlockSize bytes of the file with an initial value of 0 for pb and pc.
+            
+            /// <summary>
+            /// hashlittle2 on the following BlockSize bytes of the file with an initial value of 0 for pb and pc.
+            /// </summary>
+            public int BlockHash;
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public unsafe struct EKeyEntry {
             /// <summary>Encoding Key</summary>
             public EKey EKey;                   // The first 9 bytes of the encoded key
-            public fixed byte FileOffsetBE[5];  // Index of data file and offset within (big endian).
+            
+            /// <summary>Index of data file and offset within (big endian)</summary>
+            public fixed byte FileOffsetBE[5];
             
             /// <summary>Size of the encoded file</summary>
-            public int EncodedSize;             // Encoded size (little endian). This is the size of encoded header, all file frame headers and all file frames
+            public int EncodedSize;
         }
         
         public struct IndexEntry {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using TACTLib.Helpers;
-using static TACTLib.Helpers.Utils;
+using static TACTLib.Utils;
 
 namespace TACTLib.Container {
     /// <summary>

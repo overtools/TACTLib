@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
-using TACTLib.Helpers;
 
 namespace TACTLib.Core {
     public class Keyring : Config.Config {

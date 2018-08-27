@@ -5,54 +5,55 @@ using System.Runtime.InteropServices;
 using TACTLib.Client;
 using TACTLib.Container;
 using TACTLib.Helpers;
-using static TACTLib.Helpers.Utils;
+using static TACTLib.Utils;
 
 namespace TACTLib.Core {
     public class EncodingHandler {
         /// <summary>Encoding table</summary>
         private readonly Dictionary<CKey, CKeyEntry> _encodingEntries;
         
-        public EncodingHandler(ClientHandler client) {
+        public unsafe EncodingHandler(ClientHandler client) {
             _encodingEntries = new Dictionary<CKey, CKeyEntry>(CASCKeyComparer.Instance);
-            
-            using (Stream stream = client.OpenEKey(client.ConfigHandler.BuildConfig.Encoding.EncodingKey)) {
-                if (stream == null) return;
-                using (BinaryReader reader = new BinaryReader(stream)) {
-                    Header header = reader.Read<Header>();
 
-                    if (header.Signature != 0x4E45 || header.CKeySize != 16 || header.EKeySize != 16 ||
-                        header.Version != 1) {
-                        throw new InvalidDataException($"EncodingHandler: encoding header invalid (magic: {header.Signature:X2})");
+            using (Stream stream = client.OpenEKey(client.ConfigHandler.BuildConfig.Encoding.EncodingKey))
+            using (BinaryReader reader = new BinaryReader(stream)) {
+                Header header = reader.Read<Header>();
+
+                if (header.Signature != 0x4E45 || header.CKeySize != 16 || header.EKeySize != 16 ||
+                    header.Version != 1) {
+                    throw new InvalidDataException($"EncodingHandler: encoding header invalid (magic: {header.Signature:X4}, csize: {header.CKeySize}, esize: {header.EKeySize})");
+                }
+                
+                ushort cKeyPageSize = reader.ReadUInt16BE();  // in kilo bytes. e.g. 4 in here → 4096 byte pages (default)
+                ushort especPageSize = reader.ReadUInt16BE(); // same
+                
+                int cKeyPageCount = reader.ReadInt32BE();
+                int especPageCount = reader.ReadInt32BE();
+
+                byte unknown = reader.ReadByte();
+                Debug.Assert(unknown == 0); // asserted by agent
+
+                int especBlockSize = reader.ReadInt32BE();
+
+                //string[] strings = Encoding.ASCII.GetString(reader.ReadBytes(especBlockSize)).Split(new[] { '\0' }, StringSplitOptions.RemoveEmptyEntries);
+                stream.Position += especBlockSize;
+
+                //PageHeader[] pageHeaders = reader.ReadArray<PageHeader>(cKeyPageCount);
+                stream.Position += cKeyPageCount * sizeof(PageHeader);
+                for (int i = 0; i < cKeyPageCount; i++) {
+                    long pageEnd = stream.Position + cKeyPageSize * 1024;
+
+                    while (stream.Position <= pageEnd) {
+                        CKeyEntry entry = reader.Read<CKeyEntry>();
+                        if (entry.EKeyCount == 0) break;
+                    
+                        stream.Position += (CKey.CASC_CKEY_SIZE - EKey.CASC_EKEY_SIZE) + (entry.EKeyCount - 1) * header.EKeySize;
+                        // 16-9 because we are truncating the eKey
+
+                        _encodingEntries[entry.CKey] = entry;
                     }
                     
-                    ushort cKeyPageSize = reader.ReadUInt16BE();  // in kilo bytes. e.g. 4 in here → 4096 byte pages (default)
-                    ushort especPageSize = reader.ReadUInt16BE(); // same
-                    
-                    int cKeyPageCount = reader.ReadInt32BE();
-                    int especPageCount = reader.ReadInt32BE();
-
-                    byte unknown = reader.ReadByte();
-                    Debug.Assert(unknown == 0); // asserted by agent
-
-                    int especBlockSize = reader.ReadInt32BE();
-
-                    stream.Position += especBlockSize;
-
-                    PageHeader[] pageHeaders = reader.ReadArray<PageHeader>(cKeyPageCount);
-                    for (int i = 0; i < cKeyPageCount; i++) {
-                        long pageEnd = stream.Position + cKeyPageSize * 1024;
-
-                        while (stream.Position <= pageEnd) {
-                            CKeyEntry entry = reader.Read<CKeyEntry>();
-                        
-                            stream.Position +=  (CKey.CASC_CKEY_SIZE - EKey.CASC_EKEY_SIZE) + (entry.EKeyCount - 1) * header.EKeySize;
-                            // 16-9 because we are truncating the eKey
-
-                            _encodingEntries[entry.CKey] = entry;
-                        }
-                        
-                        reader.BaseStream.Position = pageEnd; // just checking
-                    }
+                    stream.Position = pageEnd; // just checking
                 }
             }
         }

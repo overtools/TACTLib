@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using static TACTLib.Helpers.Utils;
+using static TACTLib.Utils;
 
 namespace TACTLib.Helpers {
     public static class Extensions {
@@ -84,13 +84,13 @@ namespace TACTLib.Helpers {
         // ReSharper disable once InconsistentNaming
         public static int ReadInt32BE(this BinaryReader reader) {
             byte[] val = reader.ReadBytes(4);
-            return Int32FromByteArrayBE(val, 0);
+            return Int32FromByteArrayBE(val);
         }
         /// <summary>Read a big endian 16-bit int</summary>
         // ReSharper disable once InconsistentNaming
         public static short ReadInt16BE(this BinaryReader reader) {
             byte[] val = reader.ReadBytes(2);
-            return Int16FromByteArrayBE(val, 0);
+            return Int16FromByteArrayBE(val);
         }
         
         /// <summary>Read a big endian 16-bit uint</summary>

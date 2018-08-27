@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using TACTLib.Helpers;
-using static TACTLib.Helpers.Utils;
+using static TACTLib.Utils;
 
 namespace TACTLib.Container {
     /// <summary>
@@ -41,8 +41,8 @@ namespace TACTLib.Container {
         /// <returns></returns>
         /// <exception cref="ArgumentException">Array length != <see cref="CASC_EKEY_SIZE"/></exception>
         public static EKey FromByteArray(byte[] array) {
-            if (array.Length != CASC_EKEY_SIZE)
-                throw new ArgumentException($"array size != {CASC_EKEY_SIZE}");
+            //if (array.Length != CASC_EKEY_SIZE)
+            //    throw new ArgumentException($"array size != {CASC_EKEY_SIZE}");
             // todo: array can be to long but it's kinda ok because we need to truncate the last bytes anyway
 
             fixed (byte* ptr = array) {

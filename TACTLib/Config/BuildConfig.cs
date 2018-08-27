@@ -8,6 +8,7 @@ namespace TACTLib.Config {
         public FileRecord Patch;
         public FileRecord Download;
         public FileRecord Encoding;
+        public FileRecord VFSRoot;
         
         public BuildConfig(string containerPath, string key) : base(containerPath, key) {
             GetFileRecord("root", out Root);
@@ -15,6 +16,7 @@ namespace TACTLib.Config {
             GetFileRecord("patch", out Patch);
             GetFileRecord("download", out Download);
             GetFileRecord("encoding", out Encoding);
+            GetFileRecord("vfs-root", out VFSRoot);
         }
 
         private void GetFileRecord(string key, out FileRecord @out) {
@@ -26,7 +28,7 @@ namespace TACTLib.Config {
                 //    @out.Size = int.Parse(Values[sizeString][0]);  // todo: hmm
                 //}
             } else {
-                @out = default(FileRecord);
+                @out = null;
             }
         }
 
@@ -43,7 +45,7 @@ namespace TACTLib.Config {
             return record;
         }
 
-        public struct FileRecord {
+        public class FileRecord {
             public CKey ContentKey;
             public EKey EncodingKey;
             

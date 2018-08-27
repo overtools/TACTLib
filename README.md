@@ -28,10 +28,10 @@ if (client.VFS == null) {
     return; // or whatever
 }
 VFSFileTree vfs = client.VFS;
-using (Stream stream = vfs.Open(@"zone\\base.xpak")) {
+using (Stream stream = vfs.Open(@"zone\base.xpak")) {
     // do whatever
 }
-foreach (string folder in vfs.Root.GetFiles("zone\\")) {
+foreach (string folder in vfs.Root.GetFiles(@"zone\")) {
     // could maybe do this too
 }
 ```

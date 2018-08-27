@@ -2,8 +2,8 @@
 
 namespace TACTLib.Container {
     public class CASCKeyComparer : IEqualityComparer<EKey>, IEqualityComparer<CKey> {
-        private const uint FnvPrime32 = 16777619;
-        private const uint FnvOffset32 = 2166136261;
+        private const uint FnvPrime32 = 0x1000193;
+        private const uint FnvOffset32 = 0x811C9DC5;
         
         /// <summary>Static instance</summary>
         public static CASCKeyComparer Instance = new CASCKeyComparer();
@@ -23,18 +23,29 @@ namespace TACTLib.Container {
 
             return true;
         }
-
+        
         public unsafe int GetHashCode(EKey obj) {
-            return To32BitFnv1aHash((uint*) &obj);
+            uint hash = FnvOffset32;
+            uint* ptr = (uint*) &obj;
+
+            for (int i = 0; i < 2; i++) {
+                hash ^= ptr[i];
+                hash *= FnvPrime32;
+            }
+
+            byte* hashPtr = (byte*) &hash;
+            byte b = *((byte*)ptr + 8);
+            for (int i = 0; i < 4; ++i) {
+                hashPtr[i] ^= b;
+            }
+
+            return unchecked((int) hash);
         }
 
         public unsafe int GetHashCode(CKey obj) {
-            return To32BitFnv1aHash((uint*) &obj);
-        }
-
-        // ReSharper disable once InconsistentNaming
-        public static unsafe int To32BitFnv1aHash(uint* ptr) {
             uint hash = FnvOffset32;
+            
+            uint* ptr = (uint*) &obj;
 
             for (int i = 0; i < 4; i++) {
                 hash ^= ptr[i];
