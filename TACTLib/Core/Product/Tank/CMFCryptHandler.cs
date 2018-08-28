@@ -50,7 +50,7 @@ namespace TACTLib.Core.Product.Tank {
                 }
             }
 
-            key = provider.Key(header, digest, 32);
+            key = provider.Key(header, 32);
             iv = provider.IV(header, digest, 16);
 
             //name = Path.GetFileNameWithoutExtension(name);

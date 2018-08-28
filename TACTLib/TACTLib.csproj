@@ -37,8 +37,20 @@
     <Prefer32bit>false</Prefer32bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="LZ4, Version=1.0.15.93, Culture=neutral, PublicKeyToken=62e1b5ec1eec9bdd">
+      <HintPath>$(SolutionDir)\packages\lz4net.1.0.15.93\lib\net4-client\LZ4.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="mscorlib" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Memory, Version=4.0.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
+      <HintPath>$(SolutionDir)\packages\System.Memory.4.5.1\lib\netstandard2.0\System.Memory.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <HintPath>$(SolutionDir)\packages\System.Runtime.CompilerServices.Unsafe.4.5.0\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Client\ClientHandler.cs" />
@@ -63,6 +75,75 @@
     <Compile Include="Core\Product\Tank\ApplicationPackageManifest.cs" />
     <Compile Include="Core\Product\Tank\CMFCryptHandler.cs" />
     <Compile Include="Core\Product\Tank\CMF\ProCMF_49656.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_35328.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_35455.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_35780.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_36473.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_36859.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_37104.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_37130.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_37218.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_37254.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_37275.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_37415.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_37456.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_37636.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_37646.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_37664.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_37703.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_37734.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_37755.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_37793.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_37865.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_37962.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_38044.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_38058.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_38125.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_38170.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_38248.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_38459.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_38765.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_38882.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_39023.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_39028.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_39083.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_39103.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_39241.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_39362.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_39425.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_39484.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_39823.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_39935.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_39974.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_40407.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_40570.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_40763.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_40990.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_41350.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_41713.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_42076.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_42210.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_42539.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_42563.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_42665.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_42936.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_43036.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_43435.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_43515.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_43605.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_44022.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_44916.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_45214.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_45420.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_45752.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_46137.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_46510.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_46823.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_46836.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_47161.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_47452.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_47946.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_49154.cs" />
     <Compile Include="Core\Product\Tank\ContentManifestFile.cs" />
     <Compile Include="Core\Product\Tank\ICMFEncryptionProc.cs" />
     <Compile Include="Core\Product\Tank\ProductHandler_Tank.cs" />
@@ -78,6 +159,9 @@
     <Compile Include="Product.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

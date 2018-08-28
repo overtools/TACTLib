@@ -1,7 +1,10 @@
-﻿using System.IO;
+﻿using System;
+using System.Diagnostics;
+using System.IO;
 using System.IO.Compression;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using LZ4;
 using TACTLib.Client;
 using TACTLib.Container;
 using TACTLib.Helpers;
@@ -72,6 +75,12 @@ namespace TACTLib.Core.Product.Tank {
             public int CMFIndex;
             public ContentFlags Flags;
             public uint BundleOffset;
+
+            public CachePackageRecord(PackageRecord record, ContentManifestFile cmf) {
+                Flags = record.Flags;
+                BundleOffset = record.BundleOffset;
+                CMFIndex = cmf.IndexMap[record.GUID];
+            }
         }
 
         public APMHeader Header;
@@ -81,7 +90,7 @@ namespace TACTLib.Core.Product.Tank {
         public PackageRecord[][] Records;
         public ulong[][] PackageSiblings;
         
-        public ApplicationPackageManifest(ClientHandler client, Stream stream, ContentManifestFile cmf) {
+        public ApplicationPackageManifest(ClientHandler client, Stream stream, ContentManifestFile cmf, string name) {
             using (BinaryReader reader = new BinaryReader(stream)) {
                 Header = reader.Read<APMHeader>();
                 
@@ -89,18 +98,25 @@ namespace TACTLib.Core.Product.Tank {
                 PackageEntries = reader.ReadArray<PackageEntry>(Header.PackageCount);
                 VerifyEntries(cmf);
                 
-                // todo load cache here
-                if (false) {
-                    return;
-                }
-                
                 Packages = new Package[Header.PackageCount];
                 Records = new PackageRecord[Header.PackageCount][];
+                PackageSiblings = new ulong[Header.PackageCount][];
                 
-                //using (PerfCounter _ = new PerfCounter("APM:LoadPackage(packageCount)"))
-                //for (int i = 0; i < Header.PackageCount; i++) {
-                //    LoadPackage(i, client, cmf);
-                //}
+                if (client.CreateArgs.Tank.CacheAPM) {
+                    string path = GetCachePath(name);
+                    if (File.Exists(path)) {
+                        try {
+
+                            if (LoadCache(cmf, path)) {
+                                return;
+                            }
+
+                            // else: regen
+                        } catch (Exception) {
+                            // todo: log
+                        }
+                    }
+                }
 
                 using (PerfCounter _ = new PerfCounter("APM:LoadPackage(packageCount)"))
                 Parallel.For(0, Header.PackageCount, new ParallelOptions {
@@ -109,20 +125,80 @@ namespace TACTLib.Core.Product.Tank {
                     LoadPackage(i, client, cmf);
                 });
 
-                
-                // todo save cache here
-                if (false) {
-                    return;
+                if (client.CreateArgs.Tank.CacheAPM) {
+                    using (PerfCounter _ = new PerfCounter("APM:SaveCache"))
+                    SaveCache(cmf, name);
                 }
             }
         }
 
+        private void SaveCache(ContentManifestFile cmf, string name) {
+            using (Stream file = File.OpenWrite(GetCachePath(name)))
+            using (LZ4Stream lz4Stream = new LZ4Stream(file, LZ4StreamMode.Compress, LZ4StreamFlags.HighCompression))
+            using (BinaryWriter writer = new BinaryWriter(lz4Stream)) {
+                file.SetLength(0);
+                writer.Write(123);
+                writer.WriteStructArray(Packages);
+                
+                for (int i = 0; i < Header.PackageCount; ++i) {
+                    var package = Packages[i];
+                    var records = Records[i];
+                    CachePackageRecord[] cacheRecords = new CachePackageRecord[package.RecordCount];
+                    for (int j = 0; j < package.RecordCount; j++) {
+                        cacheRecords[j] = new CachePackageRecord(records[j], cmf);
+                    }
+                    writer.WriteStructArray(cacheRecords);
+                    //writer.WriteStructArray(PackageSiblings[i]);
+                }
+            }
+        }
+
+        private string GetCachePath(string name) {
+            string programDir = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName));
+            string apmDir = Path.Combine(programDir, "CASCCache", "APM");
+
+            if (!Directory.Exists(apmDir)) {
+                Directory.CreateDirectory(apmDir);
+            }
+            
+            return Path.Combine(apmDir, $"{Header.Build}_{Path.GetFileNameWithoutExtension(name)}.apmcached");
+        }
+        
+        private bool LoadCache(ContentManifestFile cmf, string path) {
+            using (Stream file = File.OpenRead(path))
+            using (LZ4Stream lz4Stream = new LZ4Stream(file, LZ4StreamMode.Decompress))
+            using (BinaryReader reader = new BinaryReader(lz4Stream)) {
+                if(reader.ReadUInt32() != 123) {
+                    return false;
+                }
+
+                Packages = reader.ReadArray<Package>(Header.PackageCount);
+
+                for (int i = 0; i < Header.PackageCount; i++) {
+                    var package = Packages[i];
+
+                    CachePackageRecord[] cacheRecords = reader.ReadArray<CachePackageRecord>((int)package.RecordCount);
+                    var records = new PackageRecord[package.RecordCount];
+                    Records[i] = records;
+
+                    for (int j = 0; j < package.RecordCount; j++) {
+                        var cacheRecord = cacheRecords[j];
+                        records[j] = new PackageRecord {
+                            BundleOffset = cacheRecord.BundleOffset,
+                            Flags = cacheRecord.Flags,
+                            GUID = cmf.HashList[cacheRecord.CMFIndex].GUID
+                        };
+                    }
+                    //PackageSiblings[i] = reader.ReadArray<ulong>((int) package.SiblingCount);
+                }
+            }
+
+            return true;
+        }
+
         private void LoadPackage(int i, ClientHandler client, ContentManifestFile cmf) {
             PackageEntry entry = PackageEntries[i];
-            if (!cmf.TryGet(entry.PackageGUID, out var packageCMF)) return; // lol?
-            if (!client.EncodingHandler.TryGetEncodingEntry(packageCMF.ContentKey, out var packageEncoding)) return;
-                    
-            using (Stream packageStream = client.OpenEKey(packageEncoding.EKey))
+            using (Stream packageStream = cmf.OpenFile(client, entry.PackageGUID))
             using (BinaryReader packageReader = new BinaryReader(packageStream)) {
                 Packages[i] = packageReader.Read<Package>();
                         

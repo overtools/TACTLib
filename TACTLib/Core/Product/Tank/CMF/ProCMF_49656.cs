@@ -3,9 +3,8 @@ using static TACTLib.Core.Product.Tank.ContentManifestFile;
 
 namespace TACTLib.Core.Product.Tank.CMF {
     [CMFMetadataAttribute(AutoDetectVersion = true, Product = TACTLib.Product.Overwatch)]
-    // ReSharper disable once InconsistentNaming
     public class ProCMF_49656 : ICMFEncryptionProc {
-        public byte[] Key(CMFHeader header, byte[] digest, int length) {
+        public byte[] Key(CMFHeader header, int length) {
             byte[] buffer = new byte[length];
 
             uint kidx = Keytable[header.DataCount & 511];

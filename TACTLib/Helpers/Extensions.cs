@@ -84,13 +84,13 @@ namespace TACTLib.Helpers {
         // ReSharper disable once InconsistentNaming
         public static int ReadInt32BE(this BinaryReader reader) {
             byte[] val = reader.ReadBytes(4);
-            return Int32FromByteArrayBE(val);
+            return Int32FromSpanBE(val);
         }
         /// <summary>Read a big endian 16-bit int</summary>
         // ReSharper disable once InconsistentNaming
         public static short ReadInt16BE(this BinaryReader reader) {
             byte[] val = reader.ReadBytes(2);
-            return Int16FromByteArrayBE(val);
+            return Int16FromSpanBE(val);
         }
         
         /// <summary>Read a big endian 16-bit uint</summary>
@@ -100,9 +100,9 @@ namespace TACTLib.Helpers {
         }
         #endregion
         
-        /// <summary>Convert byte array to a string</summary>
-        public static string ToHexString(this byte[] data) {
-            return BitConverter.ToString(data).Replace("-", string.Empty);
+        /// <summary>Convert <see cref="Span{T}"/> to a hexadecimal string</summary>
+        public static string ToHexString(this Span<byte> data) {
+            return BitConverter.ToString(data.ToArray()).Replace("-", string.Empty);
         }
     }
 }

@@ -22,7 +22,7 @@ namespace TACTLib.Container {
         /// <returns>Hex stirng</returns>
         public string ToHexString() {
             fixed (byte* b = Value)
-            return PtrToByteArray(b, CASC_EKEY_SIZE).ToHexString();
+            return PtrToSpan(b, CASC_EKEY_SIZE).ToHexString();
         }
         
         /// <summary>

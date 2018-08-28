@@ -32,9 +32,9 @@ namespace TACTLib.Core.Product.Tank {
 
         public CMFHeader Header;
         
-        private HashData[] _hashList;
+        public HashData[] HashList;
         public ApplicationPackageManifest.Entry[] Entries;
-        private Dictionary<ulong, int> _indexMap;
+        public Dictionary<ulong, int> IndexMap;
         private Dictionary<ulong, HashData> _mapTest;
 
         // ReSharper disable once InconsistentNaming
@@ -65,13 +65,13 @@ namespace TACTLib.Core.Product.Tank {
 
         private void ParseEntries(BinaryReader reader) {
             Entries = reader.ReadArray<ApplicationPackageManifest.Entry>(Header.EntryCount);
-            _hashList = reader.ReadArray<HashData>(Header.DataCount);
+            HashList = reader.ReadArray<HashData>(Header.DataCount);
             
-            _indexMap = new Dictionary<ulong, int>(Header.DataCount);
+            IndexMap = new Dictionary<ulong, int>(Header.DataCount);
             _mapTest = new Dictionary<ulong, HashData>(Header.DataCount); 
             for (int i = 0; i < Header.DataCount; i++) {
-                var hashData = _hashList[i];
-                _indexMap[hashData.GUID] = i;
+                var hashData = HashList[i];
+                IndexMap[hashData.GUID] = i;
 
                 _mapTest[hashData.GUID] = hashData;
             }
@@ -88,12 +88,12 @@ namespace TACTLib.Core.Product.Tank {
         }
 
         public bool Exists(ulong guid) {
-            return _indexMap.ContainsKey(guid);
+            return IndexMap.ContainsKey(guid);
         }
 
         public HashData GetHashData(ulong guid) {
-            if (_indexMap.TryGetValue(guid, out int index)) {
-                return _hashList[index];
+            if (IndexMap.TryGetValue(guid, out int index)) {
+                return HashList[index];
             }
             throw new FileNotFoundException(); // todo
         }

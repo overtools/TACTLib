@@ -1,9 +1,11 @@
 ﻿namespace TACTLib.Client {
     public class ClientCreateArgs {
-        //public Locale TextLanguage = Locale.enUS;
-        //public Locale SpokenLanguage = Locale.enUS;
+        public TankArgs Tank = new TankArgs();
         
-        public string TextLanguage = "enUS";
-        public string SpokenLanguage = "enUS";
+        public class TankArgs {
+            public string TextLanguage = "enUS";
+            public string SpokenLanguage = "enUS";
+            public bool CacheAPM = true;
+        }
     }
 }

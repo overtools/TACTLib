@@ -1,5 +1,7 @@
-﻿using System.Threading;
+﻿using System.IO;
+using System.Threading;
 using TACTLib.Client;
+using TACTLib.Core.Product.Tank;
 
 namespace TACTLibTest {
     internal class Program {
@@ -10,6 +12,12 @@ namespace TACTLibTest {
             ClientHandler clientHandler = new ClientHandler(args[0], new ClientCreateArgs());
             
             Thread.Sleep(100000);
+
+            if (clientHandler.ProductHandler is ProductHandler_Tank tankHandler) {
+                using (Stream stream = tankHandler.OpenFile(0xE00000000000895)) {
+                    
+                }
+            }
         }
     }
 }

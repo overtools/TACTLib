@@ -67,9 +67,9 @@ namespace TACTLib.Core.Product.Tank {
                 if (!manifestRecord.Key.Contains(RegionDev)) continue; // is a CN (china?) CMF. todo: support this
 
                 if (manifestRecord.Key.Contains(SpeechManifestName)) {
-                    if (manifestRecord.Value.Locale != client.CreateArgs.SpokenLanguage) continue;
+                    if (manifestRecord.Value.Locale != client.CreateArgs.Tank.SpokenLanguage) continue;
                 } else {
-                    if (manifestRecord.Value.Locale != client.CreateArgs.TextLanguage) continue;
+                    if (manifestRecord.Value.Locale != client.CreateArgs.Tank.TextLanguage) continue;
                 }
 
                 var manifest = LoadManifest(client, manifestRecord.Value);
@@ -121,7 +121,7 @@ namespace TACTLib.Core.Product.Tank {
             }
 
             using (Stream apmStream = client.OpenCKey(record.APMKey)) {
-                manifest.PackageManifest = new ApplicationPackageManifest(client, apmStream, manifest.ContentManifest);
+                manifest.PackageManifest = new ApplicationPackageManifest(client, apmStream, manifest.ContentManifest, record.Name);
             }
             return manifest;
         }
@@ -173,37 +173,37 @@ namespace TACTLib.Core.Product.Tank {
         //private readonly Dictionary<CKey, byte[]> _bundleCache = new Dictionary<CKey, byte[]>(CASCKeyComparer.Instance);
         
         public Stream OpenFile(ulong guid) {
-            if (Assets.TryGetValue(guid, out Asset asset)) {
-                var manifest = Manifests[asset.ManifestIdx];
-                var package = manifest.PackageManifest.Packages[asset.PackageIdx];
-                var record = manifest.PackageManifest.Records[asset.PackageIdx][asset.RecordIdx];
-                if ((record.Flags & ContentFlags.Bundle) == 0) {
-                    if (!manifest.ContentManifest.TryGet(record.GUID, out var data)) {
-                        throw new FileNotFoundException();
-                    }
-
-                    using (Stream bundleStream = manifest.ContentManifest.OpenFile(_client, package.BundleGUID)) {
-                        MemoryStream stream = new MemoryStream((int)data.Size);
-                        bundleStream.Position = record.BundleOffset;
-                        bundleStream.CopyTo(stream, (int)data.Size);
-                    }
-                    //using (Stream bundle = _client.OpenCKey())
-                    // if (!_bundleCache.ContainsKey(record.LoadHash)) {
-                    //     using (Stream bundleStream = CASC.OpenFile(enc.Key)) {
-                    //         byte[] buf = new byte[bundleStream.Length];
-                    //         bundleStream.Read(buf, 0, (int)bundleStream.Length);
-                    //         _bundleCache[record.LoadHash] = buf;
-                    //     }
-                    // }
-                    // MemoryStream stream = new MemoryStream((int)record.Size);
-                    // stream.Write(_bundleCache[record.LoadHash], (int)record.Offset, (int)record.Size);
-                    // stream.Position = 0;
-                    // return stream;
+            if (!Assets.TryGetValue(guid, out Asset asset)) throw new FileNotFoundException($"{guid:X8}");
+            var manifest = Manifests[asset.ManifestIdx];
+            var package = manifest.PackageManifest.Packages[asset.PackageIdx];
+            var record = manifest.PackageManifest.Records[asset.PackageIdx][asset.RecordIdx];
+            if ((record.Flags & ContentFlags.Bundle) == record.Flags) {
+                if (!manifest.ContentManifest.TryGet(record.GUID, out var data)) {
+                    throw new FileNotFoundException();
                 }
 
-                return Manifests[asset.ManifestIdx].ContentManifest.OpenFile(_client, record.GUID);
+                using (Stream bundleStream = manifest.ContentManifest.OpenFile(_client, package.BundleGUID)) {
+                    MemoryStream stream = new MemoryStream((int)data.Size);
+                    bundleStream.Position = record.BundleOffset;
+                    Utils.CopyBytes(bundleStream, stream, (int)data.Size);
+                    stream.Position = 0;
+                    return stream;
+                }
+                //using (Stream bundle = _client.OpenCKey())
+                // if (!_bundleCache.ContainsKey(record.LoadHash)) {
+                //     using (Stream bundleStream = CASC.OpenFile(enc.Key)) {
+                //         byte[] buf = new byte[bundleStream.Length];
+                //         bundleStream.Read(buf, 0, (int)bundleStream.Length);
+                //         _bundleCache[record.LoadHash] = buf;
+                //     }
+                // }
+                // MemoryStream stream = new MemoryStream((int)record.Size);
+                // stream.Write(_bundleCache[record.LoadHash], (int)record.Offset, (int)record.Size);
+                // stream.Position = 0;
+                // return stream;
             }
-            throw new FileNotFoundException($"{guid:X8}");
+
+            return Manifests[asset.ManifestIdx].ContentManifest.OpenFile(_client, record.GUID);
         }
 
         //public void WipeBundleCache() {

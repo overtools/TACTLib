@@ -140,9 +140,7 @@ namespace TACTLib.Container {
         /// <param name="index">Data file index ("data.{index}")</param>
         /// <returns>Data stream</returns>
         private Stream OpenDataFile(int index) {
-            string file = Path.Combine(ContainerDirectory, DataDirectory, $"data.{index:D3}");
-
-            return new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read);
+            return File.OpenRead(Path.Combine(ContainerDirectory, DataDirectory, $"data.{index:D3}"));
         }
         
         /// <summary>
@@ -218,9 +216,9 @@ namespace TACTLib.Container {
             public int Offset;
 
             public unsafe IndexEntry(EKeyEntry entry) {
-                byte[] buf = PtrToByteArray(entry.FileOffsetBE, 5);
+                Span<byte> buf = PtrToSpan(entry.FileOffsetBE, 5);
                 int indexHigh = buf[0];
-                int indexLow = Int32FromByteArrayBE(buf, 1);
+                int indexLow = Int32FromSpanBE(buf, 1);
 
                 Index = indexHigh << 2 | (byte) ((indexLow & 0xC0000000) >> 30);
                 Offset = indexLow & 0x3FFFFFFF;
