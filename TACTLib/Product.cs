@@ -5,40 +5,40 @@ namespace TACTLib {
     public enum Product {
         /// <summary>agent</summary>
         Agent,
-        
+
         /// <summary>bna</summary>
         BattleNetApp,
-        
+
         /// <summary>catalogs</summary>
         Catalog,
-        
+
         /// <summary>d3, d3b, d3cn, d3t</summary>
         Diablo3,
-        
+
         /// <summary>dst2, dst2a, dst2dev, dst2e1, dst2t</summary>
         Destiny2,
-        
+
         /// <summary>hero, heroc, herot</summary>
         HeroesOfTheStorm,
-        
+
         /// <summary>hsb, hst</summary>
         Hearthstone,
-        
+
         /// <summary>pro, prot, proc*, proc2*, proc3, prodev, prov</summary>
         Overwatch,
-        
+
         /// <summary>s1, s1a, s1t</summary>
         StarCraft1,
-        
+
         /// <summary>s2, s2b, s2t, sc2</summary>
         StarCraft2,
-        
+
         /// <summary>viper, viperdev</summary>
         BlackOps4,
-        
+
         /// <summary>w3, w3t, war3</summary>
         Warcraft3,
-        
+
         /// <summary>wow, wow_beta, wowdev, wowe1, wowe2, wowe3, wowt, wowv, wowz</summary>
         WorldOfWarcraft
     }
@@ -50,11 +50,10 @@ namespace TACTLib {
         /// <param name="uid">Product uid</param>
         /// <returns>Product type</returns>
         /// <exception cref="NotImplementedException">Product is unknown</exception>
-        public static Product ProductFromUID(string uid)
-        {
+        public static Product ProductFromUID(string uid) {
             if (uid.StartsWith("hero"))
                 return Product.HeroesOfTheStorm;
-            
+
             if (uid.StartsWith("hs"))
                 return Product.Hearthstone;
 
@@ -88,7 +87,47 @@ namespace TACTLib {
             if (uid.StartsWith("viper")) {
                 return Product.BlackOps4;
             }
+
             throw new NotImplementedException($"unsupported product \"{uid}\"");
+        }
+
+        /// <summary>
+        /// Get product uid from <see cref="Product"/> 
+        /// </summary>
+        /// <param name="product">product</param>
+        /// <returns>Product type</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Product is unknown</exception>
+        public static string UIDFromProduct(Product product) {
+            switch (product) {
+                case Product.HeroesOfTheStorm:
+                    return "hero";
+                case Product.Hearthstone:
+                    return "hsb";
+                case Product.Warcraft3:
+                    return "w3";
+                case Product.StarCraft1:
+                    return "s1";
+                case Product.StarCraft2:
+                    return "s2";
+                case Product.WorldOfWarcraft:
+                    return "wow";
+                case Product.Diablo3:
+                    return "d3";
+                case Product.Agent:
+                    return "agent";
+                case Product.Overwatch:
+                    return "pro";
+                case Product.BattleNetApp:
+                    return "bna";
+                case Product.Destiny2:
+                    return "dst2";
+                case Product.BlackOps4:
+                    return "viper";
+                case Product.Catalog:
+                    return "catalogs";
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(product), product, null);
+            }
         }
 
         /// <summary>Get <see cref="Product"/> from install directory</summary>
@@ -108,8 +147,7 @@ namespace TACTLib {
             if (File.Exists(Path.Combine(path, "Warcraft III.exe")))
                 return Product.Warcraft3;
 
-            if (Directory.Exists(Path.Combine(path, "Data")))
-            {
+            if (Directory.Exists(Path.Combine(path, "Data"))) {
                 if (File.Exists(Path.Combine(path, "Diablo III.exe")))
                     return Product.Diablo3;
 
@@ -127,7 +165,7 @@ namespace TACTLib {
 
                 if (File.Exists(Path.Combine(path, "StarCraft.exe")))
                     return Product.StarCraft1;
-                
+
                 if (File.Exists(Path.Combine(path, "BlackOps4.exe")))
                     return Product.BlackOps4;
             }

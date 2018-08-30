@@ -1,5 +1,10 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using TACTLib.Agent;
+using TACTLib.Agent.Protobuf;
 using TACTLib.Config;
 using TACTLib.Container;
 using TACTLib.Core;
@@ -35,6 +40,9 @@ namespace TACTLib.Client {
         /// <summary>Product specific Root File handler</summary>
         public readonly IProductHandler ProductHandler;
 
+        /// <summary>BNA Agent DB</summary>
+        public readonly ProductInstall AgentProduct;
+
         /// <summary>The base path of the container. E.g where the game executables are.</summary>
         public readonly string BasePath;
 
@@ -47,8 +55,45 @@ namespace TACTLib.Client {
         public ClientHandler(string basePath, ClientCreateArgs createArgs) {
             BasePath = basePath;
             CreateArgs = createArgs;
-            
-            Product = ProductHelpers.ProductFromLocalInstall(basePath);
+
+            string dbPath = Path.Combine(basePath, ".product.db");
+
+            try {
+                if (File.Exists(dbPath)) {
+                    using (var _ = new PerfCounter("AgentDatabase::ctor"))
+                        AgentProduct = new AgentDatabase(dbPath, true).Data.ProductInstalls[0];
+                    if (AgentProduct == null) {
+                        throw new InvalidDataException();
+                    }
+                    Product = ProductHelpers.ProductFromUID(AgentProduct.ProductCode);
+                } else {
+                    throw new InvalidDataException();
+                }
+            } catch {
+                Product = ProductHelpers.ProductFromUID(basePath);
+                AgentProduct = new ProductInstall {
+                    ProductCode = ProductHelpers.UIDFromProduct(Product),
+                    Settings = new UserSettings {
+                        SelectedTextLanguage = "enUS",
+                        SelectedSpeechLanguage = "enUS",
+                        PlayRegion = "us",
+                        Languages = new List<LanguageSetting> {
+                            new LanguageSetting {
+                                Language = "enUS",
+                                Option = LanguageOption.TextAndSpeech
+                            }
+                        }
+                    }
+                };
+            }
+
+            if (string.IsNullOrWhiteSpace(createArgs.TextLanguage)) {
+                createArgs.TextLanguage = AgentProduct.Settings.SelectedTextLanguage;
+            }
+
+            if (string.IsNullOrWhiteSpace(createArgs.SpeechLanguage)) {
+                createArgs.SpeechLanguage = AgentProduct.Settings.SelectedSpeechLanguage;
+            }
             
             string installationInfoPath = Path.Combine(basePath, InstallInfoFileName) + createArgs.ExtraFileEnding;
             if (!File.Exists(installationInfoPath)) {

@@ -69,12 +69,13 @@ namespace TACTLib.Core.Product.Tank {
                 if (!manifestRecord.Key.Contains(RegionDev)) continue; // is a CN (china?) CMF. todo: support this
 
                 if (manifestRecord.Key.Contains(SpeechManifestName)) {
-                    if (manifestRecord.Value.Locale != client.CreateArgs.Tank.SpokenLanguage) continue;
+                    if (manifestRecord.Value.Locale != client.CreateArgs.SpeechLanguage) continue;
                 } else {
-                    if (manifestRecord.Value.Locale != client.CreateArgs.Tank.TextLanguage) continue;
+                    if (manifestRecord.Value.Locale != client.CreateArgs.TextLanguage) continue;
                 }
 
                 var manifest = LoadManifest(client, manifestRecord.Value);
+                manifest.Name = manifestRecord.Key;
                 if (manifestRecord.Key.Contains(SpeechManifestName)) {
                     Manifests[1] = manifest;
                 } else {
@@ -152,6 +153,7 @@ namespace TACTLib.Core.Product.Tank {
         public class Manifest {
             public ContentManifestFile ContentManifest;
             public ApplicationPackageManifest PackageManifest;
+            public string Name;
         }
 
         public class RootFile {
