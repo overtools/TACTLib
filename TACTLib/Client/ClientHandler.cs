@@ -70,7 +70,7 @@ namespace TACTLib.Client {
                     throw new InvalidDataException();
                 }
             } catch {
-                Product = ProductHelpers.ProductFromUID(basePath);
+                Product = ProductHelpers.ProductFromLocalInstall(basePath);
                 AgentProduct = new ProductInstall {
                     ProductCode = ProductHelpers.UIDFromProduct(Product),
                     Settings = new UserSettings {
