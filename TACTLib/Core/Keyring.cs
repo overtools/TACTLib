@@ -26,6 +26,10 @@ namespace TACTLib.Core {
             }
         }
 
+        public void AddKey(ulong keyName, byte[] value) {
+            Keys[keyName] = value;
+        }
+
         public void LoadSupportFile(string path) {
             using (TextReader r = new StreamReader(path)) {
                 string line;
