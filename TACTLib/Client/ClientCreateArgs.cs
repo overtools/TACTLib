@@ -13,6 +13,10 @@
             public string TextLanguage = "enUS";
             public string SpokenLanguage = "enUS";
             public bool CacheAPM = true;
+
+            // For dev tools
+            public bool LoadAPM = true;
+            public bool LoadCMF = true;
         }
     }
 }
