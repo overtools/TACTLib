@@ -50,7 +50,7 @@ namespace TACTLib.Client {
             
             Product = ProductHelpers.ProductFromLocalInstall(basePath);
             
-            string installationInfoPath = Path.Combine(basePath, InstallInfoFileName);
+            string installationInfoPath = Path.Combine(basePath, InstallInfoFileName) + createArgs.ExtraFileEnding;
             if (!File.Exists(installationInfoPath)) {
                 throw new FileNotFoundException(installationInfoPath);
             }

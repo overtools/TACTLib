@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using TACTLib.Client;
 using TACTLib.Container;
 
 namespace TACTLib.Config {
@@ -10,7 +11,7 @@ namespace TACTLib.Config {
         public FileRecord Encoding;
         public FileRecord VFSRoot;
         
-        public BuildConfig(string containerPath, string key) : base(containerPath, key) {
+        public BuildConfig(ClientHandler client, string key) : base(client, key) {
             GetFileRecord("root", out Root);
             GetFileRecord("install", out Install);
             GetFileRecord("patch", out Patch);

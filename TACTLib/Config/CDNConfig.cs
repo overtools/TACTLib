@@ -1,5 +1,7 @@
-﻿namespace TACTLib.Config {
+﻿using TACTLib.Client;
+
+namespace TACTLib.Config {
     public class CDNConfig : Config {
-        public CDNConfig(string containerPath, string key) : base(containerPath, key) { }
+        public CDNConfig(ClientHandler client, string key) : base(client, key) { }
     }
 }

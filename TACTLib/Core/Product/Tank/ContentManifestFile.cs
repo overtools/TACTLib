@@ -35,7 +35,7 @@ namespace TACTLib.Core.Product.Tank {
         public HashData[] HashList;
         public ApplicationPackageManifest.Entry[] Entries;
         public Dictionary<ulong, int> IndexMap;
-        private Dictionary<ulong, HashData> _mapTest;
+        private Dictionary<ulong, HashData> _map;
 
         // ReSharper disable once InconsistentNaming
         public const int ENCRYPTED_MAGIC = 0x636D66; // todo: use the thingy again?
@@ -57,9 +57,9 @@ namespace TACTLib.Core.Product.Tank {
             CMFCryptHandler.GenerateKeyIV(name, Header, client.Product, out byte[] key, out byte[] iv); 
             
             using (RijndaelManaged rijndael = new RijndaelManaged {Key = key, IV = iv, Mode = CipherMode.CBC}) {
-                CryptoStream cryptostream = new CryptoStream(stream, rijndael.CreateDecryptor(),
+                CryptoStream cryptoStream = new CryptoStream(stream, rijndael.CreateDecryptor(),
                     CryptoStreamMode.Read);
-                return new BinaryReader(cryptostream);
+                return new BinaryReader(cryptoStream);
             }
         }
 
@@ -68,12 +68,12 @@ namespace TACTLib.Core.Product.Tank {
             HashList = reader.ReadArray<HashData>(Header.DataCount);
             
             IndexMap = new Dictionary<ulong, int>(Header.DataCount);
-            _mapTest = new Dictionary<ulong, HashData>(Header.DataCount); 
+            _map = new Dictionary<ulong, HashData>(Header.DataCount); 
             for (int i = 0; i < Header.DataCount; i++) {
                 var hashData = HashList[i];
                 IndexMap[hashData.GUID] = i;
 
-                _mapTest[hashData.GUID] = hashData;
+                _map[hashData.GUID] = hashData;
             }
         }
 
@@ -84,7 +84,7 @@ namespace TACTLib.Core.Product.Tank {
             // }
             // hashData = default;
             // return false;
-            return _mapTest.TryGetValue(guid, out hashData);
+            return _map.TryGetValue(guid, out hashData);
         }
 
         public bool Exists(ulong guid) {

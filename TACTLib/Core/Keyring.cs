@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
+using TACTLib.Client;
 
 namespace TACTLib.Core {
     public class Keyring : Config.Config {
@@ -8,7 +9,7 @@ namespace TACTLib.Core {
         /// </summary>
         public readonly Dictionary<ulong, byte[]> Keys;
 
-        public Keyring(string containerPath, string key) : base(containerPath, key) {
+        public Keyring(ClientHandler client, string key) : base(client, key) {
             Keys = new Dictionary<ulong, byte[]>();
             foreach (KeyValuePair<string,List<string>> pair in Values) {
                 string reverseKey = pair.Key.Substring(pair.Key.Length - 16);

@@ -36,7 +36,10 @@ namespace TACTLib.Container {
         /// <summary>Local index map</summary>
         private Dictionary<EKey, IndexEntry> _indexEntries;
 
+        private readonly ClientHandler _client;
+
         public ContainerHandler(ClientHandler client) {
+            _client = client;
             if (client.BasePath == null) throw new Exception("no 'BasePath' specified");
             ContainerDirectory = Path.Combine(client.BasePath, GetContainerDirectory(client.Product));
 
@@ -46,7 +49,7 @@ namespace TACTLib.Container {
         private void LoadIndexFiles() {
             _indexEntries = new Dictionary<EKey, IndexEntry>(CASCKeyComparer.Instance);
             for (int i = 0; i < CASC_INDEX_COUNT; i++) {
-                List<string> files = Directory.EnumerateFiles(Path.Combine(ContainerDirectory, DataDirectory), $"{i:X2}*.idx").ToList();
+                List<string> files = Directory.EnumerateFiles(Path.Combine(ContainerDirectory, DataDirectory), $"{i:X2}*.idx" + _client.CreateArgs.ExtraFileEnding).ToList();
 
                 string selectedFile = null;
                 int selectedVersion = 0;
@@ -140,7 +143,7 @@ namespace TACTLib.Container {
         /// <param name="index">Data file index ("data.{index}")</param>
         /// <returns>Data stream</returns>
         private Stream OpenDataFile(int index) {
-            return File.OpenRead(Path.Combine(ContainerDirectory, DataDirectory, $"data.{index:D3}"));
+            return File.OpenRead(Path.Combine(ContainerDirectory, DataDirectory, $"data.{index:D3}") + _client.CreateArgs.ExtraFileEnding);
         }
         
         /// <summary>
