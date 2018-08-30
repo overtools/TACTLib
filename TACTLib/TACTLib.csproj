@@ -143,6 +143,7 @@
     <Compile Include="Core\Product\Tank\CMF\ProCMF_47452.cs" />
     <Compile Include="Core\Product\Tank\CMF\ProCMF_47946.cs" />
     <Compile Include="Core\Product\Tank\CMF\ProCMF_49154.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_50148.cs" />
     <Compile Include="Core\Product\Tank\ContentManifestFile.cs" />
     <Compile Include="Core\Product\Tank\ICMFEncryptionProc.cs" />
     <Compile Include="Core\Product\Tank\ProductHandler_Tank.cs" />
@@ -155,6 +156,7 @@
     <Compile Include="Helpers\FastStruct.cs" />
     <Compile Include="Helpers\PerfCounter.cs" />
     <Compile Include="Locale.cs" />
+    <Compile Include="Logger.cs" />
     <Compile Include="Product.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils.cs" />

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using TACTLib.Client;
@@ -14,8 +16,8 @@ namespace TACTLib.Core.Product.Tank {
     public class ProductHandler_Tank : IProductHandler {
         private readonly ClientHandler _client;
         
-        public Manifest[] Manifests;
-        public RootFile[] RootFiles;
+        public readonly Manifest[] Manifests;
+        public readonly RootFile[] RootFiles;
         
         public const string RegionDev = "RDEV";
         public const string SpeechManifestName = "speech";
@@ -82,6 +84,7 @@ namespace TACTLib.Core.Product.Tank {
             }
 
             Assets = new ConcurrentDictionary<ulong, Asset>(Environment.ProcessorCount + 2, totalAssetCount);
+            Logger.Info("CASC", "Mapping assets...");
             using (var _ = new PerfCounter("ProductHandler_Tank: Map assets"))
             for (int i = 0; i < Manifests.Length; i++) {
                 Manifest manifest = Manifests[i];
@@ -107,8 +110,8 @@ namespace TACTLib.Core.Product.Tank {
             public int PackageIdx;
             public int RecordIdx;
 
-            public Asset(byte manfiestIdx, int packageIdx, int recordIdx) {
-                ManifestIdx = manfiestIdx;
+            public Asset(byte manifestIdx, int packageIdx, int recordIdx) {
+                ManifestIdx = manifestIdx;
                 PackageIdx = packageIdx;
                 RecordIdx = recordIdx;
             }
@@ -117,7 +120,14 @@ namespace TACTLib.Core.Product.Tank {
         private static Manifest LoadManifest(ClientHandler client, ManifestRecord record) {
             Manifest manifest = new Manifest();
             using (Stream cmfStream = client.OpenCKey(record.CMFKey)) {
-                manifest.ContentManifest = new ContentManifestFile(client, cmfStream, $"{record.Name}.cmf");
+                try {
+                    manifest.ContentManifest = new ContentManifestFile(client, cmfStream, $"{record.Name}.cmf");
+                } catch (CryptographicException) {
+                    Logger.Error("CASC", "Fatal - CMF decryption failed. Please update TACTLib.");
+                    if (Debugger.IsAttached) {
+                        Debugger.Break();
+                    }
+                }
             }
 
             using (Stream apmStream = client.OpenCKey(record.APMKey)) {

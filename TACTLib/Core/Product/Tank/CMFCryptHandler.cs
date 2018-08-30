@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
@@ -37,13 +38,13 @@ namespace TACTLib.Core.Product.Tank {
 
             ICMFEncryptionProc provider;
             if (Providers[product].ContainsKey(header.BuildVersion)) {
-                //TankLib.Helpers.Logger.Info("CASC", $"Using CMF procedure {header.BuildVersion}");
+                Logger.Info("CMF", $"Using CMF procedure {header.BuildVersion}");
                 provider = Providers[product][header.BuildVersion];
             } else {
-                //TankLib.Helpers.Logger.Warn("CASC", $"No CMF procedure for build {header.BuildVersion}, trying closest version");
+                Logger.Warn("CMF", $"No CMF procedure for build {header.BuildVersion}, trying closest version");
                 try {
                     KeyValuePair<uint, ICMFEncryptionProc> pair = Providers[product].Where(it => it.Key < header.BuildVersion).OrderByDescending(it => it.Key).First();
-                    //TankLib.Helpers.Logger.Info("CASC", $"Using CMF procedure {pair.Key}");
+                    Logger.Info("CMF", $"Using CMF procedure {pair.Key}");
                     provider = pair.Value;
                 } catch {
                     throw new CryptographicException("Missing CMF generators");
@@ -53,9 +54,9 @@ namespace TACTLib.Core.Product.Tank {
             key = provider.Key(header, 32);
             iv = provider.IV(header, digest, 16);
 
-            //name = Path.GetFileNameWithoutExtension(name);
-            //TankLib.Helpers.Logger.Debug("CMF", $"{name}: key={string.Join(" ", key.Select(x => x.ToString("X2")))}");
-            //TankLib.Helpers.Logger.Debug("CMF", $"{name}: iv={string.Join(" ", iv.Select(x => x.ToString("X2")))}");
+            name = Path.GetFileNameWithoutExtension(name);
+            Logger.Debug("CMF", $"{name} key:{string.Join(" ", key.Select(x => x.ToString("X2")))}");
+            Logger.Debug("CMF", $"{name} iv:{string.Join(" ", iv.Select(x => x.ToString("X2")))}");
         }
         
         private static byte[] CreateDigest(string value) {

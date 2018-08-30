@@ -6,8 +6,6 @@
 ----
 
 ### Usage:
-* Will add properly whenever i can get this thing to work
-
 #### Creating a ClientHandler
 The ClientHandler is the base object that controls the CAS(C). 
 
@@ -17,15 +15,25 @@ string path = @"C:\ow\game\Overwatch";
 ClientHandler clientHandler = new ClientHandler(path);
 ```
 
+### Logging:
+Logging is handled through the TACTLib.Logger class. It has events that are triggered by TACTLib during runtime.
+Basic logging can be enabled by using TACTLib.Logger.RegisterBasic. That method also serves as an example of how to do custom logging. (see [Logger.cs](https://github.com/overtools/TACTLib/blob/master/TACTLib/Logger.cs))
+
+```c#
+// enables the default basic logger. should be called *before* creating the client
+Logger.RegisterBasic();
+```
+
 #### Product specific:
 (none of this is true yet)
  
 ##### VFS: (Black Ops 4)
+Not all features are implemented yet. GetFiles(string subDir) is just an idea for now.
 ```c#
 ClientHandler client = new ClientHandler(path);
 if (client.VFS == null) {
     // invalid install
-    return; // or whatever
+    return;
 }
 VFSFileTree vfs = client.VFS;
 using (Stream stream = vfs.Open(@"zone\base.xpak")) {
@@ -42,6 +50,9 @@ ClientHandler client = new ClientHandler(path);
 ProductHandler_Tank tankHandler = client.ProductHandler as ProdcuctHandler_Tank;
 if (tankHandler == null) {
     // not a valid overwatch install
-    return; // or whatever
+    return;
+}
+using (Stream stream = tankHandler.OpenFile(0xE00000000000895)) {  // open any asset you want
+    // in this case, parse the material
 }
 ```

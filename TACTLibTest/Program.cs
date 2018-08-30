@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Threading;
+using TACTLib;
 using TACTLib.Client;
 using TACTLib.Core.Product.Tank;
 
@@ -9,6 +10,7 @@ namespace TACTLibTest {
             //const string path = @"C:\ow\game\Overwatch\";
             //const string path = @"D:\Games\Call of Duty Black Ops 4";
             
+            Logger.RegisterBasic();
             ClientHandler clientHandler = new ClientHandler(args[0], new ClientCreateArgs());
             
             Thread.Sleep(100000);

@@ -57,6 +57,9 @@ namespace TACTLib.Client {
             using (var _ = new PerfCounter("InstallationInfo::ctor"))
                 InstallationInfo = new InstallationInfo(installationInfoPath);
             
+            Logger.Info("CASC", $"{Product} build {InstallationInfo.Values["Version"]}");
+            
+            Logger.Info("CASC", "Initializing...");
             using (var _ = new PerfCounter("ContainerHandler::ctor"))
                 ContainerHandler = new ContainerHandler(this);
             using (var _ = new PerfCounter("ConfigHandler::ctor"))
@@ -74,6 +77,8 @@ namespace TACTLib.Client {
                 using (var _ = new PerfCounter("ProductHandler_Tank::ctor"))
                     ProductHandler = new ProductHandler_Tank(this, OpenCKey(ConfigHandler.BuildConfig.Root.ContentKey));
             }
+            
+            Logger.Info("CASC", "Ready");
         }
 
         /// <summary>

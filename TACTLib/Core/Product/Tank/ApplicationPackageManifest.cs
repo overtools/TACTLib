@@ -113,19 +113,29 @@ namespace TACTLib.Core.Product.Tank {
 
                             // else: regen
                         } catch (Exception) {
-                            // todo: log
+                            Logger.Error("APM", $"Failed to load APM Cache for {name}");
+                            File.Delete(path);
                         }
                     }
                 }
 
-                using (PerfCounter _ = new PerfCounter("APM:LoadPackage(packageCount)"))
+                int c = 0;
+                using (PerfCounter _ = new PerfCounter("APM:LoadPackages"))
                 Parallel.For(0, Header.PackageCount, new ParallelOptions {
                     MaxDegreeOfParallelism = 4
                 }, i => {
+                    c++;
+                    if (c % 1000 == 0) {
+                        if (!Console.IsOutputRedirected) {
+                            Console.Out.Write($"Loading packages: {Math.Floor(c / (float)Header.PackageCount * 10000) / 100:F0}% ({c}/{Header.PackageCount})\r");
+                        }
+                    }
+                    
                     LoadPackage(i, client, cmf);
                 });
 
                 if (client.CreateArgs.Tank.CacheAPM) {
+                    Logger.Debug("APM", $"Saving cache for {name}");
                     using (PerfCounter _ = new PerfCounter("APM:SaveCache"))
                     SaveCache(cmf, name);
                 }
