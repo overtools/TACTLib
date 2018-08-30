@@ -1,6 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using TACTLib.Client;
+using static TACTLib.Utils;
 
 namespace TACTLib.Core {
     public class Keyring : Config.Config {
@@ -19,7 +22,44 @@ namespace TACTLib.Core {
                 }
                 
                 ulong keyID = ulong.Parse(keyIDString, NumberStyles.HexNumber);
-                Keys[keyID] = Utils.StringToByteArray(pair.Value[0]);
+                Keys[keyID] = StringToByteArray(pair.Value[0]);
+            }
+        }
+
+        public void LoadSupportFile(string path) {
+            using (TextReader r = new StreamReader(path)) {
+                string line;
+                while ((line = r.ReadLine()) != null) {
+                    line = line.Trim().Split(new[] {'#'}, StringSplitOptions.None)[0].Trim();
+                    if (string.IsNullOrWhiteSpace(line)) {
+                        continue;
+                    }
+                    string[] c = line.Split(new [] {' '}, StringSplitOptions.RemoveEmptyEntries);
+                    if (c.Length < 2) {
+                        continue;
+                    }
+                    bool enabled = true;
+                    if (c.Length >= 3) {
+                        enabled = c[2] == "1";
+                    }
+
+                    ulong v;
+                    try {
+                        v = ulong.Parse(c[0], NumberStyles.HexNumber);
+                    } catch {
+                        continue;
+                    }
+
+                    if (enabled) {
+                        if (!Keys.ContainsKey(v)) {
+                            Keys.Add(v, StringToByteArray(c[1]));
+                        }
+                    } else {
+                        if (Keys.ContainsKey(v)) {
+                            Keys.Remove(v);
+                        }
+                    }
+                }
             }
         }
         
