@@ -195,7 +195,7 @@ namespace TACTLib.Core.Product.Tank {
                 using (Stream bundleStream = manifest.ContentManifest.OpenFile(_client, package.BundleGUID)) {
                     MemoryStream stream = new MemoryStream((int)data.Size);
                     bundleStream.Position = record.BundleOffset;
-                    Utils.CopyBytes(bundleStream, stream, (int)data.Size);
+                    bundleStream.CopyBytes(stream, (int)data.Size);
                     stream.Position = 0;
                     return stream;
                 }
