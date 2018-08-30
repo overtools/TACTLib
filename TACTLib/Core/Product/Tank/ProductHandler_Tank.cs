@@ -187,7 +187,7 @@ namespace TACTLib.Core.Product.Tank {
             var manifest = Manifests[asset.ManifestIdx];
             var package = manifest.PackageManifest.Packages[asset.PackageIdx];
             var record = manifest.PackageManifest.Records[asset.PackageIdx][asset.RecordIdx];
-            if ((record.Flags & ContentFlags.Bundle) == record.Flags) {
+            if ((record.Flags & ContentFlags.Bundle) != 0) {
                 if (!manifest.ContentManifest.TryGet(record.GUID, out var data)) {
                     throw new FileNotFoundException();
                 }
