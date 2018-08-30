@@ -10,10 +10,10 @@ using static TACTLib.Utils;
 namespace TACTLib.Core {
     public class EncodingHandler {
         /// <summary>Encoding table</summary>
-        private readonly Dictionary<CKey, CKeyEntry> _encodingEntries;
+        public readonly Dictionary<CKey, CKeyEntry> Entries;
         
         public unsafe EncodingHandler(ClientHandler client) {
-            _encodingEntries = new Dictionary<CKey, CKeyEntry>(CASCKeyComparer.Instance);
+            Entries = new Dictionary<CKey, CKeyEntry>(CASCKeyComparer.Instance);
 
             using (Stream stream = client.OpenEKey(client.ConfigHandler.BuildConfig.Encoding.EncodingKey))
             using (BinaryReader reader = new BinaryReader(stream)) {
@@ -50,7 +50,7 @@ namespace TACTLib.Core {
                         stream.Position += (CKey.CASC_CKEY_SIZE - EKey.CASC_EKEY_SIZE) + (entry.EKeyCount - 1) * header.EKeySize;
                         // 16-9 because we are truncating the eKey
 
-                        _encodingEntries[entry.CKey] = entry;
+                        Entries[entry.CKey] = entry;
                     }
                     
                     stream.Position = pageEnd; // just checking
@@ -59,7 +59,7 @@ namespace TACTLib.Core {
         }
 
         public bool TryGetEncodingEntry(CKey cKey, out CKeyEntry entry) {
-            return _encodingEntries.TryGetValue(cKey, out entry);
+            return Entries.TryGetValue(cKey, out entry);
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]

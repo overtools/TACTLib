@@ -34,7 +34,7 @@ namespace TACTLib.Container {
         public const string PatchDirectory = "patch";
 
         /// <summary>Local index map</summary>
-        private Dictionary<EKey, IndexEntry> _indexEntries;
+        public readonly Dictionary<EKey, IndexEntry> IndexEntries;
 
         private readonly ClientHandler _client;
 
@@ -43,11 +43,11 @@ namespace TACTLib.Container {
             if (client.BasePath == null) throw new Exception("no 'BasePath' specified");
             ContainerDirectory = Path.Combine(client.BasePath, GetContainerDirectory(client.Product));
 
+            IndexEntries = new Dictionary<EKey, IndexEntry>(CASCKeyComparer.Instance);
             LoadIndexFiles();
         }
 
         private void LoadIndexFiles() {
-            _indexEntries = new Dictionary<EKey, IndexEntry>(CASCKeyComparer.Instance);
             for (int i = 0; i < CASC_INDEX_COUNT; i++) {
                 List<string> files = Directory.EnumerateFiles(Path.Combine(ContainerDirectory, DataDirectory), $"{i:X2}*.idx" + _client.CreateArgs.ExtraFileEnding).ToList();
 
@@ -95,9 +95,9 @@ namespace TACTLib.Container {
                 EKeyEntry[] entries = reader.ReadArray<EKeyEntry>(entryCount);
                 for (int i = 0; i < entryCount; i++) {
                     EKeyEntry entry = entries[i];
-                    if (_indexEntries.ContainsKey(entry.EKey)) continue;
+                    if (IndexEntries.ContainsKey(entry.EKey)) continue;
                     
-                    _indexEntries[entry.EKey] = new IndexEntry(entry);
+                    IndexEntries[entry.EKey] = new IndexEntry(entry);
                 }
             }
         }
@@ -108,7 +108,7 @@ namespace TACTLib.Container {
         /// <param name="key">The Encoding Key</param>
         /// <returns>Loaded file</returns>
         internal Stream OpenEKey(EKey key) {
-            if (!_indexEntries.TryGetValue(key, out IndexEntry indexEntry)) {
+            if (!IndexEntries.TryGetValue(key, out IndexEntry indexEntry)) {
                 Debugger.Log(0, "ContainerHandler", $"Missing local index {key.ToHexString()}");
                 return null;
             }
