@@ -174,7 +174,7 @@ namespace TACTLib.Core {
                 Files = new List<VFSFile>();
             }
         
-            // Returns size of "container file table offset" fiels in the VFS.
+            // Returns size of "container file table offset" files in the VFS.
             // - If the container file table is larger than 0xffffff bytes, it's 4 bytes
             // - If the container file table is larger than 0xffff bytes, it's 3 bytes
             // - If the container file table is larger than 0xff bytes, it's 2 bytes

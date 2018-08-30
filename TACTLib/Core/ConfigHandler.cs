@@ -28,7 +28,7 @@ namespace TACTLib.Core {
             }
         }
 
-        private void LoadConfig<T>(ClientHandler client, string key, out T @out) {
+        private static void LoadConfig<T>(ClientHandler client, string key, out T @out) {
             // hmm
             @out = (T)Activator.CreateInstance(typeof(T), client, key);
         }

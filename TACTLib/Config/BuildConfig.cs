@@ -33,7 +33,7 @@ namespace TACTLib.Config {
             }
         }
 
-        private FileRecord GetFileRecord(List<string> vals) {
+        private FileRecord GetFileRecord(IReadOnlyList<string> vals) {
             FileRecord record = new FileRecord();
 
             if (vals.Count > 0) {

@@ -69,7 +69,6 @@
     <Compile Include="Core\BLTEStream.cs" />
     <Compile Include="Core\ConfigHandler.cs" />
     <Compile Include="Core\EncodingHandler.cs" />
-    <Compile Include="Core\EncodingTable.cs" />
     <Compile Include="Core\Keyring.cs" />
     <Compile Include="Core\Product\IProductHandler.cs" />
     <Compile Include="Core\Product\Tank\ApplicationPackageManifest.cs" />
