@@ -184,9 +184,7 @@ namespace TACTLib.Core.Product.Tank {
         
         public Stream OpenFile(ulong guid) {
             if (!Assets.TryGetValue(guid, out Asset asset)) throw new FileNotFoundException($"{guid:X8}");
-            var manifest = Manifests[asset.ManifestIdx];
-            var package = manifest.PackageManifest.Packages[asset.PackageIdx];
-            var record = manifest.PackageManifest.Records[asset.PackageIdx][asset.RecordIdx];
+            UnpackAsset(asset, out var manifest, out var package, out var record);
             if ((record.Flags & ContentFlags.Bundle) != 0) {
                 if (!manifest.ContentManifest.TryGet(record.GUID, out var data)) {
                     throw new FileNotFoundException();
@@ -214,6 +212,12 @@ namespace TACTLib.Core.Product.Tank {
             }
 
             return Manifests[asset.ManifestIdx].ContentManifest.OpenFile(_client, record.GUID);
+        }
+
+        public void UnpackAsset(Asset asset, out Manifest manifest, out ApplicationPackageManifest.Package package, out ApplicationPackageManifest.PackageRecord record) {
+            manifest = Manifests[asset.ManifestIdx];
+            package = manifest.PackageManifest.Packages[asset.PackageIdx];
+            record = manifest.PackageManifest.Records[asset.PackageIdx][asset.RecordIdx];
         }
 
         //public void WipeBundleCache() {
