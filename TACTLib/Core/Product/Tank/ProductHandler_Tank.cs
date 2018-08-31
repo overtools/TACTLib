@@ -39,6 +39,8 @@ namespace TACTLib.Core.Product.Tank {
                     RootFiles[i - 1] = new RootFile(array[i].Split('|'));
                 }
             }
+            
+            if (!client.CreateArgs.Tank.LoadManifest) return;
 
             Dictionary<string, ManifestRecord> manifestFiles = new Dictionary<string, ManifestRecord>();
             foreach (RootFile rootFile in RootFiles) {

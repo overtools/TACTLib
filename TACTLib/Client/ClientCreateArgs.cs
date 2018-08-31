@@ -17,9 +17,7 @@ namespace TACTLib.Client {
             public bool CacheAPM = true;
 
             // For dev tools
-            public bool LoadAPM = true;
-            public bool LoadCMF = true;
-            
+            public bool LoadManifest = true;
         }
     }
 }
