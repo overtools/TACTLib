@@ -1,4 +1,4 @@
-﻿/*using System;
+﻿using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace TACTLib {
@@ -6,11 +6,11 @@ namespace TACTLib {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public enum Locale : uint {
         All = 0xFFFFFFFF,
-        //None = 0,
-        //Unk_1 = 0x1,
+        None = 0,
+        Internal = 0x1,
         enUS = 0x2,
         koKR = 0x4,
-        //Unk_8 = 0x8,
+        Unused = 0x8,
         frFR = 0x10,
         deDE = 0x20,
         zhCN = 0x40,
@@ -24,10 +24,6 @@ namespace TACTLib {
         ptBR = 0x4000,
         itIT = 0x8000,
         ptPT = 0x10000,
-        jaJP = 0x20000,
-        
-        // todo: check what these are supposed to be?
-        enSG = 0x20000000, // custom
-        plPL = 0x40000000, // custom
+        jaJP = 0x20000
     }
-}*/
+}

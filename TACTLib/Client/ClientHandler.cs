@@ -10,6 +10,7 @@ using TACTLib.Container;
 using TACTLib.Core;
 using TACTLib.Core.Product;
 using TACTLib.Core.Product.Tank;
+using TACTLib.Core.Product.WorldOfWarcraft;
 using TACTLib.Helpers;
 
 namespace TACTLib.Client {
@@ -17,7 +18,7 @@ namespace TACTLib.Client {
         /// <summary>
         /// The <see cref="Product"/> that this container belongs to.
         /// </summary>
-        public readonly Product Product;
+        public readonly TACTProduct Product;
 
         /// <summary>
         /// The installation info of the container
@@ -118,10 +119,8 @@ namespace TACTLib.Client {
                     VFS = new VFSFileTree(this);
             }
 
-            if (Product == Product.Overwatch) {
-                using (var _ = new PerfCounter("ProductHandler_Tank::ctor"))
-                    ProductHandler = new ProductHandler_Tank(this, OpenCKey(ConfigHandler.BuildConfig.Root.ContentKey));
-            }
+            using (var _ = new PerfCounter("ProductHandlerFactory::GetHandler"))
+                ProductHandler = ProductHandlerFactory.GetHandler(Product, this, OpenCKey(ConfigHandler.BuildConfig.Root.ContentKey));
             
             Logger.Info("CASC", "Ready");
         }

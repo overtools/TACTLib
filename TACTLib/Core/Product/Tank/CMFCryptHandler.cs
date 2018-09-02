@@ -21,15 +21,15 @@ namespace TACTLib.Core.Product.Tank {
         }
         #endregion
         
-        private static readonly Dictionary<TACTLib.Product, Dictionary<uint, ICMFEncryptionProc>> Providers = new Dictionary<TACTLib.Product, Dictionary<uint, ICMFEncryptionProc>>();
+        private static readonly Dictionary<TACTProduct, Dictionary<uint, ICMFEncryptionProc>> Providers = new Dictionary<TACTProduct, Dictionary<uint, ICMFEncryptionProc>>();
         
-        private static void FindProviders(TACTLib.Product product) {
+        private static void FindProviders(TACTProduct product) {
             Providers[product] = new Dictionary<uint, ICMFEncryptionProc>();
             Assembly asm = typeof(ICMFEncryptionProc).Assembly;
             AddProviders(asm);
         }
         
-        public static void GenerateKeyIV(string name, ContentManifestFile.CMFHeader header, TACTLib.Product product, out byte[] key, out byte[] iv) {
+        public static void GenerateKeyIV(string name, ContentManifestFile.CMFHeader header, TACTProduct product, out byte[] key, out byte[] iv) {
             if (!Providers.ContainsKey(product)) {
                 FindProviders(product);
             }
@@ -99,7 +99,7 @@ namespace TACTLib.Core.Product.Tank {
         [AttributeUsage(AttributeTargets.Class, Inherited = false)]
         public class CMFMetadataAttribute : Attribute {
             public bool AutoDetectVersion = true;
-            public TACTLib.Product Product = TACTLib.Product.Overwatch;
+            public TACTProduct Product = TACTProduct.Overwatch;
             public uint[] BuildVersions = new uint[0];
         }
     }

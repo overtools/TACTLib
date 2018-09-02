@@ -9,10 +9,12 @@ using System.Text;
 using System.Threading.Tasks;
 using TACTLib.Client;
 using TACTLib.Container;
+using TACTLib.Core.Product.CommonV2;
 using TACTLib.Helpers;
 
 namespace TACTLib.Core.Product.Tank {
     // ReSharper disable once InconsistentNaming
+    [ProductHandler(TACTProduct.Overwatch)]
     public class ProductHandler_Tank : IProductHandler {
         private readonly ClientHandler _client;
         
@@ -21,12 +23,13 @@ namespace TACTLib.Core.Product.Tank {
         
         public const string RegionDev = "RDEV";
         public const string SpeechManifestName = "speech";
-        public const string FieldOrderCheck = @"#FILEID|MD5|CHUNK_ID|PRIORITY|MPRIORITY|FILENAME|INSTALLPATH";
+        private const string FieldOrderCheck = @"#FILEID|MD5|CHUNK_ID|PRIORITY|MPRIORITY|FILENAME|INSTALLPATH";
 
         public ConcurrentDictionary<ulong, Asset> Assets;
-        
+
         public ProductHandler_Tank(ClientHandler client, Stream stream) {
             _client = client;
+
             using (BinaryReader reader = new BinaryReader(stream)) {
                 string str = Encoding.ASCII.GetString(reader.ReadBytes((int) stream.Length));
 
@@ -41,7 +44,7 @@ namespace TACTLib.Core.Product.Tank {
             }
             
             if (!client.CreateArgs.Tank.LoadManifest) return;
-
+            
             Dictionary<string, ManifestRecord> manifestFiles = new Dictionary<string, ManifestRecord>();
             foreach (RootFile rootFile in RootFiles) {
                 string extension = Path.GetExtension(rootFile.FileName);
@@ -54,20 +57,19 @@ namespace TACTLib.Core.Product.Tank {
                     rec = new ManifestRecord(manifestName);
                     manifestFiles[manifestName] = rec;
                 }
-                
-                if (extension == ".cmf") {
+
+                // ReSharper disable once ConvertIfStatementToSwitchStatement
+                if (extension == ".cmf")
                     rec.CMFKey = rootFile.MD5;
-                } else if (extension == ".apm") {
-                    rec.APMKey = rootFile.MD5;
-                }
+                else if (extension == ".apm") rec.APMKey = rootFile.MD5;
             }
-            
+
             Manifests = new Manifest[2];
             int totalAssetCount = 0;
-            foreach (KeyValuePair<string,ManifestRecord> manifestRecord in manifestFiles) {
+            foreach (KeyValuePair<string, ManifestRecord> manifestRecord in manifestFiles) {
                 if (!client.EncodingHandler.TryGetEncodingEntry(manifestRecord.Value.CMFKey, out _)) continue;
                 if (!client.EncodingHandler.TryGetEncodingEntry(manifestRecord.Value.APMKey, out _)) continue;
-                
+
                 if (!manifestRecord.Key.Contains(RegionDev)) continue; // is a CN (china?) CMF. todo: support this
 
                 if (manifestRecord.Key.Contains(SpeechManifestName)) {
@@ -83,29 +85,29 @@ namespace TACTLib.Core.Product.Tank {
                 } else {
                     Manifests[0] = manifest;
                 }
+
                 totalAssetCount += manifest.ContentManifest.Header.DataCount;
             }
 
             Assets = new ConcurrentDictionary<ulong, Asset>(Environment.ProcessorCount + 2, totalAssetCount);
             Logger.Info("CASC", "Mapping assets...");
             using (var _ = new PerfCounter("ProductHandler_Tank: Map assets"))
-            for (int i = 0; i < Manifests.Length; i++) {
-                Manifest manifest = Manifests[i];
+                for (int i = 0; i < Manifests.Length; i++) {
+                    Manifest manifest = Manifests[i];
 
-                int i1 = i;
-                Parallel.For(0, manifest.PackageManifest.Header.PackageCount, new ParallelOptions {
-                    MaxDegreeOfParallelism = 4
-                }, j =>
-                {
-                    var assets = manifest.PackageManifest.Records[j];
+                    int i1 = i;
+                    Parallel.For(0, manifest.PackageManifest.Header.PackageCount, new ParallelOptions {
+                        MaxDegreeOfParallelism = 4
+                    }, j => {
+                        var assets = manifest.PackageManifest.Records[j];
 
-                    for (int k = 0; k < assets.Length; k++) {
-                        var asset = assets[k];
-                        if (Assets.ContainsKey(asset.GUID)) continue;
-                        Assets[asset.GUID] = new Asset((byte)i1, j, k);
-                    }
-                });
-            }
+                        for (int k = 0; k < assets.Length; k++) {
+                            var asset = assets[k];
+                            if (Assets.ContainsKey(asset.GUID)) continue;
+                            Assets[asset.GUID] = new Asset((byte) i1, j, k);
+                        }
+                    });
+                }
         }
 
         public struct Asset {
@@ -136,13 +138,14 @@ namespace TACTLib.Core.Product.Tank {
             using (Stream apmStream = client.OpenCKey(record.APMKey)) {
                 manifest.PackageManifest = new ApplicationPackageManifest(client, apmStream, manifest.ContentManifest, record.Name);
             }
+
             return manifest;
         }
 
         public class ManifestRecord {
             public string Name;
             public string Locale;
-            
+
             public CKey CMFKey;
             public CKey APMKey;
 
@@ -152,30 +155,11 @@ namespace TACTLib.Core.Product.Tank {
             }
         }
 
+        // ReSharper disable once NotAccessedField.Global
         public class Manifest {
             public ContentManifestFile ContentManifest;
             public ApplicationPackageManifest PackageManifest;
             public string Name;
-        }
-
-        public class RootFile {
-            public string FileID;
-            public CKey MD5;
-            public byte ChunkID;
-            public byte Priority;
-            public byte MPriority;
-            public string FileName;
-            public string InstallPath;
-
-            public RootFile(string[] data) {
-                FileID = data[0];
-                MD5 = CKey.FromString(data[1]);
-                ChunkID = byte.Parse(data[2]);
-                Priority = byte.Parse(data[3]);
-                MPriority = byte.Parse(data[4]);
-                FileName = data[5];
-                InstallPath = data[6];
-            }
         }
 
         private static string GetManifestLocale(string name) {
@@ -183,39 +167,37 @@ namespace TACTLib.Core.Product.Tank {
 
             return tag?.Substring(1);
         }
-        
+
         //private readonly Dictionary<CKey, byte[]> _bundleCache = new Dictionary<CKey, byte[]>(CASCKeyComparer.Instance);
-        
+
         public Stream OpenFile(ulong guid) {
             if (!Assets.TryGetValue(guid, out Asset asset)) throw new FileNotFoundException($"{guid:X8}");
             UnpackAsset(asset, out var manifest, out var package, out var record);
-            if ((record.Flags & ContentFlags.Bundle) != 0) {
-                if (!manifest.ContentManifest.TryGet(record.GUID, out var data)) {
-                    throw new FileNotFoundException();
-                }
-
-                using (Stream bundleStream = manifest.ContentManifest.OpenFile(_client, package.BundleGUID)) {
-                    MemoryStream stream = new MemoryStream((int)data.Size);
-                    bundleStream.Position = record.BundleOffset;
-                    bundleStream.CopyBytes(stream, (int)data.Size);
-                    stream.Position = 0;
-                    return stream;
-                }
-                //using (Stream bundle = _client.OpenCKey())
-                // if (!_bundleCache.ContainsKey(record.LoadHash)) {
-                //     using (Stream bundleStream = CASC.OpenFile(enc.Key)) {
-                //         byte[] buf = new byte[bundleStream.Length];
-                //         bundleStream.Read(buf, 0, (int)bundleStream.Length);
-                //         _bundleCache[record.LoadHash] = buf;
-                //     }
-                // }
-                // MemoryStream stream = new MemoryStream((int)record.Size);
-                // stream.Write(_bundleCache[record.LoadHash], (int)record.Offset, (int)record.Size);
-                // stream.Position = 0;
-                // return stream;
+            if ((record.Flags & ContentFlags.Bundle) == 0) return Manifests[asset.ManifestIdx].ContentManifest.OpenFile(_client, record.GUID);
+            if (!manifest.ContentManifest.TryGet(record.GUID, out var data)) {
+                throw new FileNotFoundException();
             }
 
-            return Manifests[asset.ManifestIdx].ContentManifest.OpenFile(_client, record.GUID);
+            using (Stream bundleStream = manifest.ContentManifest.OpenFile(_client, package.BundleGUID)) {
+                MemoryStream stream = new MemoryStream((int) data.Size);
+                bundleStream.Position = record.BundleOffset;
+                bundleStream.CopyBytes(stream, (int) data.Size);
+                stream.Position = 0;
+                return stream;
+            }
+            //using (Stream bundle = _client.OpenCKey())
+            // if (!_bundleCache.ContainsKey(record.LoadHash)) {
+            //     using (Stream bundleStream = CASC.OpenFile(enc.Key)) {
+            //         byte[] buf = new byte[bundleStream.Length];
+            //         bundleStream.Read(buf, 0, (int)bundleStream.Length);
+            //         _bundleCache[record.LoadHash] = buf;
+            //     }
+            // }
+            // MemoryStream stream = new MemoryStream((int)record.Size);
+            // stream.Write(_bundleCache[record.LoadHash], (int)record.Offset, (int)record.Size);
+            // stream.Position = 0;
+            // return stream;
+
         }
 
         public void UnpackAsset(Asset asset, out Manifest manifest, out ApplicationPackageManifest.Package package, out ApplicationPackageManifest.PackageRecord record) {

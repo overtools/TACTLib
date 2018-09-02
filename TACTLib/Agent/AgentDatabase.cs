@@ -7,7 +7,7 @@ using TACTLib.Agent.Protobuf;
 namespace TACTLib.Agent {
     public class AgentDatabase {
         public string FilePath { get; }
-        public Protobuf.ProductDatabase Data { get; }
+        public ProductDatabase Data { get; }
 
         public AgentDatabase() : this(null, false) { }
 
@@ -22,13 +22,13 @@ namespace TACTLib.Agent {
 
             using (Stream product = File.OpenRead(FilePath)) {
                 if (singleInstall) {
-                    Data = new Protobuf.ProductDatabase {
+                    Data = new ProductDatabase {
                         ProductInstalls = new List<ProductInstall> {
                             Serializer.Deserialize<ProductInstall>(product)
                         }
                     };
                 } else {
-                    Data = Serializer.Deserialize<Protobuf.ProductDatabase>(product);
+                    Data = Serializer.Deserialize<ProductDatabase>(product);
                 }
             }
         }

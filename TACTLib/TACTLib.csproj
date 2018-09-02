@@ -80,6 +80,8 @@
     <Compile Include="Core\EncodingHandler.cs" />
     <Compile Include="Core\Keyring.cs" />
     <Compile Include="Core\Product\IProductHandler.cs" />
+    <Compile Include="Core\Product\ProductHandlerAttribute.cs" />
+    <Compile Include="Core\Product\ProductHandlerFactory.cs" />
     <Compile Include="Core\Product\Tank\ApplicationPackageManifest.cs" />
     <Compile Include="Core\Product\Tank\CMFCryptHandler.cs" />
     <Compile Include="Core\Product\Tank\CMF\ProCMF_49656.cs" />
@@ -156,6 +158,10 @@
     <Compile Include="Core\Product\Tank\ContentManifestFile.cs" />
     <Compile Include="Core\Product\Tank\ICMFEncryptionProc.cs" />
     <Compile Include="Core\Product\Tank\ProductHandler_Tank.cs" />
+    <Compile Include="Core\Product\Tank\RootFile.cs" />
+    <Compile Include="Core\Product\WorldOfWarcraft\CASWarcraftV6.cs" />
+    <Compile Include="Core\Product\WorldOfWarcraft\CASWarcraftV6Record.cs" />
+    <Compile Include="Core\Product\WorldOfWarcraft\ProductHandler_WorldOfWarcraft.cs" />
     <Compile Include="Core\Salsa20.cs" />
     <Compile Include="Core\VFSCFile.cs" />
     <Compile Include="Core\VFSFile.cs" />
@@ -166,7 +172,7 @@
     <Compile Include="Helpers\PerfCounter.cs" />
     <Compile Include="Locale.cs" />
     <Compile Include="Logger.cs" />
-    <Compile Include="Product.cs" />
+    <Compile Include="TACTProduct.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>

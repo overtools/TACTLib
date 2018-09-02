@@ -152,21 +152,21 @@ namespace TACTLib.Container {
         /// <param name="product">Target product</param>
         /// <returns>Container directory</returns>
         /// <exception cref="NotImplementedException">Product is unsupported</exception>
-        public static string GetContainerDirectory(Product product) {
-            if (product == Product.HeroesOfTheStorm)
+        public static string GetContainerDirectory(TACTProduct product) {
+            if (product == TACTProduct.HeroesOfTheStorm)
                 return "HeroesData";
 
-            if (product == Product.StarCraft2)
+            if (product == TACTProduct.StarCraft2)
                 return "SC2Data";
 
-            if (product == Product.Hearthstone)
+            if (product == TACTProduct.Hearthstone)
                 return "Hearthstone_Data";
 
-            if (product == Product.Warcraft3 || product == Product.WorldOfWarcraft || product == Product.Diablo3 || 
-                product == Product.BlackOps4)
+            if (product == TACTProduct.Warcraft3 || product == TACTProduct.WorldOfWarcraft || product == TACTProduct.Diablo3 || 
+                product == TACTProduct.BlackOps4)
                 return "Data";
 
-            if (product == Product.Overwatch)
+            if (product == TACTProduct.Overwatch)
                 return "data\\casc";
             
             throw new NotImplementedException("unsupported product");

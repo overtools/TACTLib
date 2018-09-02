@@ -2,7 +2,7 @@
 using static TACTLib.Core.Product.Tank.ContentManifestFile;
 
 namespace TACTLib.Core.Product.Tank.CMF {
-    [CMFMetadata(AutoDetectVersion = true, Product = TACTLib.Product.Overwatch)]
+    [CMFMetadata(AutoDetectVersion = true, Product = TACTProduct.Overwatch)]
     public class ProCMF_39083 : ICMFEncryptionProc {
         public byte[] Key(CMFHeader header, int length) {
             byte[] buffer = new byte[length];
