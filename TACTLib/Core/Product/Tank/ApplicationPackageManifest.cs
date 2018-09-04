@@ -147,7 +147,7 @@ namespace TACTLib.Core.Product.Tank {
             using (LZ4Stream lz4Stream = new LZ4Stream(file, LZ4StreamMode.Compress, LZ4StreamFlags.HighCompression))
             using (BinaryWriter writer = new BinaryWriter(lz4Stream)) {
                 file.SetLength(0);
-                writer.Write(123);
+                writer.Write(123u);
                 writer.WriteStructArray(Packages);
                 
                 for (int i = 0; i < Header.PackageCount; ++i) {
@@ -179,7 +179,7 @@ namespace TACTLib.Core.Product.Tank {
             using (LZ4Stream lz4Stream = new LZ4Stream(file, LZ4StreamMode.Decompress))
             using (BinaryReader reader = new BinaryReader(lz4Stream)) {
                 if(reader.ReadUInt32() != 123) {
-                    return false;
+                    throw new InvalidDataException("invalid magic");
                 }
 
                 Packages = reader.ReadArray<Package>(Header.PackageCount);
