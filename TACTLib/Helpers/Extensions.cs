@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Buffers;
 using static TACTLib.Utils;
 
 namespace TACTLib.Helpers {
@@ -113,6 +114,29 @@ namespace TACTLib.Helpers {
                 output.Write(buffer, 0, read);
                 bytes -= read;
             }
+        }
+
+        /// <summary>
+        /// Reads stream data to span.
+        /// https://github.com/dotnet/coreclr/blob/1456a38ed9ee3eda8022b9f162a45334723a0d7a/src/System.Private.CoreLib/shared/System/IO/Stream.cs
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="buffer"></param>
+        /// <returns></returns>
+        /// <exception cref="IOException"></exception>
+        public static int Read(this Stream input, in Memory<byte> buffer) {
+            byte[] sharedBuffer = ArrayPool<byte>.Shared.Rent(buffer.Length);
+            try
+            {
+                int numRead = input.Read(sharedBuffer, 0, buffer.Length);
+                if ((uint)numRead > buffer.Length)
+                {
+                    throw new IOException("Stream was too long");
+                }
+                new Memory<byte>(sharedBuffer, 0, numRead).CopyTo(buffer);
+                return numRead;
+            }
+            finally { ArrayPool<byte>.Shared.Return(sharedBuffer); }
         }
     }
 }
