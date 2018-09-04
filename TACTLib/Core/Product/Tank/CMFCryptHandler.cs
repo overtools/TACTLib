@@ -7,7 +7,7 @@ using System.Security.Cryptography;
 using System.Text;
 
 namespace TACTLib.Core.Product.Tank {
-    public class CMFCryptHandler {
+    public static class CMFCryptHandler {
         #region Helpers
         // ReSharper disable once InconsistentNaming
         internal const uint SHA1_DIGESTSIZE = 20;
@@ -22,16 +22,17 @@ namespace TACTLib.Core.Product.Tank {
         #endregion
         
         private static readonly Dictionary<TACTProduct, Dictionary<uint, ICMFEncryptionProc>> Providers = new Dictionary<TACTProduct, Dictionary<uint, ICMFEncryptionProc>>();
+        private static bool _baseProvidersFound;
         
-        private static void FindProviders(TACTProduct product) {
-            Providers[product] = new Dictionary<uint, ICMFEncryptionProc>();
+        private static void FindProviders() {
             Assembly asm = typeof(ICMFEncryptionProc).Assembly;
             AddProviders(asm);
         }
         
         public static void GenerateKeyIV(string name, ContentManifestFile.CMFHeader header, TACTProduct product, out byte[] key, out byte[] iv) {
-            if (!Providers.ContainsKey(product)) {
-                FindProviders(product);
+            if (!_baseProvidersFound) {
+                FindProviders();
+                _baseProvidersFound = true;
             }
 
             byte[] digest = CreateDigest(name);
