@@ -168,7 +168,7 @@ namespace TACTLib.Core.Product.Tank {
             return tag?.Substring(1);
         }
 
-        //private readonly Dictionary<CKey, byte[]> _bundleCache = new Dictionary<CKey, byte[]>(CASCKeyComparer.Instance);
+        private readonly Dictionary<ulong, byte[]> _bundleCache = new Dictionary<ulong, byte[]>();
 
         public Stream OpenFile(ulong guid) {
             if (!Assets.TryGetValue(guid, out Asset asset)) throw new FileNotFoundException($"{guid:X8}");
@@ -178,26 +178,30 @@ namespace TACTLib.Core.Product.Tank {
                 throw new FileNotFoundException();
             }
 
-            using (Stream bundleStream = manifest.ContentManifest.OpenFile(_client, package.BundleGUID)) {
-                MemoryStream stream = new MemoryStream((int) data.Size);
-                bundleStream.Position = record.BundleOffset;
-                bundleStream.CopyBytes(stream, (int) data.Size);
+            // not using cache
+            //using (Stream bundleStream = manifest.ContentManifest.OpenFile(_client, package.BundleGUID)) {
+            //    MemoryStream stream = new MemoryStream((int) data.Size);
+            //    bundleStream.Position = record.BundleOffset;
+            //    bundleStream.CopyBytes(stream, (int) data.Size);
+            //    stream.Position = 0;
+            //    return stream;
+            //}
+
+            // eww locks
+            lock (_bundleCache) {
+                if (!_bundleCache.ContainsKey(package.BundleGUID)) {
+                    using (Stream bundleStream = manifest.ContentManifest.OpenFile(_client, package.BundleGUID)) {
+                        byte[] buf = new byte[bundleStream.Length];
+                        bundleStream.Read(buf, 0, (int)bundleStream.Length);
+                        _bundleCache[package.BundleGUID] = buf;
+                    }
+                }
+            
+                MemoryStream stream = new MemoryStream((int)data.Size);
+                stream.Write(_bundleCache[package.BundleGUID], (int)record.BundleOffset, (int)data.Size);
                 stream.Position = 0;
                 return stream;
             }
-            //using (Stream bundle = _client.OpenCKey())
-            // if (!_bundleCache.ContainsKey(record.LoadHash)) {
-            //     using (Stream bundleStream = CASC.OpenFile(enc.Key)) {
-            //         byte[] buf = new byte[bundleStream.Length];
-            //         bundleStream.Read(buf, 0, (int)bundleStream.Length);
-            //         _bundleCache[record.LoadHash] = buf;
-            //     }
-            // }
-            // MemoryStream stream = new MemoryStream((int)record.Size);
-            // stream.Write(_bundleCache[record.LoadHash], (int)record.Offset, (int)record.Size);
-            // stream.Position = 0;
-            // return stream;
-
         }
 
         public void UnpackAsset(Asset asset, out Manifest manifest, out ApplicationPackageManifest.Package package, out ApplicationPackageManifest.PackageRecord record) {
@@ -206,8 +210,10 @@ namespace TACTLib.Core.Product.Tank {
             record = manifest.PackageManifest.Records[asset.PackageIdx][asset.RecordIdx];
         }
 
-        //public void WipeBundleCache() {
-        //    _bundleCache.Clear();
-        //}
+        public void WipeBundleCache() {
+            lock (_bundleCache) {
+                _bundleCache.Clear();
+            }
+        }
     }
 }
