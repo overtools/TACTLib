@@ -19,14 +19,16 @@ namespace TACTLib.Client {
         // will probably need some other fields too
 
         /// <summary>
-        /// Product DB filename, used for backup purposes
+        /// Name of the product database file
         /// </summary>
-        public string ProductDBFilename { get; set; } = ".product.db";
+        /// <seealso cref="TACTLib.Agent.AgentDatabase"/>
+        public string ProductDatabaseFilename { get; set; } = ".product.db";
 
         /// <summary>
-        /// Build Info filename, used for backup purposes
+        /// Name of the installation info file
         /// </summary>
-        public string BuildInfoFilename { get; set; } = ".build.info";
+        /// <seealso cref="TACTLib.Config.InstallationInfo"/>
+        public string InstallInfoFileName { get; set; } = ".build.info";
         
         /// <summary>
         /// extra file "extension" that is appended to every file

@@ -8,6 +8,7 @@ using TACTLib.Container;
 using TACTLib.Core;
 using TACTLib.Core.Product;
 using TACTLib.Helpers;
+// ReSharper disable NotAccessedField.Global
 
 namespace TACTLib.Client {
     public class ClientHandler {
@@ -19,7 +20,7 @@ namespace TACTLib.Client {
         /// <summary>
         /// The installation info of the container
         /// </summary>
-        /// <seealso cref="InstallInfoFileName"/>
+        /// <seealso cref="ClientCreateArgs.InstallInfoFileName"/>
         public readonly InstallationInfo InstallationInfo;
         
         /// <summary>Container handler</summary>
@@ -38,14 +39,11 @@ namespace TACTLib.Client {
         public readonly IProductHandler ProductHandler;
 
         /// <summary>BNA Agent DB</summary>
+        /// <seealso cref="ClientCreateArgs.ProductDatabaseFilename"/>
         public readonly ProductInstall AgentProduct;
 
         /// <summary>The base path of the container. E.g where the game executables are.</summary>
         public readonly string BasePath;
-
-        /// <summary>Name of the installation info file</summary>
-        /// <seealso cref="InstallationInfo"/>
-        public const string InstallInfoFileName = ".build.info";
 
         public readonly ClientCreateArgs CreateArgs;
 
@@ -53,7 +51,7 @@ namespace TACTLib.Client {
             BasePath = basePath;
             CreateArgs = createArgs;
 
-            string dbPath = Path.Combine(basePath, ".product.db");
+            string dbPath = Path.Combine(basePath, createArgs.ProductDatabaseFilename);
 
             try {
                 if (File.Exists(dbPath)) {
@@ -62,6 +60,7 @@ namespace TACTLib.Client {
                     if (AgentProduct == null) {
                         throw new InvalidDataException();
                     }
+
                     Product = ProductHelpers.ProductFromUID(AgentProduct.ProductCode);
                 } else {
                     throw new InvalidDataException();
@@ -71,17 +70,29 @@ namespace TACTLib.Client {
                 AgentProduct = new ProductInstall {
                     ProductCode = ProductHelpers.UIDFromProduct(Product),
                     Settings = new UserSettings {
-                        SelectedTextLanguage = "enUS",
-                        SelectedSpeechLanguage = "enUS",
+                        SelectedTextLanguage = createArgs.TextLanguage ?? "enUS",
+                        SelectedSpeechLanguage = createArgs.SpeechLanguage ?? "enUS",
                         PlayRegion = "us",
-                        Languages = new List<LanguageSetting> {
-                            new LanguageSetting {
-                                Language = "enUS",
-                                Option = LanguageOption.TextAndSpeech
-                            }
-                        }
+                        Languages = new List<LanguageSetting>()
                     }
                 };
+
+                if (AgentProduct.Settings.SelectedSpeechLanguage == AgentProduct.Settings.SelectedTextLanguage) {
+                    AgentProduct.Settings.Languages.Add(new LanguageSetting {
+                        Language = AgentProduct.Settings.SelectedTextLanguage,
+                        Option = LanguageOption.TextAndSpeech
+                    });
+                } else {
+                    AgentProduct.Settings.Languages.Add(new LanguageSetting {
+                        Language = AgentProduct.Settings.SelectedTextLanguage,
+                        Option = LanguageOption.Text
+                    });
+                    
+                    AgentProduct.Settings.Languages.Add(new LanguageSetting {
+                        Language = AgentProduct.Settings.SelectedSpeechLanguage,
+                        Option = LanguageOption.Speech
+                    });
+                }
             }
 
             if (string.IsNullOrWhiteSpace(createArgs.TextLanguage)) {
@@ -92,7 +103,7 @@ namespace TACTLib.Client {
                 createArgs.SpeechLanguage = AgentProduct.Settings.SelectedSpeechLanguage;
             }
             
-            string installationInfoPath = Path.Combine(basePath, InstallInfoFileName) + createArgs.ExtraFileEnding;
+            string installationInfoPath = Path.Combine(basePath, createArgs.InstallInfoFileName) + createArgs.ExtraFileEnding;
             if (!File.Exists(installationInfoPath)) {
                 throw new FileNotFoundException(installationInfoPath);
             }
