@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using LZ4;
 using TACTLib.Client;
+using TACTLib.Client.HandlerArgs;
 using TACTLib.Container;
 using TACTLib.Helpers;
 
@@ -91,6 +92,8 @@ namespace TACTLib.Core.Product.Tank {
         public ulong[][] PackageSiblings;
         
         public ApplicationPackageManifest(ClientHandler client, Stream stream, ContentManifestFile cmf, string name) {
+            ClientCreateArgs_Tank args = client.CreateArgs.HandlerArgs as ClientCreateArgs_Tank ?? new ClientCreateArgs_Tank();
+            
             using (BinaryReader reader = new BinaryReader(stream)) {
                 Header = reader.Read<APMHeader>();
                 
@@ -102,7 +105,7 @@ namespace TACTLib.Core.Product.Tank {
                 Records = new PackageRecord[Header.PackageCount][];
                 PackageSiblings = new ulong[Header.PackageCount][];
                 
-                if (client.CreateArgs.Tank.CacheAPM) {
+                if (args.CacheAPM) {
                     string path = GetCachePath(name);
                     if (File.Exists(path)) {
                         try {
@@ -134,7 +137,7 @@ namespace TACTLib.Core.Product.Tank {
                     LoadPackage(i, client, cmf);
                 });
 
-                if (client.CreateArgs.Tank.CacheAPM) {
+                if (args.CacheAPM) {
                     Logger.Debug("APM", $"Saving cache for {name}");
                     using (PerfCounter _ = new PerfCounter("APM:SaveCache"))
                     SaveCache(cmf, name);

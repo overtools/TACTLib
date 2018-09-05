@@ -74,6 +74,9 @@
     <Compile Include="Agent\Protobuf\ProtoDatabase.cs" />
     <Compile Include="Client\ClientHandler.cs" />
     <Compile Include="Client\ClientCreateArgs.cs" />
+    <Compile Include="Client\HandlerArgs\ClientCreateArgs_Tank.cs" />
+    <Compile Include="Client\HandlerArgs\ClientCreateArgs_WorldOfWarcraftV6.cs" />
+    <Compile Include="Client\IHandlerArgs.cs" />
     <Compile Include="Config\BuildConfig.cs" />
     <Compile Include="Config\InstallationInfo.cs" />
     <Compile Include="Config\CDNConfig.cs" />
@@ -169,9 +172,9 @@
     <Compile Include="Core\Product\Tank\ICMFEncryptionProc.cs" />
     <Compile Include="Core\Product\Tank\ProductHandler_Tank.cs" />
     <Compile Include="Core\Product\Tank\RootFile.cs" />
-    <Compile Include="Core\Product\WorldOfWarcraft\CASWarcraftV6.cs" />
-    <Compile Include="Core\Product\WorldOfWarcraft\CASWarcraftV6Record.cs" />
-    <Compile Include="Core\Product\WorldOfWarcraft\ProductHandler_WorldOfWarcraft.cs" />
+    <Compile Include="Core\Product\WorldOfWarcraftV6\CASWarcraftV6.cs" />
+    <Compile Include="Core\Product\WorldOfWarcraftV6\CASWarcraftV6Record.cs" />
+    <Compile Include="Core\Product\WorldOfWarcraftV6\ProductHandler_WorldOfWarcraftV6.cs" />
     <Compile Include="Core\Salsa20.cs" />
     <Compile Include="Core\VFSCFile.cs" />
     <Compile Include="Core\VFSFile.cs" />

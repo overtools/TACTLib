@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using TACTLib.Agent;
 using TACTLib.Agent.Protobuf;
 using TACTLib.Config;
 using TACTLib.Container;
 using TACTLib.Core;
 using TACTLib.Core.Product;
-using TACTLib.Core.Product.Tank;
-using TACTLib.Core.Product.WorldOfWarcraft;
 using TACTLib.Helpers;
 
 namespace TACTLib.Client {

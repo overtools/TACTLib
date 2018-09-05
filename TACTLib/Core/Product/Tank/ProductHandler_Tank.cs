@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using TACTLib.Client;
+using TACTLib.Client.HandlerArgs;
 using TACTLib.Container;
 using TACTLib.Core.Product.CommonV2;
 using TACTLib.Helpers;
@@ -31,6 +32,8 @@ namespace TACTLib.Core.Product.Tank {
         public ProductHandler_Tank(ClientHandler client, Stream stream) {
             _client = client;
 
+            var clientArgs = client.CreateArgs.HandlerArgs as ClientCreateArgs_Tank ?? new ClientCreateArgs_Tank();
+
             using (BinaryReader reader = new BinaryReader(stream)) {
                 string str = Encoding.ASCII.GetString(reader.ReadBytes((int) stream.Length));
 
@@ -44,7 +47,7 @@ namespace TACTLib.Core.Product.Tank {
                 }
             }
 
-            if (!client.CreateArgs.Tank.LoadManifest) return;
+            if (!clientArgs.LoadManifest) return;
 
             Dictionary<string, ManifestRecord> manifestFiles = new Dictionary<string, ManifestRecord>();
             foreach (RootFile rootFile in RootFiles) {
@@ -171,6 +174,24 @@ namespace TACTLib.Core.Product.Tank {
 
         private readonly Dictionary<ulong, Memory<byte>> _bundleCache = new Dictionary<ulong, Memory<byte>>();
 
+        /// <inheritdoc />
+        public Stream OpenFile(object key) {
+            switch (key) {
+                case ulong guid:
+                    return OpenFile(guid);
+                case long badGuid:
+                    return OpenFile((ulong) badGuid);
+                default:
+                    throw new InvalidDataException(nameof(key));
+            }
+        }
+
+        /// <summary>
+        /// Opens file by GUID
+        /// </summary>
+        /// <param name="guid"></param>
+        /// <returns></returns>
+        /// <exception cref="FileNotFoundException"></exception>
         public Stream OpenFile(ulong guid) {
             if (!Assets.TryGetValue(guid, out Asset asset)) throw new FileNotFoundException($"{guid:X8}");
             UnpackAsset(asset, out var manifest, out var package, out var record);
@@ -205,12 +226,22 @@ namespace TACTLib.Core.Product.Tank {
             }
         }
 
+        /// <summary>
+        /// Unpacks asset indices to real data
+        /// </summary>
+        /// <param name="asset"></param>
+        /// <param name="manifest"></param>
+        /// <param name="package"></param>
+        /// <param name="record"></param>
         public void UnpackAsset(Asset asset, out Manifest manifest, out ApplicationPackageManifest.Package package, out ApplicationPackageManifest.PackageRecord record) {
             manifest = Manifests[asset.ManifestIdx];
             package = manifest.PackageManifest.Packages[asset.PackageIdx];
             record = manifest.PackageManifest.Records[asset.PackageIdx][asset.RecordIdx];
         }
 
+        /// <summary>
+        /// Clears bundle cache
+        /// </summary>
         public void WipeBundleCache() {
             lock (_bundleCache) {
                 _bundleCache.Clear();
