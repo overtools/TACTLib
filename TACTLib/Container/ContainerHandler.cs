@@ -220,7 +220,7 @@ namespace TACTLib.Container {
 
             public unsafe IndexEntry(EKeyEntry entry) {
                 int indexHigh = entry.FileOffsetBE[0];
-                int indexLow = Int32FromPtrBE(entry.FileOffsetBE, 1);
+                int indexLow = Int32FromPtrBE(entry.FileOffsetBE+1);
 
                 Index = indexHigh << 2 | (byte) ((indexLow & 0xC0000000) >> 30);
                 Offset = indexLow & 0x3FFFFFFF;

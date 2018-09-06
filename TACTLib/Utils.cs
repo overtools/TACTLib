@@ -7,13 +7,13 @@ namespace TACTLib {
         }
 
         // ReSharper disable once InconsistentNaming
-        public static unsafe int Int32FromPtrBE(byte* ptr, int start=0) {
-            return ptr[3+start] | (ptr[2+start] << 8) | (ptr[1+start] << 16) | (ptr[0+start] << 24);
+        public static unsafe int Int32FromPtrBE(byte* ptr) {
+            return ptr[3] | (ptr[2] << 8) | (ptr[1] << 16) | (ptr[0] << 24);
         }
         
         // ReSharper disable once InconsistentNaming
-        public static unsafe short Int16FromPtrBE(byte* ptr, int start=0) {
-            return (short)(ptr[start + 1] | (ptr[start] << 8));
+        public static unsafe short Int16FromPtrBE(byte* ptr) {
+            return (short)(ptr[1] | (ptr[0] << 8));
         }
         
         public static byte[] StringToByteArray(string str) {
