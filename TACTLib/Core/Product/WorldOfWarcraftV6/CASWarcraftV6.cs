@@ -3,7 +3,7 @@ using TACTLib.Container;
 using TACTLib.Helpers;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
-namespace TACTLib.Core.Product.WorldOfWarcraft {
+namespace TACTLib.Core.Product.WorldOfWarcraftV6 {
     public class CASWarcraftV6 {
         public int RecordCount { get; }
         public ContentFlags Flags { get; }

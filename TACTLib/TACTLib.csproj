@@ -47,14 +47,24 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
+      <HintPath>$(SolutionDir)\packages\System.Buffers.4.5.0\lib\netstandard2.0\System.Buffers.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Memory, Version=4.0.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
       <HintPath>$(SolutionDir)\packages\System.Memory.4.5.1\lib\netstandard2.0\System.Memory.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <HintPath>$(SolutionDir)\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <HintPath>$(SolutionDir)\packages\System.Runtime.CompilerServices.Unsafe.4.5.0\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+      <HintPath>$(SolutionDir)\packages\System.Runtime.CompilerServices.Unsafe.4.5.1\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
@@ -64,6 +74,9 @@
     <Compile Include="Agent\Protobuf\ProtoDatabase.cs" />
     <Compile Include="Client\ClientHandler.cs" />
     <Compile Include="Client\ClientCreateArgs.cs" />
+    <Compile Include="Client\HandlerArgs\ClientCreateArgs_Tank.cs" />
+    <Compile Include="Client\HandlerArgs\ClientCreateArgs_WorldOfWarcraftV6.cs" />
+    <Compile Include="Client\IHandlerArgs.cs" />
     <Compile Include="Config\BuildConfig.cs" />
     <Compile Include="Config\InstallationInfo.cs" />
     <Compile Include="Config\CDNConfig.cs" />
@@ -159,9 +172,9 @@
     <Compile Include="Core\Product\Tank\ICMFEncryptionProc.cs" />
     <Compile Include="Core\Product\Tank\ProductHandler_Tank.cs" />
     <Compile Include="Core\Product\Tank\RootFile.cs" />
-    <Compile Include="Core\Product\WorldOfWarcraft\CASWarcraftV6.cs" />
-    <Compile Include="Core\Product\WorldOfWarcraft\CASWarcraftV6Record.cs" />
-    <Compile Include="Core\Product\WorldOfWarcraft\ProductHandler_WorldOfWarcraft.cs" />
+    <Compile Include="Core\Product\WorldOfWarcraftV6\CASWarcraftV6.cs" />
+    <Compile Include="Core\Product\WorldOfWarcraftV6\CASWarcraftV6Record.cs" />
+    <Compile Include="Core\Product\WorldOfWarcraftV6\ProductHandler_WorldOfWarcraftV6.cs" />
     <Compile Include="Core\Salsa20.cs" />
     <Compile Include="Core\VFSCFile.cs" />
     <Compile Include="Core\VFSFile.cs" />

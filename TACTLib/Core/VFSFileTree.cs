@@ -29,6 +29,12 @@ namespace TACTLib.Core {
             }
         }
 
+        /// <summary>
+        /// Open file by path
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        /// <exception cref="FileNotFoundException"></exception>
         public Stream Open(string file) {
             if (_files.TryGetValue(file, out VFSFile vfsFile)) {
                 if (vfsFile is VFSCFile cFile) {

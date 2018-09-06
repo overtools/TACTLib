@@ -8,19 +8,21 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using TACTLib.Client;
+using TACTLib.Client.HandlerArgs;
 using TACTLib.Container;
 using TACTLib.Core.Product.CommonV2;
 using TACTLib.Helpers;
 
 namespace TACTLib.Core.Product.Tank {
+    // ReSharper disable ClassNeverInstantiated.Global
     // ReSharper disable once InconsistentNaming
     [ProductHandler(TACTProduct.Overwatch)]
     public class ProductHandler_Tank : IProductHandler {
         private readonly ClientHandler _client;
-        
+
         public readonly Manifest[] Manifests;
         public readonly RootFile[] RootFiles;
-        
+
         public const string RegionDev = "RDEV";
         public const string SpeechManifestName = "speech";
         private const string FieldOrderCheck = @"#FILEID|MD5|CHUNK_ID|PRIORITY|MPRIORITY|FILENAME|INSTALLPATH";
@@ -29,6 +31,8 @@ namespace TACTLib.Core.Product.Tank {
 
         public ProductHandler_Tank(ClientHandler client, Stream stream) {
             _client = client;
+
+            var clientArgs = client.CreateArgs.HandlerArgs as ClientCreateArgs_Tank ?? new ClientCreateArgs_Tank();
 
             using (BinaryReader reader = new BinaryReader(stream)) {
                 string str = Encoding.ASCII.GetString(reader.ReadBytes((int) stream.Length));
@@ -42,9 +46,9 @@ namespace TACTLib.Core.Product.Tank {
                     RootFiles[i - 1] = new RootFile(array[i].Split('|'));
                 }
             }
-            
-            if (!client.CreateArgs.Tank.LoadManifest) return;
-            
+
+            if (!clientArgs.LoadManifest) return;
+
             Dictionary<string, ManifestRecord> manifestFiles = new Dictionary<string, ManifestRecord>();
             foreach (RootFile rootFile in RootFiles) {
                 string extension = Path.GetExtension(rootFile.FileName);
@@ -168,12 +172,30 @@ namespace TACTLib.Core.Product.Tank {
             return tag?.Substring(1);
         }
 
-        private readonly Dictionary<ulong, byte[]> _bundleCache = new Dictionary<ulong, byte[]>();
+        private readonly Dictionary<ulong, Memory<byte>> _bundleCache = new Dictionary<ulong, Memory<byte>>();
 
+        /// <inheritdoc />
+        public Stream OpenFile(object key) {
+            switch (key) {
+                case ulong guid:
+                    return OpenFile(guid);
+                case long badGuid:
+                    return OpenFile((ulong) badGuid);
+                default:
+                    throw new InvalidDataException(nameof(key));
+            }
+        }
+
+        /// <summary>
+        /// Opens file by GUID
+        /// </summary>
+        /// <param name="guid"></param>
+        /// <returns></returns>
+        /// <exception cref="FileNotFoundException"></exception>
         public Stream OpenFile(ulong guid) {
             if (!Assets.TryGetValue(guid, out Asset asset)) throw new FileNotFoundException($"{guid:X8}");
             UnpackAsset(asset, out var manifest, out var package, out var record);
-            if ((record.Flags & ContentFlags.Bundle) == 0) return Manifests[asset.ManifestIdx].ContentManifest.OpenFile(_client, record.GUID);
+            if ((record.Flags & ContentFlags.Bundle) == 0) return manifest.ContentManifest.OpenFile(_client, record.GUID);
             if (!manifest.ContentManifest.TryGet(record.GUID, out var data)) {
                 throw new FileNotFoundException();
             }
@@ -191,25 +213,35 @@ namespace TACTLib.Core.Product.Tank {
             lock (_bundleCache) {
                 if (!_bundleCache.ContainsKey(package.BundleGUID)) {
                     using (Stream bundleStream = manifest.ContentManifest.OpenFile(_client, package.BundleGUID)) {
-                        byte[] buf = new byte[bundleStream.Length];
-                        bundleStream.Read(buf, 0, (int)bundleStream.Length);
+                        Memory<byte> buf = new byte[(int) bundleStream.Length];
+                        bundleStream.Read(buf);
                         _bundleCache[package.BundleGUID] = buf;
                     }
                 }
-            
-                MemoryStream stream = new MemoryStream((int)data.Size);
-                stream.Write(_bundleCache[package.BundleGUID], (int)record.BundleOffset, (int)data.Size);
-                stream.Position = 0;
+
+                MemoryStream stream = new MemoryStream(_bundleCache[package.BundleGUID].Slice((int) record.BundleOffset, (int) data.Size).ToArray()) {
+                    Position = 0
+                };
                 return stream;
             }
         }
 
+        /// <summary>
+        /// Unpacks asset indices to real data
+        /// </summary>
+        /// <param name="asset"></param>
+        /// <param name="manifest"></param>
+        /// <param name="package"></param>
+        /// <param name="record"></param>
         public void UnpackAsset(Asset asset, out Manifest manifest, out ApplicationPackageManifest.Package package, out ApplicationPackageManifest.PackageRecord record) {
             manifest = Manifests[asset.ManifestIdx];
             package = manifest.PackageManifest.Packages[asset.PackageIdx];
             record = manifest.PackageManifest.Records[asset.PackageIdx][asset.RecordIdx];
         }
 
+        /// <summary>
+        /// Clears bundle cache
+        /// </summary>
         public void WipeBundleCache() {
             lock (_bundleCache) {
                 _bundleCache.Clear();
