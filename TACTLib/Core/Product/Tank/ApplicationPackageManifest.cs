@@ -133,6 +133,10 @@ namespace TACTLib.Core.Product.Tank {
                     
                     LoadPackage(i, client, cmf);
                 });
+                
+                if (!Console.IsOutputRedirected) {
+                    Console.Write(new string(' ', Console.WindowWidth-1)+"\r");
+                }
 
                 if (client.CreateArgs.Tank.CacheAPM) {
                     Logger.Debug("APM", $"Saving cache for {name}");
