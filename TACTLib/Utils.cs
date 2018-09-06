@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 
 namespace TACTLib {
     public static class Utils {
@@ -8,23 +7,13 @@ namespace TACTLib {
         }
 
         // ReSharper disable once InconsistentNaming
-        public static unsafe int Int32FromPtrBE(byte* ptr) {
-            return Int32FromSpanBE(PtrToSpan(ptr, 4));
+        public static unsafe int Int32FromPtrBE(byte* ptr, int start=0) {
+            return ptr[3+start] | (ptr[2+start] << 8) | (ptr[1+start] << 16) | (ptr[0+start] << 24);
         }
         
         // ReSharper disable once InconsistentNaming
-        public static unsafe int Int16FromPtrBE(byte* ptr) {
-            return Int16FromSpanBE(PtrToSpan(ptr, 2));
-        }
-
-        // ReSharper disable once InconsistentNaming
-        public static int Int32FromSpanBE(Span<byte> val, int start=0) {
-            return val[3+start] | (val[2+start] << 8) | (val[1+start] << 16) | (val[0+start] << 24);
-        }
-        
-        // ReSharper disable once InconsistentNaming
-        public static short Int16FromSpanBE(Span<byte> val, int start=0) {
-            return (short)(val[start + 1] | (val[start] << 8));
+        public static unsafe short Int16FromPtrBE(byte* ptr, int start=0) {
+            return (short)(ptr[start + 1] | (ptr[start] << 8));
         }
         
         public static byte[] StringToByteArray(string str) {

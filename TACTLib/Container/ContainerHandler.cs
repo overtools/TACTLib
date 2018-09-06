@@ -219,9 +219,8 @@ namespace TACTLib.Container {
             public int Offset;
 
             public unsafe IndexEntry(EKeyEntry entry) {
-                Span<byte> buf = PtrToSpan(entry.FileOffsetBE, 5);
-                int indexHigh = buf[0];
-                int indexLow = Int32FromSpanBE(buf, 1);
+                int indexHigh = entry.FileOffsetBE[0];
+                int indexLow = Int32FromPtrBE(entry.FileOffsetBE, 1);
 
                 Index = indexHigh << 2 | (byte) ((indexLow & 0xC0000000) >> 30);
                 Offset = indexLow & 0x3FFFFFFF;

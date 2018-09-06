@@ -92,6 +92,7 @@
     <Compile Include="Core\ConfigHandler.cs" />
     <Compile Include="Core\EncodingHandler.cs" />
     <Compile Include="Core\Keyring.cs" />
+    <Compile Include="Core\Product\CommonV2\RootFile.cs" />
     <Compile Include="Core\Product\IProductHandler.cs" />
     <Compile Include="Core\Product\ProductHandlerAttribute.cs" />
     <Compile Include="Core\Product\ProductHandlerFactory.cs" />
@@ -171,7 +172,6 @@
     <Compile Include="Core\Product\Tank\ContentManifestFile.cs" />
     <Compile Include="Core\Product\Tank\ICMFEncryptionProc.cs" />
     <Compile Include="Core\Product\Tank\ProductHandler_Tank.cs" />
-    <Compile Include="Core\Product\Tank\RootFile.cs" />
     <Compile Include="Core\Product\WorldOfWarcraftV6\CASWarcraftV6.cs" />
     <Compile Include="Core\Product\WorldOfWarcraftV6\CASWarcraftV6Record.cs" />
     <Compile Include="Core\Product\WorldOfWarcraftV6\ProductHandler_WorldOfWarcraftV6.cs" />
