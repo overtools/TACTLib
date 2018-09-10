@@ -182,7 +182,7 @@ namespace TACTLib.Core.Product.Tank {
                 case long badGuid:
                     return OpenFile((ulong) badGuid);
                 default:
-                    throw new InvalidDataException(nameof(key));
+                    throw new ArgumentException(nameof(key));
             }
         }
 
@@ -194,6 +194,15 @@ namespace TACTLib.Core.Product.Tank {
         /// <exception cref="FileNotFoundException"></exception>
         public Stream OpenFile(ulong guid) {
             if (!Assets.TryGetValue(guid, out Asset asset)) throw new FileNotFoundException($"{guid:X8}");
+            return OpenFile(asset);
+        }
+
+        /// <summary>
+        /// Open an <see cref="Asset"/>
+        /// </summary>
+        /// <param name="asset"></param>
+        /// <returns></returns>
+        public Stream OpenFile(Asset asset) {
             UnpackAsset(asset, out var manifest, out var package, out var record);
             if ((record.Flags & ContentFlags.Bundle) == 0) return manifest.ContentManifest.OpenFile(_client, record.GUID);
             if (!manifest.ContentManifest.TryGet(record.GUID, out var data)) {
