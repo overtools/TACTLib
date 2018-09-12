@@ -43,6 +43,12 @@ namespace TACTLib.Core.Product.Tank {
         public ContentManifestFile(ClientHandler client, Stream stream, string name) {
             using (BinaryReader reader = new BinaryReader(stream)) {
                 Header = reader.Read<CMFHeader>();
+
+                if(Header.BuildVersion >= 50483)
+                {
+                    Header.BuildVersion = Header.BuildVersion >> 8;
+                }
+
                 if (Header.Magic >> 8 == ENCRYPTED_MAGIC) {
                     using (BinaryReader decryptedReader = DecryptCMF(client, stream, name)) {
                         ParseEntries(decryptedReader);
