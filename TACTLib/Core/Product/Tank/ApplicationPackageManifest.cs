@@ -97,6 +97,11 @@ namespace TACTLib.Core.Product.Tank {
             using (BinaryReader reader = new BinaryReader(stream)) {
                 Header = reader.Read<APMHeader>();
                 
+                if(Header.Build >= 50483)
+                {
+                    Header.Build = Header.Build >> 8;
+                }
+                
                 Entries = reader.ReadArray<Entry>(Header.EntryCount);
                 PackageEntries = reader.ReadArray<PackageEntry>(Header.PackageCount);
                 VerifyEntries(cmf);
