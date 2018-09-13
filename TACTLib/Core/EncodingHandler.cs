@@ -49,6 +49,8 @@ namespace TACTLib.Core {
                     
                         stream.Position += (CKey.CASC_CKEY_SIZE - EKey.CASC_EKEY_SIZE) + (entry.EKeyCount - 1) * header.EKeySize;
                         // 16-9 because we are truncating the eKey
+                        
+                        if (Entries.ContainsKey(entry.CKey)) continue;
 
                         Entries[entry.CKey] = entry;
                     }
