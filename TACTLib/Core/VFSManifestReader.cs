@@ -356,7 +356,7 @@ namespace TACTLib.Core {
             //int cftFileEnd = cftFileTable + manifest.CftTableSize;
 
             reader.BaseStream.Position = cftFileEntry;
-            var eKey = reader.Read<EKey>();
+            var eKey = reader.Read<CKey>();
             VFSFile file = new VFSFile {
                 Offset = fileOffset,
                 Name = null,

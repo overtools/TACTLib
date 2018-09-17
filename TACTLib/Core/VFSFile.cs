@@ -4,7 +4,7 @@ namespace TACTLib.Core {
     public class VFSFile {
         public string Name;
         
-        public EKey EKey;
+        public CKey EKey;
         public int Offset;
     }
 }
