@@ -34,7 +34,7 @@ namespace TACTLib.Protocol.Ribbit {
                         {"Active", "1"},
                         {"InstallKey", ""},
                         {"IMSize", ""},
-                        {"Tags", "Online NGDP"},
+                        {"Tags", "Online Ribbit"},
                         {"Armadillo", ""},
                         {"LastActivated", "0"},
                         {"BuildComplete", "1"}
