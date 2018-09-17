@@ -41,13 +41,21 @@ namespace TACTLib.Container {
         /// <returns></returns>
         /// <exception cref="ArgumentException">Array length != <see cref="CASC_EKEY_SIZE"/></exception>
         public static EKey FromByteArray(byte[] array) {
-            //if (array.Length != CASC_EKEY_SIZE)
-            //    throw new ArgumentException($"array size != {CASC_EKEY_SIZE}");
-            // todo: array can be to long but it's kinda ok because we need to truncate the last bytes anyway
+            if (array.Length < CASC_EKEY_SIZE)
+                throw new ArgumentException($"array size < {CASC_EKEY_SIZE}");
 
-            fixed (byte* ptr = array) {
-                return *(EKey*) ptr;
-            }
+            var fixedArray = array.AsMemory(0, CASC_EKEY_SIZE);
+            var pinnable = fixedArray.Pin().Pointer;
+            return FromPointer(pinnable);
+        }
+        
+        /// <summary>
+        /// Create <see cref="EKey"/> from a byte array
+        /// </summary>
+        /// <param name="array">Source array</param>
+        /// <returns></returns>
+        public static EKey FromPointer(void* array) {
+            return *(EKey*) array;
         }
     }
 }

@@ -11,7 +11,10 @@ namespace TACTLibTest {
             //const string path = @"D:\Games\Call of Duty Black Ops 4";
             
             Logger.RegisterBasic();
-            ClientHandler clientHandler = new ClientHandler(args[0], new ClientCreateArgs());
+            ClientHandler clientHandler = new ClientHandler(null, new ClientCreateArgs {
+                Mode = ClientCreateArgs.InstallMode.Ribbit,
+                OnlineProduct = TACTProduct.Overwatch
+            });
             
             Thread.Sleep(100000);
 

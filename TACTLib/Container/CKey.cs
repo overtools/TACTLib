@@ -41,11 +41,17 @@ namespace TACTLib.Container {
         /// <returns></returns>
         /// <exception cref="ArgumentException">Array length != <see cref="CASC_CKEY_SIZE"/></exception>
         public static CKey FromByteArray(byte[] array) {
-            if (array.Length != CASC_CKEY_SIZE)
-                throw new ArgumentException($"array size != {CASC_CKEY_SIZE}");
+            if (array.Length < CASC_CKEY_SIZE)
+                throw new ArgumentException($"array size < {CASC_CKEY_SIZE}");
 
-            fixed (byte* ptr = array) {
-                return *(CKey*) ptr;
+            var fixedArray = array.AsMemory(0, CASC_CKEY_SIZE);
+            var pinable = fixedArray.Pin().Pointer;
+            return *(CKey*) pinable;
+        }
+
+        public EKey AsEKey() {
+            fixed(byte* ptr = Value) {
+                return EKey.FromPointer(ptr);
             }
         }
     }

@@ -9,10 +9,8 @@ namespace TACTLib.Config {
     public class Config {
         public Dictionary<string, List<string>> Values;
 
-        protected Config(ClientHandler client, string key) {
-            string path = Path.Combine(client.ContainerHandler.ContainerDirectory, ContainerHandler.ConfigDirectory, key.Substring(0, 2), key.Substring(2, 2), key) + client.CreateArgs.ExtraFileEnding;
-
-            using (StreamReader reader = new StreamReader(path)) {
+        protected Config(ClientHandler client, Stream stream) {
+            using (StreamReader reader = new StreamReader(stream)) {
                 Read(reader);
             }
         }

@@ -12,7 +12,7 @@ namespace TACTLib.Core {
         /// </summary>
         public readonly Dictionary<ulong, byte[]> Keys;
 
-        public Keyring(ClientHandler client, string key) : base(client, key) {
+        public Keyring(ClientHandler client, Stream stream) : base(client, stream) {
             Keys = new Dictionary<ulong, byte[]>();
             foreach (KeyValuePair<string,List<string>> pair in Values) {
                 string reverseKey = pair.Key.Substring(pair.Key.Length - 16);

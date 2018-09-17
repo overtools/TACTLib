@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using TACTLib.Protocol;
 
 namespace TACTLib.Config {
     public class InstallationInfo {
@@ -11,17 +13,25 @@ namespace TACTLib.Config {
             }
         }
 
-        private void Parse(TextReader reader) {
+        public InstallationInfo(INetworkHandler netHandle, string region) {
+            Values = netHandle.CreateInstallationInfo(region);
+        }
+
+        internal static IEnumerable<IDictionary<string, string>> ParseInternal(TextReader reader) {
             string[] keys = null;
-            Values = new Dictionary<string, string>();
+            List<Dictionary<string, string>> ret = new List<Dictionary<string, string>>();
             
             for (int i = 0; i < 0xFF; i++) {
-                string line = reader.ReadLine();
+                string line = reader.ReadLine()?.Trim();
                 if (line == null) break;
+
+                if (line.Length == 0) {
+                    continue;
+                }
                 
                 string[] tokens = line.Split('|');
 
-                if (i == 0) {
+                if (keys == null) {
                     keys = new string[tokens.Length];
 
                     for (int j = 0; j < tokens.Length; j++) {
@@ -34,13 +44,17 @@ namespace TACTLib.Config {
                     for (int j = 0; j < tokens.Length; ++j) {
                         vals[keys[j]] = tokens[j];
                     }
-
-                    if (vals.ContainsKey("Active") && vals["Active"] == "1") {
-                        Values = vals;
-                        break;
-                    }
+                    
+                    ret.Add(vals);
                 }
             }
+
+            return ret;
+        }
+
+        private void Parse(TextReader reader) {
+            var vals = ParseInternal(reader);
+            Values = (Dictionary<string, string>) vals.FirstOrDefault(x => x["Active"] == "1");
         }
     }
 }

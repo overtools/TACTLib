@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using TACTLib.Client;
 using TACTLib.Container;
 
@@ -11,7 +12,7 @@ namespace TACTLib.Config {
         public FileRecord Encoding;
         public FileRecord VFSRoot;
         
-        public BuildConfig(ClientHandler client, string key) : base(client, key) {
+        public BuildConfig(ClientHandler client, Stream stream) : base(client, stream) {
             GetFileRecord("root", out Root);
             GetFileRecord("install", out Install);
             GetFileRecord("patch", out Patch);
@@ -41,14 +42,15 @@ namespace TACTLib.Config {
             }
 
             if (vals.Count > 1) {
-                record.EncodingKey = EKey.FromString(vals[1]);
+                record.EncodingKey = CKey.FromString(vals[1]);
             }
+            
             return record;
         }
 
         public class FileRecord {
             public CKey ContentKey;
-            public EKey EncodingKey;
+            public CKey EncodingKey;
             
             //public int DecodedSize;
             //public int EncodedSize;

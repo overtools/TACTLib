@@ -12,7 +12,7 @@ namespace TACTLib.Core {
         
         public VFSFileTree(ClientHandler client) {
             _client = client;
-            using (Stream stream = client.OpenCKey(client.ConfigHandler.BuildConfig.VFSRoot.ContentKey))
+            using (Stream stream = client.OpenEKey(client.ConfigHandler.BuildConfig.VFSRoot.EncodingKey))
             using (BinaryReader reader = new BinaryReader(stream, Encoding.Default)) {
 
                 //using (Stream file = File.OpenWrite("vfs.hex")) {

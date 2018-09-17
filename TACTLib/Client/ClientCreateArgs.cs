@@ -5,18 +5,59 @@ namespace TACTLib.Client {
     /// Client runtime args
     /// </summary>
     public class ClientCreateArgs {
+        public enum InstallMode {
+            /// <summary>
+            /// Local file loading
+            /// </summary>
+            CASC,
+            /// <summary>
+            /// Online Ribbit
+            /// </summary>
+            Ribbit,
+            /// <summary>
+            /// Online NGDP
+            /// </summary>
+            NGDP,
+        }
+
+        public const string US_NGDP = "http://us.patch.battle.net:1119";
+        public const string EU_NGDP = "http://eu.patch.battle.net:1119";
+        public const string CN_NGDP = "http://cn.patch.battle.net:1119";
+        public const string KR_NGDP = "http://kr.patch.battle.net:1119";
+        public const string TW_NGDP = "http://tw.patch.battle.net:1119";
+
+        public const string US_RIBBIT = "ribbit://us.version.battle.net:1119";
+        public const string EU_RIBBIT = "ribbit://eu.version.battle.net:1119";
+        public const string CN_RIBBIT = "ribbit://cn.version.battle.net:1119";
+        public const string KR_RIBBIT = "ribbit://kr.version.battle.net:1119";
+        public const string TW_RIBBIT = "ribbit://tw.version.battle.net:1119";
+
+        /// <summary>
+        /// Root host for online download
+        /// </summary>
+        public string OnlineRootHost { get; set; } = US_RIBBIT;
+        
         /// <summary>
         /// Handler specific args
         /// </summary>
         /// <seealso cref="TACTLib.Client.HandlerArgs.ClientCreateArgs_Tank"/>
         /// <seealso cref="TACTLib.Client.HandlerArgs.ClientCreateArgs_WorldOfWarcraftV6"/> 
-        public IHandlerArgs HandlerArgs;
+        public IHandlerArgs HandlerArgs { get; set; } = null;
 
         /// <summary>
-        /// TODO
+        /// Sets 
         /// </summary>
-        public bool Online { get; set; } = false;
-        // will probably need some other fields too
+        public InstallMode Mode { get; set; } = InstallMode.CASC;
+
+        /// <summary>
+        /// Download erroring files
+        /// </summary>
+        public bool Online { get; set; } = true;
+
+        /// <summary>
+        /// Region to load from NGDP/Ribbit.
+        /// </summary>
+        public string OnlineRegion { get; set; } = "us";
 
         /// <summary>
         /// Name of the product database file
@@ -46,5 +87,7 @@ namespace TACTLib.Client {
         /// Speech language to load in case product db doesn't
         /// </summary>
         public string SpeechLanguage { get; set; } = null;
+
+        public TACTProduct OnlineProduct { get; set; } = TACTProduct.Catalog;
     }
 }

@@ -15,7 +15,9 @@ namespace TACTLib.Core {
         public unsafe EncodingHandler(ClientHandler client) {
             Entries = new Dictionary<CKey, CKeyEntry>(CASCKeyComparer.Instance);
 
-            using (Stream stream = client.OpenEKey(client.ConfigHandler.BuildConfig.Encoding.EncodingKey))
+            var key = client.ConfigHandler.BuildConfig.Encoding.EncodingKey;
+
+            using (Stream stream = client.CreateArgs.Mode > ClientCreateArgs.InstallMode.CASC ? client.OpenCKey(key) : client.OpenEKey(key.AsEKey()))
             using (BinaryReader reader = new BinaryReader(stream)) {
                 Header header = reader.Read<Header>();
 
@@ -47,8 +49,7 @@ namespace TACTLib.Core {
                         CKeyEntry entry = reader.Read<CKeyEntry>();
                         if (entry.EKeyCount == 0) break;
                     
-                        stream.Position += (CKey.CASC_CKEY_SIZE - EKey.CASC_EKEY_SIZE) + (entry.EKeyCount - 1) * header.EKeySize;
-                        // 16-9 because we are truncating the eKey
+                        stream.Position += (entry.EKeyCount - 1) * header.EKeySize;
                         
                         if (Entries.ContainsKey(entry.CKey)) continue;
 
@@ -100,7 +101,7 @@ namespace TACTLib.Core {
             public CKey CKey;  // Content key. This is MD5 of the file content
             
             /// <summary>Encoding Key. This is (trimmed) MD5 hash of the file header, containing MD5 hashes of all the logical blocks of the file</summary>
-            public EKey EKey;
+            public CKey EKey; // :kyaah:
 
             /// <summary>Get content size</summary>
             /// <returns>Content size</returns>

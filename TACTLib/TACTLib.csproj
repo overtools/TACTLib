@@ -11,7 +11,7 @@
     <AssemblyName>TACTLib</AssemblyName>
     <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <LangVersion>7.2</LangVersion>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>x64</PlatformTarget>
@@ -186,6 +186,10 @@
     <Compile Include="Helpers\PerfCounter.cs" />
     <Compile Include="Locale.cs" />
     <Compile Include="Logger.cs" />
+    <Compile Include="Protocol\CDNClient.cs" />
+    <Compile Include="Protocol\INetworkHandler.cs" />
+    <Compile Include="Protocol\NGDP\NGDPClient.cs" />
+    <Compile Include="Protocol\Ribbit\RibbitClient.cs" />
     <Compile Include="TACTProduct.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils.cs" />
