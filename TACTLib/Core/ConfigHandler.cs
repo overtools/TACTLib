@@ -2,7 +2,6 @@
 using System.IO;
 using TACTLib.Client;
 using TACTLib.Config;
-using TACTLib.Container;
 
 namespace TACTLib.Core {
     public class ConfigHandler {

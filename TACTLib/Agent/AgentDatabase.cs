@@ -1,7 +1,7 @@
-﻿using ProtoBuf;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using ProtoBuf;
 using TACTLib.Agent.Protobuf;
 
 namespace TACTLib.Agent {

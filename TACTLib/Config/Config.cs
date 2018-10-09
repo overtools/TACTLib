@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using TACTLib.Client;
-using TACTLib.Container;
 
 namespace TACTLib.Config {
     public class Config {

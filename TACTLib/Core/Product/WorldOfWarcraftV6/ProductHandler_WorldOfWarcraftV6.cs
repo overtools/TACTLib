@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using TACTLib.Client;
 using TACTLib.Client.HandlerArgs;
+
 // ReSharper disable NotAccessedField.Global
 
 namespace TACTLib.Core.Product.WorldOfWarcraftV6 {

@@ -11,7 +11,6 @@ using TACTLib.Helpers;
 using TACTLib.Protocol;
 using TACTLib.Protocol.NGDP;
 using TACTLib.Protocol.Ribbit;
-using BuildConfig = TACTLib.Config.BuildConfig;
 
 // ReSharper disable NotAccessedField.Global
 

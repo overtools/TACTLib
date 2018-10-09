@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Net.Http;
 using TACTLib.Client;
 using TACTLib.Container;
 

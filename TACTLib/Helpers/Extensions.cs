@@ -1,6 +1,6 @@
 ﻿using System;
-using System.IO;
 using System.Buffers;
+using System.IO;
 using static TACTLib.Utils;
 
 namespace TACTLib.Helpers {
