@@ -173,7 +173,7 @@ namespace TACTLib {
                     return TACTProduct.BlackOps4;
             }
 
-            throw new NotImplementedException("unable to detect product");
+            throw new NotImplementedException("unable to detect product. ensure that the archive directory is correct");  // hmm
         }
     }
 }

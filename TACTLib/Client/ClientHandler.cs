@@ -57,6 +57,8 @@ namespace TACTLib.Client {
             basePath = basePath ?? "";
             BasePath = basePath;
             CreateArgs = createArgs;
+            
+            if (!Directory.Exists(basePath)) throw new FileNotFoundException("invalid archive directory");
 
             string dbPath = Path.Combine(basePath, createArgs.ProductDatabaseFilename);
 
@@ -76,6 +78,9 @@ namespace TACTLib.Client {
                 try {
                     Product = ProductHelpers.ProductFromLocalInstall(basePath);
                 } catch {
+                    if (createArgs.Mode == ClientCreateArgs.InstallMode.CASC) {  // if we need an archive then we should be able to detect the product
+                        throw;
+                    }
                     Product = createArgs.OnlineProduct;
                 }
 
