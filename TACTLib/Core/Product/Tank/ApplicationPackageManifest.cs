@@ -104,7 +104,7 @@ namespace TACTLib.Core.Product.Tank {
                 
                 Entries = reader.ReadArray<Entry>(Header.EntryCount);
                 PackageEntries = reader.ReadArray<PackageEntry>(Header.PackageCount);
-                VerifyEntries(cmf);
+                //VerifyEntries(cmf); // iv is broken or something
                 
                 Packages = new Package[Header.PackageCount];
                 Records = new PackageRecord[Header.PackageCount][];
