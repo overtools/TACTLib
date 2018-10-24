@@ -21,7 +21,7 @@ namespace TACTLib.Core {
     public class BLTEKeyException : Exception {
         public ulong MissingKey;
 
-        public BLTEKeyException(ulong key) : base($"unknown keyname ${key:X16}") {
+        public BLTEKeyException(ulong key) : base($"unknown key {key:X16}") {
             MissingKey = key;
         }
     }

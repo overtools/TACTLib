@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -22,12 +23,13 @@ namespace TACTLib.Core.Product.Tank {
             public uint Unk02; // 8
             public uint Unk03; // 12
             public uint Unk04; // 16
-            public int DataCount; // 20
-            public uint Unk05; // 24
-            public int EntryCount; // 28
+            public uint Unk05; // 20
+            public int DataCount; // 24
+            public uint Unk06; // 28
+            public int EntryCount; // 32
             // 0x16666D63 '\x16fmc' -> Not Encrypted
             // 0x636D6616 'cmf\x16' -> Encrypted
-            public uint Magic; // 32
+            public uint Magic; // 36
         }
 
         public CMFHeader Header;
@@ -43,10 +45,9 @@ namespace TACTLib.Core.Product.Tank {
         public ContentManifestFile(ClientHandler client, Stream stream, string name) {
             using (BinaryReader reader = new BinaryReader(stream)) {
                 Header = reader.Read<CMFHeader>();
-
-                if(Header.BuildVersion >= 50483)
-                {
-                    Header.BuildVersion = Header.BuildVersion >> 8;
+                
+                if(Header.BuildVersion >= 12923648 || Header.BuildVersion < 52320) {
+                    throw new NotSupportedException("Overwatch 1.29 or earlier is not supported");
                 }
 
                 if (Header.Magic >> 8 == ENCRYPTED_MAGIC) {
@@ -65,6 +66,7 @@ namespace TACTLib.Core.Product.Tank {
             using (RijndaelManaged rijndael = new RijndaelManaged {Key = key, IV = iv, Mode = CipherMode.CBC}) {
                 CryptoStream cryptoStream = new CryptoStream(stream, rijndael.CreateDecryptor(),
                     CryptoStreamMode.Read);
+                
                 return new BinaryReader(cryptoStream);
             }
         }

@@ -109,7 +109,7 @@ namespace TACTLib.Container {
         /// <returns>Loaded file</returns>
         internal Stream OpenEKey(EKey key) {
             if (!IndexEntries.TryGetValue(key, out IndexEntry indexEntry)) {
-                Debugger.Log(0, "ContainerHandler", $"Missing local index {key.ToHexString()}");
+                Debugger.Log(0, "ContainerHandler", $"Missing local index {key.ToHexString()}\n");
                 return null;
             }
             return OpenIndexEntry(indexEntry);

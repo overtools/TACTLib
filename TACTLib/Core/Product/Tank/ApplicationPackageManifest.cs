@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using LZ4;
@@ -15,10 +16,12 @@ namespace TACTLib.Core.Product.Tank {
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
         public struct APMHeader {
             public ulong Build;
-            public ulong Unknown1;
+            public uint Unknown1;
             public uint Unknown2;
-            public int PackageCount;
             public uint Unknown3;
+            public uint Unknown4;
+            public int PackageCount;
+            public uint Unknown5;
             public int EntryCount;
             public uint Checksum;
         }
@@ -33,12 +36,10 @@ namespace TACTLib.Core.Product.Tank {
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
         public struct PackageEntry {
             public ulong PackageGUID; // 077 file
-            public ulong Unknown1;
+            public uint Unknown1;
             public uint Unknown2;
             public uint Unknown3;
             public uint Unknown4;
-                
-            public uint Unknown5;
         }
         
         public enum PackageCompressionMethod : uint {
@@ -49,19 +50,25 @@ namespace TACTLib.Core.Product.Tank {
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
         public struct Package {
             public long OffsetRecords;
-            public long OffsetSiblings;
-            public long OffsetUnknown;
-            public long OffsetSiblings2;
-            public ulong Unknown1;
+            public long OffsetUnknown1;
+            public long OffsetUnknown2; // streamed?
+            public long OffsetUnknown3;
+            public long OffsetUnknown4;
+            
+            public uint Unknown1;
             public uint Unknown2;
-            public uint RecordCount;
-            public PackageCompressionMethod CompressionMethod;
-            public ulong SizeRecords;
-            public uint SiblingCount;
-            public uint Checksum;
             public uint Unknown3;
-            public ulong BundleGUID; // 09C file
-            public ulong Unknown4;
+            
+            public uint RecordCount;
+            public uint Unknown2Count;
+            
+            public uint CompressedSize;
+            
+            public uint Unknown1Count;
+            public uint Unknown3Count;
+            public uint Unknown4Count;
+            
+            public ulong BundleGUID;
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 4)]  // size = 16
@@ -96,10 +103,10 @@ namespace TACTLib.Core.Product.Tank {
             
             using (BinaryReader reader = new BinaryReader(stream)) {
                 Header = reader.Read<APMHeader>();
+
                 
-                if(Header.Build >= 50483)
-                {
-                    Header.Build = Header.Build >> 8;
+                if(Header.Build >= 12923648 || Header.Build < 52320) {
+                    throw new NotSupportedException("Overwatch 1.29 or earlier is not supported");
                 }
                 
                 Entries = reader.ReadArray<Entry>(Header.EntryCount);
@@ -223,11 +230,17 @@ namespace TACTLib.Core.Product.Tank {
             using (Stream packageStream = cmf.OpenFile(client, entry.PackageGUID))
             using (BinaryReader packageReader = new BinaryReader(packageStream)) {
                 Packages[i] = packageReader.Read<Package>();
-                        
+                var pkg = Packages[i];
+
+                if (Packages[i].RecordCount == 0) {
+                    Records[i] = new PackageRecord[0];
+                    return;
+                }
+                
                 packageStream.Position = Packages[i].OffsetRecords;
                 using (GZipStream decompressedStream = new GZipStream(packageStream, CompressionMode.Decompress))
                 using (BinaryReader decompressedReader = new BinaryReader(decompressedStream)) {
-                    Records[i] = decompressedReader.ReadArray<PackageRecord>((int)Packages[i].RecordCount);
+                    Records[i] = decompressedReader.ReadArray<PackageRecord>((int) Packages[i].RecordCount);
                 }
             }
         }

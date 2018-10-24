@@ -186,7 +186,7 @@ namespace TACTLib.Client {
                     }
                 }
             }
-            Debugger.Log(0, "ContainerHandler", $"Missing encoding entry for CKey {key.ToHexString()}");
+            Debugger.Log(0, "ContainerHandler", $"Missing encoding entry for CKey {key.ToHexString()}\n");
             return null;
         }
 

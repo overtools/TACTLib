@@ -111,6 +111,13 @@ namespace TACTLib.Core.Product.Tank {
                             Assets[asset.GUID] = new Asset((byte) i1, j, k);
                         }
                     });
+                    Parallel.For(0, manifest.ContentManifest.HashList.Length, new ParallelOptions {
+                        MaxDegreeOfParallelism = 4
+                    }, j => {
+                        var cmfAsset = manifest.ContentManifest.HashList[j];
+                        if (Assets.ContainsKey(cmfAsset.GUID)) return;
+                        Assets[cmfAsset.GUID] = new Asset((byte) i1, -1, j);
+                    }); 
                 }
         }
 
@@ -244,8 +251,19 @@ namespace TACTLib.Core.Product.Tank {
         /// <param name="record"></param>
         public void UnpackAsset(Asset asset, out Manifest manifest, out ApplicationPackageManifest.Package package, out ApplicationPackageManifest.PackageRecord record) {
             manifest = Manifests[asset.ManifestIdx];
-            package = manifest.PackageManifest.Packages[asset.PackageIdx];
-            record = manifest.PackageManifest.Records[asset.PackageIdx][asset.RecordIdx];
+            if (asset.PackageIdx == -1) {
+                package = new ApplicationPackageManifest.Package {
+                    BundleGUID = 0
+                };
+                record = new ApplicationPackageManifest.PackageRecord {
+                    Flags = ContentFlags.None,
+                    GUID = manifest.ContentManifest.HashList[asset.RecordIdx].GUID,
+                    BundleOffset = 0
+                };
+            } else {
+                package = manifest.PackageManifest.Packages[asset.PackageIdx];
+                record = manifest.PackageManifest.Records[asset.PackageIdx][asset.RecordIdx];
+            }
         }
 
         /// <summary>
