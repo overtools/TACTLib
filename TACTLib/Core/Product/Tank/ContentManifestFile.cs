@@ -86,22 +86,16 @@ namespace TACTLib.Core.Product.Tank {
         }
 
         public bool TryGet(ulong guid, out HashData hashData) {
-            // if (_indexMap.TryGetValue(guid, out int index)) {
-            //     hashData = _hashList[index];
-            //     return true;
-            // }
-            // hashData = default;
-            // return false;
             return _map.TryGetValue(guid, out hashData);
         }
 
         public bool Exists(ulong guid) {
-            return IndexMap.ContainsKey(guid);
+            return _map.ContainsKey(guid);
         }
 
         public HashData GetHashData(ulong guid) {
-            if (IndexMap.TryGetValue(guid, out int index)) {
-                return HashList[index];
+            if (_map.TryGetValue(guid, out var data)) {
+                return data;
             }
             throw new FileNotFoundException(); // todo
         }

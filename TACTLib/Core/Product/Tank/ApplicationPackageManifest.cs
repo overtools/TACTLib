@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
-using System.Net;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using LZ4;
@@ -96,7 +95,6 @@ namespace TACTLib.Core.Product.Tank {
         public PackageEntry[] PackageEntries;
         public Package[] Packages;
         public PackageRecord[][] Records;
-        public ulong[][] PackageSiblings;
         
         public ApplicationPackageManifest(ClientHandler client, Stream stream, ContentManifestFile cmf, string name) {
             ClientCreateArgs_Tank args = client.CreateArgs.HandlerArgs as ClientCreateArgs_Tank ?? new ClientCreateArgs_Tank();
@@ -104,18 +102,19 @@ namespace TACTLib.Core.Product.Tank {
             using (BinaryReader reader = new BinaryReader(stream)) {
                 Header = reader.Read<APMHeader>();
 
-                
                 if(Header.Build >= 12923648 || Header.Build < 52320) {
                     throw new NotSupportedException("Overwatch 1.29 or earlier is not supported");
                 }
                 
                 Entries = reader.ReadArray<Entry>(Header.EntryCount);
                 PackageEntries = reader.ReadArray<PackageEntry>(Header.PackageCount);
-                //VerifyEntries(cmf); // iv is broken or something
+
+                if (!VerifyEntries(cmf)) {
+                    Logger.Debug("APM", "Entry hash invalid. IV may be wrong");
+                }
                 
                 Packages = new Package[Header.PackageCount];
                 Records = new PackageRecord[Header.PackageCount][];
-                PackageSiblings = new ulong[Header.PackageCount][];
                 
                 if (args.CacheAPM) {
                     string path = GetCachePath(name);
@@ -177,7 +176,6 @@ namespace TACTLib.Core.Product.Tank {
                         cacheRecords[j] = new CachePackageRecord(records[j], cmf);
                     }
                     writer.WriteStructArray(cacheRecords);
-                    //writer.WriteStructArray(PackageSiblings[i]);
                 }
             }
         }
@@ -218,7 +216,6 @@ namespace TACTLib.Core.Product.Tank {
                             GUID = cmf.HashList[cacheRecord.CMFIndex].GUID
                         };
                     }
-                    //PackageSiblings[i] = reader.ReadArray<ulong>((int) package.SiblingCount);
                 }
             }
 
@@ -245,16 +242,18 @@ namespace TACTLib.Core.Product.Tank {
             }
         }
 
-        private void VerifyEntries(ContentManifestFile cmf) {
+        private bool VerifyEntries(ContentManifestFile cmf) {
             for (int i = 0; i < Header.EntryCount; i++) {
                 Entry a = Entries[i];
                 Entry b = cmf.Entries[i];
 
                 if (a.HashA != b.HashA) {
-                    throw new InvalidDataException();
+                    return false;
                 }
                 // todo: HashB is always 0 in APM. what does this mean?
             }
+
+            return true;
         }
     }
 }
