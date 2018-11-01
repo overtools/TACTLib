@@ -174,7 +174,7 @@ namespace TACTLib.Core.Product.Tank {
         }
 
         private static string GetManifestLocale(string name) {
-            string tag = name.Split('_').Reverse().Single(v => v[0] == 'L' && v.Length == 5);
+            string tag = name.Split('_').Reverse().SingleOrDefault(v => v[0] == 'L' && v.Length >= 4);
 
             return tag?.Substring(1);
         }
