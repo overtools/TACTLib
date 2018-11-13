@@ -133,20 +133,24 @@ namespace TACTLib.Core.Product.Tank {
                     }
                 }
 
-                int c = 0;
-                using (PerfCounter _ = new PerfCounter("APM:LoadPackages"))
-                Parallel.For(0, Header.PackageCount, new ParallelOptions {
-                    MaxDegreeOfParallelism = 4
-                }, i => {
-                    c++;
-                    if (c % 1000 == 0) {
-                        if (!Console.IsOutputRedirected) {
-                            Console.Out.Write($"Loading packages: {Math.Floor(c / (float)Header.PackageCount * 10000) / 100:F0}% ({c}/{Header.PackageCount})\r");
-                        }
-                    }
-                    
+                for (int i = 0; i < Header.PackageCount; i++) {
                     LoadPackage(i, client, cmf);
-                });
+                }
+
+                //int c = 0;
+                //using (PerfCounter _ = new PerfCounter("APM:LoadPackages"))
+                //Parallel.For(0, Header.PackageCount, new ParallelOptions {
+                //    MaxDegreeOfParallelism = 4
+                //}, i => {
+                //    c++;
+                //    if (c % 1000 == 0) {
+                //        if (!Console.IsOutputRedirected) {
+                //            Console.Out.Write($"Loading packages: {Math.Floor(c / (float)Header.PackageCount * 10000) / 100:F0}% ({c}/{Header.PackageCount})\r");
+                //        }
+                //    }
+                //    
+                //    LoadPackage(i, client, cmf);
+                //});
                 
                 if (!Console.IsOutputRedirected) {
                     Console.Write(new string(' ', Console.WindowWidth-1)+"\r");

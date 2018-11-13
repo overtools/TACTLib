@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using TACTLib.Client;
+using TACTLib.Core.Product.Tank;
 using TACTLib.Helpers;
 
 namespace TACTLib.Core.Product {
@@ -14,7 +15,8 @@ namespace TACTLib.Core.Product {
             }
 
             using (var _ = new PerfCounter($"{handler.Name}::ctor"))
-                return (IProductHandler)Activator.CreateInstance(handler, client, root);
+                return new ProductHandler_Tank(client, root);
+                //return (IProductHandler)Activator.CreateInstance(handler, client, root);
         }
     }
 }

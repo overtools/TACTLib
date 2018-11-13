@@ -11,7 +11,7 @@ namespace TACTLibTest {
             
             Logger.RegisterBasic();
             
-            System.Diagnostics.Debugger.Break();
+            //System.Diagnostics.Debugger.Break();
             ClientHandler clientHandler = new ClientHandler(args[0], new ClientCreateArgs());
             System.Diagnostics.Debugger.Break();
             if (clientHandler.ProductHandler is ProductHandler_Tank tankHandler) {
