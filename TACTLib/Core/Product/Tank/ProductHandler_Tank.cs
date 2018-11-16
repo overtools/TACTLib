@@ -9,7 +9,6 @@ using System.Text;
 using System.Threading.Tasks;
 using TACTLib.Client;
 using TACTLib.Client.HandlerArgs;
-using TACTLib.Container;
 using TACTLib.Core.Product.CommonV2;
 using TACTLib.Helpers;
 
@@ -20,8 +19,11 @@ namespace TACTLib.Core.Product.Tank {
     public class ProductHandler_Tank : IProductHandler {
         private readonly ClientHandler _client;
 
-        public readonly Manifest[] Manifests;
         public readonly RootFile[] RootFiles;
+
+        public readonly ApplicationPackageManifest PackageManifest;
+        public readonly ContentManifestFile MainContentManifest;
+        public readonly ContentManifestFile SpeechContentManifest;
 
         public const string RegionDev = "RDEV";
         public const string SpeechManifestName = "speech";
@@ -49,128 +51,87 @@ namespace TACTLib.Core.Product.Tank {
 
             if (!clientArgs.LoadManifest) return;
 
-            Dictionary<string, ManifestRecord> manifestFiles = new Dictionary<string, ManifestRecord>();
-            foreach (RootFile rootFile in RootFiles) {
+            int totalAssetCount = 0;
+            
+            foreach (RootFile rootFile in RootFiles.Reverse()) {  // cmf first, then apm
                 string extension = Path.GetExtension(rootFile.FileName);
                 if (extension != ".cmf" && extension != ".apm") continue;
-
+                
                 string manifestName = Path.GetFileNameWithoutExtension(rootFile.FileName);
                 if (manifestName == null) throw new InvalidDataException();
-
-                if (!manifestFiles.TryGetValue(manifestName, out ManifestRecord rec)) {
-                    rec = new ManifestRecord(manifestName);
-                    manifestFiles[manifestName] = rec;
-                }
-
+                
+                if (!manifestName.Contains(RegionDev)) continue; // is a CN (china?) CMF. todo: support this
+                var locale = GetManifestLocale(manifestName);
+                
                 // ReSharper disable once ConvertIfStatementToSwitchStatement
-                if (extension == ".cmf")
-                    rec.CMFKey = rootFile.MD5;
-                else if (extension == ".apm") rec.APMKey = rootFile.MD5;
-            }
+                if (extension == ".cmf") {
+                    bool speech = manifestName.Contains(SpeechManifestName);
 
-            Manifests = new Manifest[2];
-            int totalAssetCount = 0;
-            foreach (KeyValuePair<string, ManifestRecord> manifestRecord in manifestFiles) {
-                if (!client.EncodingHandler.TryGetEncodingEntry(manifestRecord.Value.CMFKey, out _)) continue;
-                if (!client.EncodingHandler.TryGetEncodingEntry(manifestRecord.Value.APMKey, out _)) continue;
-
-                if (!manifestRecord.Key.Contains(RegionDev)) continue; // is a CN (china?) CMF. todo: support this
-
-                if (manifestRecord.Key.Contains(SpeechManifestName)) {
-                    if (manifestRecord.Value.Locale != client.CreateArgs.SpeechLanguage) continue;
-                } else {
-                    if (manifestRecord.Value.Locale != client.CreateArgs.TextLanguage) continue;
-                }
-
-                var manifest = LoadManifest(client, manifestRecord.Value);
-                manifest.Name = manifestRecord.Key;
-                if (manifestRecord.Key.Contains(SpeechManifestName)) {
-                    Manifests[1] = manifest;
-                } else {
-                    Manifests[0] = manifest;
-                }
-
-                totalAssetCount += manifest.ContentManifest.Header.DataCount;
-            }
-
-            Assets = new ConcurrentDictionary<ulong, Asset>(Environment.ProcessorCount + 2, totalAssetCount);
-            Logger.Info("CASC", "Mapping assets...");
-            using (var _ = new PerfCounter("ProductHandler_Tank: Map assets"))
-                for (int i = 0; i < Manifests.Length; i++) {
-                    Manifest manifest = Manifests[i];
-
-                    int i1 = i;
-                    Parallel.For(0, manifest.PackageManifest.Header.PackageCount, new ParallelOptions {
-                        MaxDegreeOfParallelism = 4
-                    }, j => {
-                        var assets = manifest.PackageManifest.Records[j];
-
-                        for (int k = 0; k < assets.Length; k++) {
-                            var asset = assets[k];
-                            if (Assets.ContainsKey(asset.GUID)) continue;
-                            Assets[asset.GUID] = new Asset((byte) i1, j, k);
+                    if (speech) {
+                        if (locale != client.CreateArgs.SpeechLanguage) continue;
+                    } else {
+                        if (locale != client.CreateArgs.TextLanguage) continue;
+                    }
+                    
+                    ContentManifestFile cmf;
+                    using (Stream cmfStream = client.OpenCKey(rootFile.MD5)) {
+                        try {
+                            cmf = new ContentManifestFile(client, cmfStream, $"{manifestName}.cmf");
+                        } catch (CryptographicException) {
+                            Logger.Error("CASC", "Fatal - CMF decryption failed. Please update TACTLib.");
+                            if (Debugger.IsAttached) {
+                                Debugger.Break();
+                            }
+                            throw;
                         }
-                    });
-                    Parallel.For(0, manifest.ContentManifest.HashList.Length, new ParallelOptions {
-                        MaxDegreeOfParallelism = 4
-                    }, j => {
-                        var cmfAsset = manifest.ContentManifest.HashList[j];
-                        if (Assets.ContainsKey(cmfAsset.GUID)) return;
-                        Assets[cmfAsset.GUID] = new Asset((byte) i1, -1, j);
-                    }); 
-                }
-        }
-
-        public struct Asset {
-            public byte ManifestIdx;
-            public int PackageIdx;
-            public int RecordIdx;
-
-            public Asset(byte manifestIdx, int packageIdx, int recordIdx) {
-                ManifestIdx = manifestIdx;
-                PackageIdx = packageIdx;
-                RecordIdx = recordIdx;
-            }
-        }
-
-        private static Manifest LoadManifest(ClientHandler client, ManifestRecord record) {
-            Manifest manifest = new Manifest();
-            using (Stream cmfStream = client.OpenCKey(record.CMFKey)) {
-                try {
-                    manifest.ContentManifest = new ContentManifestFile(client, cmfStream, $"{record.Name}.cmf");
-                } catch (CryptographicException) {
-                    Logger.Error("CASC", "Fatal - CMF decryption failed. Please update TACTLib.");
-                    if (Debugger.IsAttached) {
-                        Debugger.Break();
+                    }
+                    if (speech) {
+                        SpeechContentManifest = cmf;
+                    } else {
+                        MainContentManifest = cmf;
+                    }
+                    totalAssetCount += cmf.Header.DataCount;
+                } else if (extension == ".apm") {
+                    if (locale != client.CreateArgs.TextLanguage) continue;
+                    using (Stream apmStream = client.OpenCKey(rootFile.MD5)) {
+                        PackageManifest = new ApplicationPackageManifest(client, this, apmStream, manifestName);
                     }
                 }
             }
+            
+            Assets = new ConcurrentDictionary<ulong, Asset>(Environment.ProcessorCount + 2, totalAssetCount);
 
-            using (Stream apmStream = client.OpenCKey(record.APMKey)) {
-                manifest.PackageManifest = new ApplicationPackageManifest(client, apmStream, manifest.ContentManifest, record.Name);
+            for (int i = 0; i < PackageManifest.Header.PackageCount; i++) {
+                var records = PackageManifest.Records[i];
+
+                for (int j = 0; j < records.Length; j++) {
+                    var record = records[j];
+                    //Console.Out.WriteLine($"{record.GUID:X8} {record.Unknown1} {record.Unknown2} {Manifests[0].ContentManifest.Exists(record.GUID)} {Manifests[1].ContentManifest.Exists(record.GUID)}");
+
+                    if (Assets.ContainsKey(record.GUID)) continue;
+                    Assets[record.GUID] = new Asset(i, j);
+                }
             }
 
-            return manifest;
-        }
-
-        public class ManifestRecord {
-            public string Name;
-            public string Locale;
-
-            public CKey CMFKey;
-            public CKey APMKey;
-
-            public ManifestRecord(string manifestName) {
-                Name = manifestName;
-                Locale = GetManifestLocale(manifestName);
+            foreach (ContentManifestFile contentManifestFile in new [] {MainContentManifest, SpeechContentManifest}) {
+                Parallel.For(0, contentManifestFile.HashList.Length, new ParallelOptions {
+                    MaxDegreeOfParallelism = 4
+                }, j => {
+                    var cmfAsset = contentManifestFile.HashList[j];
+                    if (Assets.ContainsKey(cmfAsset.GUID)) return;
+                    Assets[cmfAsset.GUID] = new Asset(-1, j);
+                }); 
             }
         }
 
-        // ReSharper disable once NotAccessedField.Global
-        public class Manifest {
-            public ContentManifestFile ContentManifest;
-            public ApplicationPackageManifest PackageManifest;
-            public string Name;
+        public struct Asset {
+            public int PackageIdx;
+            public int RecordIdx;
+
+            public Asset(int packageIdx, int recordIdx) {
+                PackageIdx = packageIdx;
+                RecordIdx = recordIdx;
+            }
         }
 
         private static string GetManifestLocale(string name) {
@@ -178,8 +139,6 @@ namespace TACTLib.Core.Product.Tank {
 
             return tag?.Substring(1);
         }
-
-        private readonly Dictionary<ulong, Memory<byte>> _bundleCache = new Dictionary<ulong, Memory<byte>>();
 
         /// <inheritdoc />
         public Stream OpenFile(object key) {
@@ -204,65 +163,76 @@ namespace TACTLib.Core.Product.Tank {
             return OpenFile(asset);
         }
 
+        private readonly Dictionary<ulong, Memory<byte>> _bundleCache = new Dictionary<ulong, Memory<byte>>();
+        private readonly Dictionary<ulong, Dictionary<ulong, uint>> _bundleOffsetCache = new Dictionary<ulong, Dictionary<ulong, uint>>();
+        
         /// <summary>
         /// Open an <see cref="Asset"/>
         /// </summary>
         /// <param name="asset"></param>
         /// <returns></returns>
         public Stream OpenFile(Asset asset) {
-            UnpackAsset(asset, out var manifest, out var package, out var record);
-            if ((record.Flags & ContentFlags.Bundle) == 0) return manifest.ContentManifest.OpenFile(_client, record.GUID);
-            if (!manifest.ContentManifest.TryGet(record.GUID, out var data)) {
+            UnpackAsset(asset, out var package, out var record);
+            var cmf = GetContentManifestForAsset(record.GUID);
+            
+            if (!record.Flags.HasFlag(ApplicationPackageManifest.RecordFlags.Bundle)) return cmf.OpenFile(_client, record.GUID);
+            
+            ulong[] bundles = PackageManifest.PackageBundles[asset.PackageIdx];
+            if (!cmf.TryGet(record.GUID, out var data)) {
                 throw new FileNotFoundException();
             }
 
-            // not using cache
-            //using (Stream bundleStream = manifest.ContentManifest.OpenFile(_client, package.BundleGUID)) {
-            //    MemoryStream stream = new MemoryStream((int) data.Size);
-            //    bundleStream.Position = record.BundleOffset;
-            //    bundleStream.CopyBytes(stream, (int) data.Size);
-            //    stream.Position = 0;
-            //    return stream;
-            //}
-
-            // eww locks
-            lock (_bundleCache) {
-                if (!_bundleCache.ContainsKey(package.BundleGUID)) {
-                    using (Stream bundleStream = manifest.ContentManifest.OpenFile(_client, package.BundleGUID)) {
-                        Memory<byte> buf = new byte[(int) bundleStream.Length];
-                        bundleStream.Read(buf);
-                        _bundleCache[package.BundleGUID] = buf;
+            foreach (ulong bundleGuid in bundles) {
+                if (!_bundleOffsetCache.TryGetValue(bundleGuid, out var offsetCache)) {
+                    offsetCache = CreateOffsetCache(cmf, bundleGuid);
+                    _bundleOffsetCache[bundleGuid] = offsetCache;
+                }
+                if (offsetCache.TryGetValue(record.GUID, out uint offset)) {
+                    lock (_bundleCache) {
+                        var slice =_bundleCache[bundleGuid].Slice((int)offset, (int)data.Size);
+                        return new MemoryStream(slice.ToArray());
                     }
                 }
+            }
+            throw new Exception("bundle not found. :tim:");
+        }
 
-                MemoryStream stream = new MemoryStream(_bundleCache[package.BundleGUID].Slice((int) record.BundleOffset, (int) data.Size).ToArray()) {
-                    Position = 0
-                };
-                return stream;
+        private Dictionary<ulong, uint> CreateOffsetCache(ContentManifestFile cmf, ulong bundleGuid) {
+            using (Stream bundleStream = cmf.OpenFile(_client, bundleGuid)) {
+                Memory<byte> buf = new byte[(int) bundleStream.Length];
+                bundleStream.Read(buf);
+                lock (_bundleCache) {
+                    _bundleCache[bundleGuid] = buf;
+                }
+                bundleStream.Position = 0;
+                
+                BinaryPackageData binaryPackageData = new BinaryPackageData(bundleStream);
+                return binaryPackageData.Entries.ToDictionary(x => x.GUID, x => x.Offset);
             }
         }
 
+        public ContentManifestFile GetContentManifestForAsset(ulong guid) {
+            if (SpeechContentManifest.Exists(guid)) {
+                return SpeechContentManifest;
+            }
+            return MainContentManifest;
+        }
+        
         /// <summary>
         /// Unpacks asset indices to real data
         /// </summary>
         /// <param name="asset"></param>
-        /// <param name="manifest"></param>
         /// <param name="package"></param>
         /// <param name="record"></param>
-        public void UnpackAsset(Asset asset, out Manifest manifest, out ApplicationPackageManifest.Package package, out ApplicationPackageManifest.PackageRecord record) {
-            manifest = Manifests[asset.ManifestIdx];
+        public void UnpackAsset(Asset asset, out ApplicationPackageManifest.Package package, out ApplicationPackageManifest.PackageRecord record) {
             if (asset.PackageIdx == -1) {
-                package = new ApplicationPackageManifest.Package {
-                    BundleGUID = 0
-                };
+                package = new ApplicationPackageManifest.Package();
                 record = new ApplicationPackageManifest.PackageRecord {
-                    Flags = ContentFlags.None,
-                    GUID = manifest.ContentManifest.HashList[asset.RecordIdx].GUID,
-                    BundleOffset = 0
+                    GUID = MainContentManifest.HashList[asset.RecordIdx].GUID
                 };
             } else {
-                package = manifest.PackageManifest.Packages[asset.PackageIdx];
-                record = manifest.PackageManifest.Records[asset.PackageIdx][asset.RecordIdx];
+                package = PackageManifest.Packages[asset.PackageIdx];
+                record = PackageManifest.Records[asset.PackageIdx][asset.RecordIdx];
             }
         }
 

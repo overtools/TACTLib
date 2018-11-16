@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using LZ4;
 using TACTLib.Client;
 using TACTLib.Client.HandlerArgs;
-using TACTLib.Container;
 using TACTLib.Helpers;
 
 namespace TACTLib.Core.Product.Tank {
@@ -41,11 +38,6 @@ namespace TACTLib.Core.Product.Tank {
             public uint Unknown4;
         }
         
-        public enum PackageCompressionMethod : uint {
-            Uncompressed = 0,
-            Gzip = 1
-        }
-        
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
         public struct Package {
             public long OffsetRecords;
@@ -53,41 +45,31 @@ namespace TACTLib.Core.Product.Tank {
             public long OffsetUnknown2; // streamed?
             public long OffsetUnknown3;
             public long OffsetUnknown4;
+            public long OffsetUnknown5;
+            
+            public uint RecordCount;
+            public uint SiblingCount;
             
             public uint Unknown1;
             public uint Unknown2;
             public uint Unknown3;
+            public uint Unknown4;
             
-            public uint RecordCount;
-            public uint Unknown2Count;
-            
-            public uint CompressedSize;
-            
-            public uint Unknown1Count;
-            public uint Unknown3Count;
-            public uint Unknown4Count;
-            
-            public ulong BundleGUID;
+            public uint BundleCount;
         }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 4)]  // size = 16
+        [StructLayout(LayoutKind.Sequential, Pack = 4, Size = 12)]  // size = 12
         public struct PackageRecord {
             public ulong GUID;
-            public ContentFlags Flags;
-            public uint BundleOffset;
+            public short Unknown1;
+            public byte Unknown2;
+            public RecordFlags Flags;
         }
-        
-        [StructLayout(LayoutKind.Sequential, Pack = 4)]
-        public struct CachePackageRecord {
-            public int CMFIndex;
-            public ContentFlags Flags;
-            public uint BundleOffset;
 
-            public CachePackageRecord(PackageRecord record, ContentManifestFile cmf) {
-                Flags = record.Flags;
-                BundleOffset = record.BundleOffset;
-                CMFIndex = cmf.IndexMap[record.GUID];
-            }
+        [Flags]
+        public enum RecordFlags : byte {
+            None = 0,
+            Bundle = 0x40
         }
 
         public APMHeader Header;
@@ -95,9 +77,13 @@ namespace TACTLib.Core.Product.Tank {
         public PackageEntry[] PackageEntries;
         public Package[] Packages;
         public PackageRecord[][] Records;
+
+        public ulong[][] PackageBundles;
         
-        public ApplicationPackageManifest(ClientHandler client, Stream stream, ContentManifestFile cmf, string name) {
+        public ApplicationPackageManifest(ClientHandler client, ProductHandler_Tank tankHandler, Stream stream, string name) {
             ClientCreateArgs_Tank args = client.CreateArgs.HandlerArgs as ClientCreateArgs_Tank ?? new ClientCreateArgs_Tank();
+
+            var cmf = tankHandler.MainContentManifest;
             
             using (BinaryReader reader = new BinaryReader(stream)) {
                 Header = reader.Read<APMHeader>();
@@ -115,133 +101,50 @@ namespace TACTLib.Core.Product.Tank {
                 
                 Packages = new Package[Header.PackageCount];
                 Records = new PackageRecord[Header.PackageCount][];
-                
-                if (args.CacheAPM) {
-                    string path = GetCachePath(name);
-                    if (File.Exists(path)) {
-                        try {
+                PackageBundles = new ulong[Header.PackageCount][];
 
-                            if (LoadCache(cmf, path)) {
-                                return;
-                            }
-
-                            // else: regen
-                        } catch (Exception) {
-                            Logger.Error("APM", $"Failed to load APM Cache for {name}");
-                            File.Delete(path);
+                int c = 0;
+                using (PerfCounter _ = new PerfCounter("APM:LoadPackages"))
+                Parallel.For(0, Header.PackageCount, new ParallelOptions {
+                    MaxDegreeOfParallelism = 4
+                }, i => {
+                    c++;
+                    if (c % 1000 == 0) {
+                        if (!Console.IsOutputRedirected) {
+                            Console.Out.Write($"Loading packages: {Math.Floor(c / (float)Header.PackageCount * 10000) / 100:F0}% ({c}/{Header.PackageCount})\r");
                         }
                     }
-                }
-
-                for (int i = 0; i < Header.PackageCount; i++) {
+                    
                     LoadPackage(i, client, cmf);
-                }
-
-                //int c = 0;
-                //using (PerfCounter _ = new PerfCounter("APM:LoadPackages"))
-                //Parallel.For(0, Header.PackageCount, new ParallelOptions {
-                //    MaxDegreeOfParallelism = 4
-                //}, i => {
-                //    c++;
-                //    if (c % 1000 == 0) {
-                //        if (!Console.IsOutputRedirected) {
-                //            Console.Out.Write($"Loading packages: {Math.Floor(c / (float)Header.PackageCount * 10000) / 100:F0}% ({c}/{Header.PackageCount})\r");
-                //        }
-                //    }
-                //    
-                //    LoadPackage(i, client, cmf);
-                //});
+                });
                 
                 if (!Console.IsOutputRedirected) {
                     Console.Write(new string(' ', Console.WindowWidth-1)+"\r");
                 }
-
-                if (args.CacheAPM) {
-                    Logger.Debug("APM", $"Saving cache for {name}");
-                    using (PerfCounter _ = new PerfCounter("APM:SaveCache"))
-                    SaveCache(cmf, name);
-                }
             }
-        }
-
-        private void SaveCache(ContentManifestFile cmf, string name) {
-            using (Stream file = File.OpenWrite(GetCachePath(name)))
-            using (LZ4Stream lz4Stream = new LZ4Stream(file, LZ4StreamMode.Compress, LZ4StreamFlags.HighCompression))
-            using (BinaryWriter writer = new BinaryWriter(lz4Stream)) {
-                file.SetLength(0);
-                writer.Write(123u);
-                writer.WriteStructArray(Packages);
-                
-                for (int i = 0; i < Header.PackageCount; ++i) {
-                    var package = Packages[i];
-                    var records = Records[i];
-                    CachePackageRecord[] cacheRecords = new CachePackageRecord[package.RecordCount];
-                    for (int j = 0; j < package.RecordCount; j++) {
-                        cacheRecords[j] = new CachePackageRecord(records[j], cmf);
-                    }
-                    writer.WriteStructArray(cacheRecords);
-                }
-            }
-        }
-
-        private string GetCachePath(string name) {
-            string programDir = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName));
-            string apmDir = Path.Combine(programDir, "CASCCache", "APM");
-
-            if (!Directory.Exists(apmDir)) {
-                Directory.CreateDirectory(apmDir);
-            }
-            
-            return Path.Combine(apmDir, $"{Header.Build}_{Path.GetFileNameWithoutExtension(name)}.apmcached");
-        }
-        
-        private bool LoadCache(ContentManifestFile cmf, string path) {
-            using (Stream file = File.OpenRead(path))
-            using (LZ4Stream lz4Stream = new LZ4Stream(file, LZ4StreamMode.Decompress))
-            using (BinaryReader reader = new BinaryReader(lz4Stream)) {
-                if(reader.ReadUInt32() != 123) {
-                    throw new InvalidDataException("invalid magic");
-                }
-
-                Packages = reader.ReadArray<Package>(Header.PackageCount);
-
-                for (int i = 0; i < Header.PackageCount; i++) {
-                    var package = Packages[i];
-
-                    CachePackageRecord[] cacheRecords = reader.ReadArray<CachePackageRecord>((int)package.RecordCount);
-                    var records = new PackageRecord[package.RecordCount];
-                    Records[i] = records;
-
-                    for (int j = 0; j < package.RecordCount; j++) {
-                        var cacheRecord = cacheRecords[j];
-                        records[j] = new PackageRecord {
-                            BundleOffset = cacheRecord.BundleOffset,
-                            Flags = cacheRecord.Flags,
-                            GUID = cmf.HashList[cacheRecord.CMFIndex].GUID
-                        };
-                    }
-                }
-            }
-
-            return true;
         }
 
         private void LoadPackage(int i, ClientHandler client, ContentManifestFile cmf) {
             PackageEntry entry = PackageEntries[i];
             using (Stream packageStream = cmf.OpenFile(client, entry.PackageGUID))
             using (BinaryReader packageReader = new BinaryReader(packageStream)) {
-                Packages[i] = packageReader.Read<Package>();
-                var pkg = Packages[i];
+                var package = packageReader.Read<Package>();
+                Packages[i] = package;
 
-                if (Packages[i].RecordCount == 0) {
+                if (package.RecordCount == 0) {
                     Records[i] = new PackageRecord[0];
                     return;
                 }
                 
-                packageStream.Position = Packages[i].OffsetRecords;
+                if (package.BundleCount > 0) {
+                    packageStream.Position = package.OffsetUnknown4;
+                    PackageBundles[i] = packageReader.ReadArray<ulong>((int)package.BundleCount);
+                }
+
+                packageStream.Position = package.OffsetRecords;
                 using (GZipStream decompressedStream = new GZipStream(packageStream, CompressionMode.Decompress))
                 using (BinaryReader decompressedReader = new BinaryReader(decompressedStream)) {
-                    Records[i] = decompressedReader.ReadArray<PackageRecord>((int) Packages[i].RecordCount);
+                    Records[i] = decompressedReader.ReadArray<PackageRecord>((int) package.RecordCount);
                 }
             }
         }
