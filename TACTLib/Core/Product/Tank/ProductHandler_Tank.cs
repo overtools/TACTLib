@@ -113,6 +113,29 @@ namespace TACTLib.Core.Product.Tank {
                 }
             }
 
+            for (int i = 0; i < 2; i++) {
+                ContentManifestFile contentManifestFile;
+
+                int cmfId = -(i + 1);
+                if (cmfId == -1) {
+                    contentManifestFile = MainContentManifest;
+                } else if (cmfId == -2) {
+                    contentManifestFile = SpeechContentManifest;
+                } else {
+                    throw new Exception("wat");
+                }
+                // main = -1
+                // speech = -2
+                
+                Parallel.For(0, contentManifestFile.HashList.Length, new ParallelOptions {
+                    MaxDegreeOfParallelism = 4
+                }, j => {
+                    var cmfAsset = contentManifestFile.HashList[j];
+                    if (Assets.ContainsKey(cmfAsset.GUID)) return;
+                    Assets[cmfAsset.GUID] = new Asset(cmfId, j);
+                }); 
+            }
+            
             foreach (ContentManifestFile contentManifestFile in new [] {MainContentManifest, SpeechContentManifest}) {
                 Parallel.For(0, contentManifestFile.HashList.Length, new ParallelOptions {
                     MaxDegreeOfParallelism = 4
@@ -228,10 +251,21 @@ namespace TACTLib.Core.Product.Tank {
         /// <param name="package"></param>
         /// <param name="record"></param>
         public void UnpackAsset(Asset asset, out ApplicationPackageManifest.Package package, out ApplicationPackageManifest.PackageRecord record) {
-            if (asset.PackageIdx == -1) {
+            if (asset.PackageIdx < 0) {
                 package = new ApplicationPackageManifest.Package();
+                ContentManifestFile contentManifest;
+                
+                // main = -1
+                // speech = -2
+                if (asset.PackageIdx == -1) {
+                    contentManifest = MainContentManifest;
+                } else if (asset.PackageIdx == -2) {
+                    contentManifest = SpeechContentManifest;
+                } else {
+                    throw new Exception("wat");
+                }
                 record = new ApplicationPackageManifest.PackageRecord {
-                    GUID = MainContentManifest.HashList[asset.RecordIdx].GUID
+                    GUID = contentManifest.HashList[asset.RecordIdx].GUID
                 };
             } else {
                 package = PackageManifest.Packages[asset.PackageIdx];
