@@ -206,8 +206,8 @@ namespace TACTLib.Core.Product.Tank {
                 }
                 bundleStream.Position = 0;
                 
-                BinaryPackageData binaryPackageData = new BinaryPackageData(bundleStream);
-                return binaryPackageData.Entries.ToDictionary(x => x.GUID, x => x.Offset);
+                Bundle bundle = new Bundle(bundleStream);
+                return bundle.Entries.ToDictionary(x => x.GUID, x => x.Offset);
             }
         }
 

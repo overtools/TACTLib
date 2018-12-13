@@ -97,7 +97,7 @@
     <Compile Include="Core\Product\ProductHandlerAttribute.cs" />
     <Compile Include="Core\Product\ProductHandlerFactory.cs" />
     <Compile Include="Core\Product\Tank\ApplicationPackageManifest.cs" />
-    <Compile Include="Core\Product\Tank\BinaryPackageData.cs" />
+    <Compile Include="Core\Product\Tank\Bundle.cs" />
     <Compile Include="Core\Product\Tank\CMFCryptHandler.cs" />
     <Compile Include="Core\Product\Tank\CMF\ProCMF_49656.cs" />
     <Compile Include="Core\Product\Tank\CMF\ProCMF_35328.cs" />
@@ -175,6 +175,7 @@
     <Compile Include="Core\Product\Tank\CMF\ProCMF_51948.cs" />
     <Compile Include="Core\Product\Tank\CMF\ProCMF_52717.cs" />
     <Compile Include="Core\Product\Tank\CMF\ProCMF_52926.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_53537.cs" />
     <Compile Include="Core\Product\Tank\ContentManifestFile.cs" />
     <Compile Include="Core\Product\Tank\ICMFEncryptionProc.cs" />
     <Compile Include="Core\Product\Tank\ProductHandler_Tank.cs" />

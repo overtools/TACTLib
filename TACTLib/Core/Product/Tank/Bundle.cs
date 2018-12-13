@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using TACTLib.Helpers;
 
 namespace TACTLib.Core.Product.Tank {
-    public class BinaryPackageData {  // "bundle"
+    public class Bundle {  // note to self: uses "BINARY PACAKGE DATA" handler, but so do movies, so that's not the type
         public readonly HeaderData Header;
         public readonly Entry4[] Entries;
 
@@ -31,7 +31,7 @@ namespace TACTLib.Core.Product.Tank {
             public uint Offset;  // 4
         }
 
-        public BinaryPackageData(Stream stream) {
+        public Bundle(Stream stream) {
             using (BinaryReader reader = new BinaryReader(stream)) {
                 Header = reader.Read<HeaderData>();
                 
