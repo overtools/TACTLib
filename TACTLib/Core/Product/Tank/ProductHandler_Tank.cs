@@ -173,22 +173,25 @@ namespace TACTLib.Core.Product.Tank {
         /// <returns></returns>
         public Stream OpenFile(Asset asset) {
             UnpackAsset(asset, out var package, out var record);
-            var cmf = GetContentManifestForAsset(record.GUID);
-            
-            if (!record.Flags.HasFlag(ApplicationPackageManifest.RecordFlags.Bundle)) return cmf.OpenFile(_client, record.GUID);
+
+            if (!record.Flags.HasFlag(ApplicationPackageManifest.RecordFlags.Bundle)) {
+                var cmf = GetContentManifestForAsset(record.GUID);
+                return cmf.OpenFile(_client, record.GUID);
+            }
             
             ulong[] bundles = PackageManifest.PackageBundles[asset.PackageIdx];
-            if (!cmf.TryGet(record.GUID, out var data)) {
-                throw new FileNotFoundException();
-            }
 
             foreach (ulong bundleGuid in bundles) {
+                var cmf = GetContentManifestForAsset(bundleGuid);
                 if (!_bundleOffsetCache.TryGetValue(bundleGuid, out var offsetCache)) {
                     offsetCache = CreateOffsetCache(cmf, bundleGuid);
                     _bundleOffsetCache[bundleGuid] = offsetCache;
                 }
                 if (offsetCache.TryGetValue(record.GUID, out uint offset)) {
                     lock (_bundleCache) {
+                        if (!cmf.TryGet(record.GUID, out var data)) {
+                            throw new FileNotFoundException();
+                        }
                         var slice =_bundleCache[bundleGuid].Slice((int)offset, (int)data.Size);
                         return new MemoryStream(slice.ToArray());
                     }

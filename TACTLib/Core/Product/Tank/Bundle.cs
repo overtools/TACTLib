@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -11,6 +12,8 @@ namespace TACTLib.Core.Product.Tank {
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public struct HeaderData {
             public int EntryCount;
+            public int Flags;
+            public byte OffsetSize;
         }
         
         [StructLayout(LayoutKind.Sequential, Pack = 2, Size = 9)]
@@ -35,23 +38,22 @@ namespace TACTLib.Core.Product.Tank {
             using (BinaryReader reader = new BinaryReader(stream)) {
                 Header = reader.Read<HeaderData>();
                 
-                // note: sizeof(header) = 9
-                stream.Position = 9;
-                
-                // offset size is adaptive depending on bundle size
                 // todo: maybe don't use Select then convert. bit of a hack
-                if (stream.Length <= byte.MaxValue)
+                if (Header.OffsetSize == 1)
                     Entries = reader.ReadArray<Entry1>(Header.EntryCount).Select(x => new Entry4 {
                         GUID = x.GUID,
                         Offset = x.Offset
                     }).ToArray();
-                else if (stream.Length <= ushort.MaxValue) {
+                else if (Header.OffsetSize == 2) {
                     Entries = reader.ReadArray<Entry2>(Header.EntryCount).Select(x => new Entry4 {
                         GUID = x.GUID,
                         Offset = x.Offset
                     }).ToArray();
-                } else {
+                } else if (Header.OffsetSize == 4) {
                     Entries = reader.ReadArray<Entry4>(Header.EntryCount);
+                } else {
+                    throw new Exception("unknown bundle offset size. contact the devs");
+                    // this should never happen
                 }
             }
         } 
