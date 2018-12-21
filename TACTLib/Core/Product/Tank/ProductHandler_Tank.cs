@@ -135,16 +135,6 @@ namespace TACTLib.Core.Product.Tank {
                     Assets[cmfAsset.GUID] = new Asset(cmfId, j);
                 }); 
             }
-            
-            foreach (ContentManifestFile contentManifestFile in new [] {MainContentManifest, SpeechContentManifest}) {
-                Parallel.For(0, contentManifestFile.HashList.Length, new ParallelOptions {
-                    MaxDegreeOfParallelism = 4
-                }, j => {
-                    var cmfAsset = contentManifestFile.HashList[j];
-                    if (Assets.ContainsKey(cmfAsset.GUID)) return;
-                    Assets[cmfAsset.GUID] = new Asset(-1, j);
-                }); 
-            }
         }
 
         public struct Asset {
