@@ -10,7 +10,6 @@ namespace TACTLib.Core.Product.Tank.CMF {
             byte[] buffer = new byte[length];
 
             uint kidx = Keytable[SignedMod(length * Keytable[0], 512)];
-            uint increment = kidx % 61;
             for (int i = 0; i != length; ++i)
             {
                 buffer[i] = Keytable[SignedMod(kidx, 512)];
