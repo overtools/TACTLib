@@ -9,10 +9,11 @@ using TACTLib.Helpers;
 
 namespace TACTLib.Core.Product.Tank {
     public class ContentManifestFile {
-        [StructLayout(LayoutKind.Sequential, Pack = 4)]
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public struct HashData {
             public ulong GUID;
             public uint Size;
+            public byte Unknown;
             public CKey ContentKey;
         }
         
