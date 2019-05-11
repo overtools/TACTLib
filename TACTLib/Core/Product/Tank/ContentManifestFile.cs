@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using TACTLib.Client;
@@ -15,6 +16,22 @@ namespace TACTLib.Core.Product.Tank {
             public uint Size;
             public byte Unknown;
             public CKey ContentKey;
+        }
+        
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        public struct HashDataStormSettled {
+            public ulong GUID;
+            public uint Size;
+            public CKey ContentKey;
+
+            public HashData ToHashData() {
+                return new HashData() {
+                    GUID = GUID,
+                    Size = Size,
+                    Unknown = 0,
+                    ContentKey = ContentKey
+                };
+            }
         }
         
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
@@ -74,8 +91,12 @@ namespace TACTLib.Core.Product.Tank {
 
         private void ParseEntries(BinaryReader reader) {
             Entries = reader.ReadArray<ApplicationPackageManifest.Entry>(Header.EntryCount);
-            HashList = reader.ReadArray<HashData>(Header.DataCount);
-            
+            if (Header.BuildVersion >= 57230) {
+                HashList = reader.ReadArray<HashData>(Header.DataCount);
+            } else {
+                HashList = reader.ReadArray<HashDataStormSettled>(Header.DataCount).Select(x => x.ToHashData()).ToArray();
+            }
+
             IndexMap = new Dictionary<ulong, int>(Header.DataCount);
             _map = new Dictionary<ulong, HashData>(Header.DataCount); 
             for (int i = 0; i < Header.DataCount; i++) {
