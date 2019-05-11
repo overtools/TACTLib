@@ -23,6 +23,8 @@ namespace TACTLib.Core {
                 
                 ulong keyID = ulong.Parse(keyIDString, NumberStyles.HexNumber);
                 Keys[keyID] = StringToByteArray(pair.Value[0]);
+                
+                //Console.Out.WriteLine(pair.Value[0]);
             }
         }
 
