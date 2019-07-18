@@ -163,7 +163,7 @@ namespace TACTLib {
                 if (File.Exists(Path.Combine(path, "Battle.net.exe")))
                     return TACTProduct.BattleNetApp;
 
-                if (File.Exists(Path.Combine(path, "Overwatch.exe")))
+                if (File.Exists(Path.Combine(path, "Overwatch.exe")) || File.Exists(Path.Combine(path, "_retail_", "Overwatch.exe")))
                     return TACTProduct.Overwatch;
 
                 if (File.Exists(Path.Combine(path, "StarCraft.exe")))
