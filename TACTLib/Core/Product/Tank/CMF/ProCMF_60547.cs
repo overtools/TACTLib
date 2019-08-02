@@ -9,11 +9,11 @@ namespace TACTLib.Core.Product.Tank.CMF {
         {
             byte[] buffer = new byte[length];
 
-            uint kidx = Keytable[length * Keytable[0] % 512];
+            uint kidx = Keytable[SignedMod(length * Keytable[0] % 512)];
             for (uint i = 0; i != length; ++i)
             {
                 buffer[i] = Keytable[SignedMod(kidx, 512)];
-                kidx += (uint)(header.BuildVersion * header.DataCount % 7);
+                kidx += (uint)(header.BuildVersion * header.DataCount) % 7;
             }
             
             return buffer;
