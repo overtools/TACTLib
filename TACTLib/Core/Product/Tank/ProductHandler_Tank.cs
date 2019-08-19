@@ -173,7 +173,7 @@ namespace TACTLib.Core.Product.Tank {
         /// <exception cref="FileNotFoundException"></exception>
         public Stream OpenFile(ulong guid) {
             if (!Assets.TryGetValue(guid, out Asset asset)) throw new FileNotFoundException($"{guid:X8}");
-            return OpenFile(asset);
+            return new GuidStream(OpenFile(asset), guid);
         }
 
         private readonly Dictionary<ulong, Memory<byte>> _bundleCache = new Dictionary<ulong, Memory<byte>>();
@@ -270,6 +270,49 @@ namespace TACTLib.Core.Product.Tank {
             lock (_bundleCache) {
                 _bundleCache.Clear();
             }
+        }
+    }
+
+    public class GuidStream : Stream {
+        public Stream BaseStream { get; }
+        public ulong GUID { get; }
+
+        public GuidStream(Stream baseStream, ulong guid) {
+            BaseStream = baseStream;
+            GUID = guid;
+        }
+
+        public override void Flush() {
+            BaseStream.Flush();
+        }
+
+        public override long Seek(long offset, SeekOrigin origin) {
+            return BaseStream.Seek(offset, origin);
+        }
+
+        public override void SetLength(long value) {
+            BaseStream.SetLength(value);
+        }
+
+        public override int Read(byte[] buffer, int offset, int count) {
+            return BaseStream.Read(buffer, offset, count);
+        }
+
+        public override void Write(byte[] buffer, int offset, int count) {
+            BaseStream.Write(buffer, offset, count);
+        }
+
+        public override bool CanRead => BaseStream.CanRead;
+
+        public override bool CanSeek => BaseStream.CanSeek;
+
+        public override bool CanWrite => BaseStream.CanWrite;
+
+        public override long Length => BaseStream.Length;
+
+        public override long Position {
+            get => BaseStream.Position;
+            set => BaseStream.Position = value;
         }
     }
 }
