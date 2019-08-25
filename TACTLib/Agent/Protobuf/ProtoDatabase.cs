@@ -42,10 +42,19 @@ namespace TACTLib.Agent.Protobuf {
         public List<LanguageSetting> Languages { get; set; } = new List<LanguageSetting>();
 
         [ProtoMember(9)]
-        public string GfxOverrideTags { get; set; }
+        public string AdditionalTags { get; set; }
 
         [ProtoMember(10)]
         public string VersionBranch { get; set; }
+
+        [ProtoMember(11)]
+        public string AccountCountry { get; set; }
+
+        [ProtoMember(12)]
+        public string GeoIPCountry { get; set; }
+
+        [ProtoMember(13)]
+        public string GameSubfolder { get; set; }
     }
 
     [ProtoContract]
@@ -104,6 +113,24 @@ namespace TACTLib.Agent.Protobuf {
 
         [ProtoMember(11)]
         public List<string> CompletedInstallActions { get; set; } = new List<string>();
+
+        [ProtoMember(12)]
+        public List<string> CompletedBuildKeys { get; set; } = new List<string>();
+
+        [ProtoMember(13)]
+        public List<string> CompletedBGDLKeys { get; set; } = new List<string>();
+
+        [ProtoMember(14)]
+        public string ActiveBuildKey { get; set; }
+
+        [ProtoMember(15)]
+        public string ActiveBGDLKey { get; set; }
+
+        [ProtoMember(16)]
+        public string ActiveInstallKey { get; set; }
+
+        [ProtoMember(17)]
+        public string ActiveTagString { get; set; }
 
     }
 
@@ -186,6 +213,13 @@ namespace TACTLib.Agent.Protobuf {
 
         [ProtoMember(5)]
         public ProductOperations ProductOperations { get; set; }
+
+        [ProtoMember(6)]
+        public string ProductFamily { get; set; }
+
+        [ProtoMember(7)]
+        public bool Hidden { get; set; }
+
     }
 
     [ProtoContract]
@@ -195,9 +229,6 @@ namespace TACTLib.Agent.Protobuf {
 
         [ProtoMember(2)]
         public string MetadataHash { get; set; }
-
-        [ProtoMember(3)]
-        public string Timestamp { get; set; }
     }
 
     [ProtoContract]
@@ -215,10 +246,10 @@ namespace TACTLib.Agent.Protobuf {
     [ProtoContract]
     public class DownloadSettings {
         [ProtoMember(1)]
-        public int DownloadLimit { get; set; }
+        public long DownloadLimit { get; set; }
 
         [ProtoMember(2)]
-        public int BackfillLimit { get; set; }
+        public long BackfillLimit { get; set; }
     }
 
     [ProtoContract]
@@ -237,6 +268,12 @@ namespace TACTLib.Agent.Protobuf {
 
         [ProtoMember(5)]
         public DownloadSettings DownloadSettings { get; set; }
+
+        [ProtoMember(6)]
+        public uint VersionSummarySEQN { get; set; }
+
+        [ProtoMember((7))]
+        public List<string> PriorityUIDList { get; set; } = new List<string>();
     }
 
     [ProtoContract]
@@ -268,5 +305,6 @@ namespace TACTLib.Agent.Protobuf {
         Update = 0,
         Backfill = 1,
         Repair = 2,
+        Uninstall = 3
     }
 }
