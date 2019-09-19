@@ -6,7 +6,7 @@ namespace TACTLib.Core.Product.Tank.CMF {
     public class ProCMF_62065 : ICMFEncryptionProc {
         public byte[] Key(CMFHeader header, int length) {
             byte[] buffer = new byte[length];
-            uint kidx = Keytable[0x71];
+            uint kidx = Keytable[header.BuildVersion & 511];
             for (uint i = 0; i != length; ++i) {
                 buffer[i] = Keytable[SignedMod(kidx, 512)];
                 kidx = header.BuildVersion - kidx;
