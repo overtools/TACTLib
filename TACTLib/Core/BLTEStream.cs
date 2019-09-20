@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -48,6 +49,7 @@ namespace TACTLib.Core {
         private Stream _stream;
         private int _blocksIndex;
         private long _length;
+        public HashSet<string> Keys { get; set; } = new HashSet<string>();
 
         private readonly ClientHandler _client;
         
@@ -217,6 +219,8 @@ namespace TACTLib.Core {
 
             if (key == null)
                 throw new BLTEKeyException(keyName);
+
+            Keys.Add(keyName.ToString("X16"));
 
             if (encType == EncryptionSalsa20) {
                 ICryptoTransform decryptor = SalsaInstance.CreateDecryptor(key, iv);
