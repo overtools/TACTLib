@@ -5,11 +5,11 @@ using TACTLib.Protocol;
 
 namespace TACTLib.Config {
     public class InstallationInfo {
-        public Dictionary<string, string> Values;
+        public Dictionary<string, string> Values { get; private set; }
         
-        public InstallationInfo(string path) {
+        public InstallationInfo(string path, string product) {
             using (StreamReader reader = new StreamReader(path)) {
-                Parse(reader);
+                Parse(reader, product);
             }
         }
 
@@ -52,9 +52,14 @@ namespace TACTLib.Config {
             return ret;
         }
 
-        private void Parse(TextReader reader) {
+        private void Parse(TextReader reader, string product) {
             var vals = ParseInternal(reader);
-            Values = (Dictionary<string, string>) vals.FirstOrDefault(x => x["Active"] == "1");
+            Values = (Dictionary<string, string>) vals.FirstOrDefault(x => {
+                if (x.TryGetValue("Product", out var entryProduct) && !entryProduct.Equals(product)) {
+                    return false;
+                }
+                return x["Active"] == "1";
+            });
         }
     }
 }

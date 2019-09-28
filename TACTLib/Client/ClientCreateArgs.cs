@@ -88,6 +88,14 @@ namespace TACTLib.Client {
         /// </summary>
         public string SpeechLanguage { get; set; } = null;
 
+        /// <summary>
+        /// The online product branch to load
+        /// </summary>
         public TACTProduct OnlineProduct { get; set; } = TACTProduct.Catalog;
+
+        /// <summary>
+        /// The depot flavor to load
+        /// </summary>
+        public string Flavor { get; set; } = "retail";
     }
 }

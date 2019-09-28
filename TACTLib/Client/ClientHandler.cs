@@ -65,7 +65,14 @@ namespace TACTLib.Client {
             try {
                 if (File.Exists(dbPath)) {
                     using (var _ = new PerfCounter("AgentDatabase::ctor`string`bool"))
-                        AgentProduct = new AgentDatabase(dbPath, true).Data.ProductInstalls[0];
+                        foreach(var install in new AgentDatabase(dbPath).Data.ProductInstall)
+                        {
+                            if(string.IsNullOrEmpty(createArgs.Flavor) || install.Settings.GameSubfolder.Contains(createArgs.Flavor))
+                            {
+                                AgentProduct = install;
+                                break;
+                            }
+                        }
                     if (AgentProduct == null) {
                         throw new InvalidDataException();
                     }
@@ -89,25 +96,24 @@ namespace TACTLib.Client {
                     Settings = new UserSettings {
                         SelectedTextLanguage = createArgs.TextLanguage ?? "enUS",
                         SelectedSpeechLanguage = createArgs.SpeechLanguage ?? "enUS",
-                        PlayRegion = "us",
-                        Languages = new List<LanguageSetting>()
+                        PlayRegion = "us"
                     }
                 };
 
                 if (AgentProduct.Settings.SelectedSpeechLanguage == AgentProduct.Settings.SelectedTextLanguage) {
                     AgentProduct.Settings.Languages.Add(new LanguageSetting {
                         Language = AgentProduct.Settings.SelectedTextLanguage,
-                        Option = LanguageOption.TextAndSpeech
+                        Option = LanguageOption.LangoptionTextAndSpeech
                     });
                 } else {
                     AgentProduct.Settings.Languages.Add(new LanguageSetting {
                         Language = AgentProduct.Settings.SelectedTextLanguage,
-                        Option = LanguageOption.Text
+                        Option = LanguageOption.LangoptionText
                     });
                     
                     AgentProduct.Settings.Languages.Add(new LanguageSetting {
                         Language = AgentProduct.Settings.SelectedSpeechLanguage,
-                        Option = LanguageOption.Speech
+                        Option = LanguageOption.LangoptionSpeech
                     });
                 }
             }
@@ -136,7 +142,7 @@ namespace TACTLib.Client {
                 }
 
                 using (var _ = new PerfCounter("InstallationInfo::ctor`string"))
-                    InstallationInfo = new InstallationInfo(installationInfoPath);
+                    InstallationInfo = new InstallationInfo(installationInfoPath, AgentProduct.ProductCode);
             } else {
                 using (var _ = new PerfCounter("InstallationInfo::ctor`INetworkHandler"))
                     InstallationInfo = new InstallationInfo(NetHandle, createArgs.OnlineRegion);

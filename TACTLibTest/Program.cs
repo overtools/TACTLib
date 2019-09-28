@@ -12,7 +12,10 @@ namespace TACTLibTest {
             Logger.RegisterBasic();
             
             //System.Diagnostics.Debugger.Break();
-            ClientHandler clientHandler = new ClientHandler(args[0], new ClientCreateArgs());
+            ClientHandler clientHandler = new ClientHandler(args[0], new ClientCreateArgs
+            {
+                Flavor = "retail"
+            });
 
             Logger.Info("LOAD", clientHandler.Product.ToString("G"));
 
