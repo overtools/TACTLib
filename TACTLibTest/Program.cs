@@ -13,24 +13,17 @@ namespace TACTLibTest {
             
             //System.Diagnostics.Debugger.Break();
             ClientHandler clientHandler = new ClientHandler(args[0], new ClientCreateArgs());
-            System.Diagnostics.Debugger.Break();
-            if (clientHandler.ProductHandler is ProductHandler_Tank tankHandler) {
-                using (Stream stream = tankHandler.OpenFile(0xE00000000000895)) {
-                    
-                }
-            }
-            
-            System.Diagnostics.Debugger.Break();
+
+            Logger.Info("LOAD", clientHandler.Product.ToString("G"));
+
+            return;
+            /*
             ClientHandler onlineClientHandler = new ClientHandler(args[0], new ClientCreateArgs {
                 Mode = ClientCreateArgs.InstallMode.Ribbit,
                 OnlineProduct = TACTProduct.Overwatch
             });
-            System.Diagnostics.Debugger.Break();
-            if (onlineClientHandler.ProductHandler is ProductHandler_Tank onlineTankHandler) {
-                using (Stream stream = onlineTankHandler.OpenFile(0xE00000000000895)) {
-                    
-                }
-            }
+            Logger.Info("LOAD", onlineClientHandler.Product.ToString("G"));
+            */
         }
     }
 }
