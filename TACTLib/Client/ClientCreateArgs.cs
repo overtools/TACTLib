@@ -97,5 +97,15 @@ namespace TACTLib.Client {
         /// The depot flavor to load
         /// </summary>
         public string Flavor { get; set; } = "retail";
+        
+        /// <summary>
+        /// The depot subdirectory flavor to load
+        /// </summary>
+        public string SubDirectory { get; set; } = "_retail_";
+        
+        /// <summary>
+        /// The depot product flavor to load
+        /// </summary>
+        public string Product { get; set; } = "pro";
     }
 }
