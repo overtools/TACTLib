@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -7,14 +8,25 @@ using TACTLib.Helpers;
 
 namespace TACTLib.Core.Product {
     public static class ProductHandlerFactory {
+        private static readonly Dictionary<TACTProduct, Type> _handlers = new Dictionary<TACTProduct, Type>();
+        
         public static IProductHandler GetHandler(TACTProduct product, ClientHandler client, Stream root) {
-            var handler = Assembly.GetExecutingAssembly().GetTypes().FirstOrDefault(x => typeof(IProductHandler).IsAssignableFrom(x) && x.GetCustomAttribute<ProductHandlerAttribute>()?.Product == product);
-            if (handler == null) {
-                return null;
-            }
+            var handlerType = GetHandlerType(product);
+            if (handlerType == null) return null;
 
-            using (var _ = new PerfCounter($"{handler.Name}::ctor"))
-                return (IProductHandler)Activator.CreateInstance(handler, client, root);
+            using (var _ = new PerfCounter($"{handlerType.Name}::ctor"))
+                return (IProductHandler)Activator.CreateInstance(handlerType, client, root);
+        }
+
+        public static Type GetHandlerType(TACTProduct product) {
+            if (!_handlers.TryGetValue(product, out var type)) {
+                type = Assembly.GetExecutingAssembly().GetTypes().FirstOrDefault(x => typeof(IProductHandler).IsAssignableFrom(x) && x.GetCustomAttribute<ProductHandlerAttribute>()?.Product == product);
+            }
+            return type;
+        }
+
+        public static void SetHandler(TACTProduct product, Type type) {
+            _handlers[product] = type;
         }
     }
 }
