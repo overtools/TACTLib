@@ -92,7 +92,7 @@ namespace TACTLib.Client {
                 }
 
                 AgentProduct = new ProductInstall {
-                    ProductCode = ProductHelpers.UIDFromProduct(Product),
+                    ProductCode = createArgs.Product ?? ProductHelpers.UIDFromProduct(Product),
                     Settings = new UserSettings {
                         SelectedTextLanguage = createArgs.TextLanguage ?? "enUS",
                         SelectedSpeechLanguage = createArgs.SpeechLanguage ?? "enUS",
