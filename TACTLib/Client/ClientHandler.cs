@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using TACTLib.Agent;
 using TACTLib.Agent.Protobuf;
 using TACTLib.Config;
@@ -57,6 +58,7 @@ namespace TACTLib.Client {
             basePath = basePath ?? "";
             BasePath = basePath;
             CreateArgs = createArgs;
+            string flavorInfoProductCode = null;
             
             if (!Directory.Exists(basePath)) throw new FileNotFoundException("invalid archive directory");
 
@@ -83,16 +85,26 @@ namespace TACTLib.Client {
                 }
             } catch {
                 try {
-                    Product = ProductHelpers.ProductFromLocalInstall(basePath);
-                } catch {
-                    if (createArgs.Mode == ClientCreateArgs.InstallMode.CASC) {  // if we need an archive then we should be able to detect the product
-                        throw;
+                    if (File.Exists(Path.Combine(basePath, ".flavor.info"))) {
+                        // mixed installation, store the product code to be used below
+                        flavorInfoProductCode = File.ReadLines(Path.Combine(basePath, ".flavor.info")).Skip(1).First();
+                        Product = ProductHelpers.ProductFromUID(flavorInfoProductCode);
+                        BasePath = basePath = Path.Combine(basePath, "../"); // lmao
                     }
-                    Product = createArgs.OnlineProduct;
+                } catch {
+                    try {
+                        Product = ProductHelpers.ProductFromLocalInstall(basePath);
+                    } catch {
+                        if (createArgs.Mode == ClientCreateArgs.InstallMode.CASC) {  // if we need an archive then we should be able to detect the product
+                            throw;
+                        }
+                        
+                        Product = createArgs.OnlineProduct;
+                    }
                 }
 
                 AgentProduct = new ProductInstall {
-                    ProductCode = createArgs.Product ?? ProductHelpers.UIDFromProduct(Product),
+                    ProductCode = flavorInfoProductCode ?? createArgs.Product ?? ProductHelpers.UIDFromProduct(Product),
                     Settings = new UserSettings {
                         SelectedTextLanguage = createArgs.TextLanguage ?? "enUS",
                         SelectedSpeechLanguage = createArgs.SpeechLanguage ?? "enUS",
