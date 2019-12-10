@@ -48,6 +48,21 @@ namespace TACTLib.Core.Product.Tank {
             // 0x16666D63 '\x16fmc' -> Not Encrypted
             // 0x636D6616 'cmf\x16' -> Encrypted
             public uint Magic; // 36
+            
+            public uint GetNonEncryptedMagic()
+            {
+                return (uint)(0x00666D63u | (GetVersion() << 24));
+            }
+            
+            public byte GetVersion()
+            {
+                return IsEncrypted() ? (byte)(Magic & 0x000000FF) : (byte)((Magic & 0xFF000000) >> 24);
+            }
+            
+            public bool IsEncrypted()
+            {
+                return (Magic >> 8) == ENCRYPTED_MAGIC;
+            }
         }
 
         public CMFHeader Header;
@@ -68,7 +83,7 @@ namespace TACTLib.Core.Product.Tank {
                     throw new NotSupportedException("Overwatch 1.29 or earlier is not supported");
                 }
 
-                if (Header.Magic >> 8 == ENCRYPTED_MAGIC) {
+                if (Header.IsEncrypted()) {
                     using (BinaryReader decryptedReader = DecryptCMF(client, stream, name)) {
                         ParseEntries(decryptedReader);
                     }
