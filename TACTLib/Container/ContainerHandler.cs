@@ -169,7 +169,7 @@ namespace TACTLib.Container {
             if (product == TACTProduct.Overwatch)
                 return "data\\casc";
             
-            throw new NotImplementedException("unsupported product");
+            throw new NotImplementedException($"Product \"{product}\" is not supported.");
         }
         
         [StructLayout(LayoutKind.Sequential, Pack = 1)]

@@ -69,12 +69,12 @@ namespace TACTLib.Client {
                     using (var _ = new PerfCounter("AgentDatabase::ctor`string`bool"))
                         foreach(var install in new AgentDatabase(dbPath).Data.ProductInstall)
                         {
-                            if(string.IsNullOrEmpty(createArgs.Flavor) || install.Settings.GameSubfolder.Contains(createArgs.Flavor))
-                            {
+                            if (string.IsNullOrEmpty(createArgs.Flavor) || install.Settings.GameSubfolder.Contains(createArgs.Flavor)) {
                                 AgentProduct = install;
                                 break;
                             }
                         }
+                    
                     if (AgentProduct == null) {
                         throw new InvalidDataException();
                     }
@@ -86,10 +86,15 @@ namespace TACTLib.Client {
             } catch {
                 try {
                     if (File.Exists(Path.Combine(basePath, ".flavor.info"))) {
+                        
                         // mixed installation, store the product code to be used below
                         flavorInfoProductCode = File.ReadLines(Path.Combine(basePath, ".flavor.info")).Skip(1).First();
                         Product = ProductHelpers.ProductFromUID(flavorInfoProductCode);
                         BasePath = basePath = Path.Combine(basePath, "../"); // lmao
+                        
+                        Logger.Info("Core", $".flavor.info detected. Found product \"{flavorInfoProductCode}\"");
+                    } else {
+                        throw new InvalidDataException();
                     }
                 } catch {
                     try {

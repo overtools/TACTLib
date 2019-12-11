@@ -91,7 +91,7 @@ namespace TACTLib {
                 return TACTProduct.BlackOps4;
             }
 
-            throw new NotImplementedException($"unsupported product \"{uid}\"");
+            throw new NotImplementedException($"Product \"{uid}\" is not supported.");
         }
 
         /// <summary>
