@@ -218,6 +218,7 @@
     <Compile Include="Core\Product\Tank\CMF\ProCMF_64346.cs" />
     <Compile Include="Core\Product\Tank\CMF\ProCMF_64719.cs" />
     <Compile Include="Core\Product\Tank\CMF\ProCMF_65302.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_65513.cs" />
     <Compile Include="Core\Product\Tank\ContentManifestFile.cs" />
     <Compile Include="Core\Product\Tank\ICMFEncryptionProc.cs" />
     <Compile Include="Core\Product\Tank\ProductHandler_Tank.cs" />
