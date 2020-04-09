@@ -9,7 +9,7 @@ using TACTLib.Helpers;
 namespace TACTLib.Core.Product {
     public static class ProductHandlerFactory {
         private static readonly Dictionary<TACTProduct, Type> _handlers = new Dictionary<TACTProduct, Type>();
-        
+
         public static IProductHandler GetHandler(TACTProduct product, ClientHandler client, Stream root) {
             var handlerType = GetHandlerType(product);
             if (handlerType == null) return null;
@@ -20,7 +20,7 @@ namespace TACTLib.Core.Product {
 
         public static Type GetHandlerType(TACTProduct product) {
             if (!_handlers.TryGetValue(product, out var type)) {
-                type = Assembly.GetExecutingAssembly().GetTypes().FirstOrDefault(x => typeof(IProductHandler).IsAssignableFrom(x) && x.GetCustomAttribute<ProductHandlerAttribute>()?.Product == product);
+                type = Assembly.GetExecutingAssembly().GetTypes().FirstOrDefault(x => typeof(IProductHandler).IsAssignableFrom(x) && x.GetCustomAttributes<ProductHandlerAttribute>().Any(i => i.Product == product));
             }
             return type;
         }
