@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Buffers;
 using System.IO;
 using static TACTLib.Utils;
@@ -100,6 +100,13 @@ namespace TACTLib.Helpers {
         // ReSharper disable once InconsistentNaming
         public static ushort ReadUInt16BE(this BinaryReader reader) {
             return (ushort)ReadInt16BE(reader);
+        }
+
+        /// <summary>Read a big-endian 24-bit int</summary>
+        // ReSharper disable once InconsistentNaming
+        public static int ReadInt24BE(this BinaryReader reader) {
+	        byte[] data = reader.ReadBytes(3);
+	        return data[2] | (data[1] << 8) | (data[0] << 16);
         }
         #endregion
         

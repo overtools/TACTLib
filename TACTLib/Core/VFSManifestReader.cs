@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -345,8 +345,7 @@ namespace TACTLib.Core {
             } else if (manifest.CftOffsSize == 2) {
                 cftOffset = reader.ReadInt16BE();
             } else if (manifest.CftOffsSize == 3) {
-                throw new NotImplementedException();
-                //cftOffset = reader.ReadInt24();
+                cftOffset = reader.ReadInt24BE();
             } else if (manifest.CftOffsSize == 4) {
                 cftOffset = reader.ReadInt32BE();
             }
