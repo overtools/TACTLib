@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -162,8 +162,8 @@ namespace TACTLib.Container {
             if (product == TACTProduct.Hearthstone)
                 return "Hearthstone_Data";
 
-            if (product == TACTProduct.Warcraft3 || product == TACTProduct.WorldOfWarcraft || product == TACTProduct.Diablo3 || 
-                product == TACTProduct.BlackOps4)
+            if (product == TACTProduct.Warcraft3 || product == TACTProduct.WorldOfWarcraft || product == TACTProduct.Diablo3 ||
+                product == TACTProduct.BlackOps4 || product == TACTProduct.ModernWarfare)
                 return "Data";
 
             if (product == TACTProduct.Overwatch)
