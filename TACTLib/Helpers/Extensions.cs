@@ -105,8 +105,8 @@ namespace TACTLib.Helpers {
         /// <summary>Read a big-endian 24-bit int</summary>
         // ReSharper disable once InconsistentNaming
         public static int ReadInt24BE(this BinaryReader reader) {
-	        byte[] data = reader.ReadBytes(3);
-	        return data[2] | (data[1] << 8) | (data[0] << 16);
+            byte[] data = reader.ReadBytes(3);
+            return data[2] | (data[1] << 8) | (data[0] << 16);
         }
         #endregion
         
