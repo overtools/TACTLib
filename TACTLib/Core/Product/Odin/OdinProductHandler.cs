@@ -6,7 +6,8 @@ namespace TACTLib.Core.Product.Odin {
 	public class OdinProductHandler : IProductHandler {
 		private ClientHandler _client;
 
-		public OdinProductHandler(ClientHandler client, Stream stream) {
+		// ReSharper disable once UnusedParameter.Local
+		public OdinProductHandler(ClientHandler client, Stream ignored) {
 			_client = client;
 		}
 
