@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("overtools")]
 [assembly: AssemblyProduct("TACTLib")]
-[assembly: AssemblyCopyright("Copyright © overtools 2018-2019")]
+[assembly: AssemblyCopyright("Copyright © overtools 2018-2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
