@@ -38,7 +38,7 @@ namespace TACTLib.Core {
     /// <summary>BLTE encoded stream</summary>
     public class BLTEStream : Stream {
         public static Salsa20 SalsaInstance = new Salsa20();
-        
+
         private const byte EncryptionSalsa20 = 0x53;
         private const byte EncryptionArc4 = 0x41;
         public const int Magic = 0x45544C42;
@@ -51,13 +51,16 @@ namespace TACTLib.Core {
         private long _length;
         public HashSet<string> Keys { get; set; } = new HashSet<string>();
 
+        public int EncodedSize { get; private set; }
+        public int DecodedSize { get; private set; }
+
         private readonly ClientHandler _client;
-        
+
         public override bool CanRead => true;
         public override bool CanSeek => true;
         public override bool CanWrite => false;
         public override long Length => _length;
-        
+
         public override long Position {
             get => _memStream.Position;
             set {
@@ -145,7 +148,12 @@ namespace TACTLib.Core {
                 _dataBlocks[i] = block;
             }
 
-            _memStream = new MemoryStream(_dataBlocks.Sum(b => b.DecompSize));
+            foreach(DataBlock dataBlock in _dataBlocks) {
+                EncodedSize += dataBlock.CompSize;
+                DecodedSize += dataBlock.DecompSize;
+            }
+
+            _memStream = new MemoryStream(DecodedSize);
 
             ProcessNextBlock();
 
