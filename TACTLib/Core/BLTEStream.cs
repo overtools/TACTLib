@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -32,7 +33,6 @@ namespace TACTLib.Core {
         public int CompSize;
         public int DecompSize;
         public CKey Hash;
-        public byte[] Data;
     }
 
     /// <summary>BLTE encoded stream</summary>
@@ -139,7 +139,7 @@ namespace TACTLib.Core {
                 } else {
                     block.CompSize = size - 8;
                     block.DecompSize = size - 8 - 1;
-                    block.Hash = default(CKey);
+                    block.Hash = default;
                 }
 
                 _dataBlocks[i] = block;
@@ -223,20 +223,31 @@ namespace TACTLib.Core {
             Keys.Add(keyName.ToString("X16"));
 
             if (encType == EncryptionSalsa20) {
-                ICryptoTransform decryptor = SalsaInstance.CreateDecryptor(key, iv);
-
+                using ICryptoTransform decryptor = SalsaInstance.CreateDecryptor(key, iv);
                 return decryptor.TransformFinalBlock(data, dataOffset, data.Length - dataOffset);
             }
 
             // ARC4 ?
             throw new BLTEDecoderException("encType ENCRYPTION_ARC4 not implemented");
         }
+        
+        public static void NoAllocCopyTo(Stream dis, Stream destination, int bufferSize=81920)
+        {
+            byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
+            try {
+                int count;
+                while ((count = dis.Read(buffer, 0, buffer.Length)) != 0)
+                    destination.Write(buffer, 0, count);
+            } finally {
+                ArrayPool<byte>.Shared.Return(buffer);
+            }
+        }
 
         private static void Decompress(byte[] data, Stream outStream) {
             // skip first 3 bytes (zlib)
             using (MemoryStream ms = new MemoryStream(data, 3, data.Length - 3))
             using (DeflateStream dfltStream = new DeflateStream(ms, CompressionMode.Decompress)) {
-                dfltStream.CopyTo(outStream);
+                NoAllocCopyTo(dfltStream, outStream);
             }
         }
 
@@ -264,8 +275,7 @@ namespace TACTLib.Core {
             _memStream.Position = _memStream.Length;
 
             DataBlock block = _dataBlocks[_blocksIndex];
-
-            block.Data = _reader.ReadBytes(block.CompSize);
+            var blockData = _reader.ReadBytes(block.CompSize);
 
             //            if (!block.Hash.IsZeroed() && CASCConfig.ValidateData)
             //            {
@@ -275,7 +285,7 @@ namespace TACTLib.Core {
             //                    throw new BLTEDecoderException("MD5 mismatch");
             //            }
 
-            HandleDataBlock(block.Data, _blocksIndex);
+            HandleDataBlock(blockData, _blocksIndex);
             _blocksIndex++;
 
             _memStream.Position = oldPos;
@@ -313,6 +323,7 @@ namespace TACTLib.Core {
                 _stream?.Dispose();
                 _reader?.Dispose();
                 _memStream?.Dispose();
+                _dataBlocks = null;
             } finally {
                 _stream = null;
                 _reader = null;
@@ -320,6 +331,7 @@ namespace TACTLib.Core {
 
                 base.Dispose(disposing);
             }
+            GC.SuppressFinalize(this);
         }
     }
 }

@@ -1,13 +1,13 @@
-﻿using static TACTLib.Core.Product.Tank.CMFCryptHandler;
+﻿using static TACTLib.Core.Product.Tank.ManifestCryptoHandler;
 using static TACTLib.Core.Product.Tank.ContentManifestFile;
 
 namespace TACTLib.Core.Product.Tank.CMF {
-    [CMFMetadata(AutoDetectVersion = true, Product = TACTProduct.Overwatch)]
+    [ManifestCrypto(AutoDetectVersion = true, Product = TACTProduct.Overwatch)]
     public class ProCMF_42076 : ICMFEncryptionProc {
         public byte[] Key(CMFHeader header, int length) {
             byte[] buffer = new byte[length];
 
-            uint kidx = Keytable[header.DataCount & 511];
+            uint kidx = Keytable[header.m_dataCount & 511];
             uint increment = kidx % 61;
             for (int i = 0; i != length; ++i) {
                 buffer[i] = Keytable[kidx % 512];
@@ -20,8 +20,8 @@ namespace TACTLib.Core.Product.Tank.CMF {
         public byte[] IV(CMFHeader header, byte[] digest, int length) {
             byte[] buffer = new byte[length];
 
-            uint kidx = (digest[7] + (uint)header.DataCount) & 511;
-            uint increment = (uint)header.EntryCount + digest[header.EntryCount % SHA1_DIGESTSIZE];
+            uint kidx = (digest[7] + (uint)header.m_dataCount) & 511;
+            uint increment = (uint)header.m_entryCount + digest[header.m_entryCount % SHA1_DIGESTSIZE];
             for (int i = 0; i != length; ++i) {
                 kidx += increment;
                 buffer[i] = digest[kidx % SHA1_DIGESTSIZE];

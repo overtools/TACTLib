@@ -133,8 +133,13 @@ namespace TACTLib.Container {
                 // 2+8 byte block of something?
                 dataStream.Position += 10;
                 
+                // todo: maybe this?
+                // var memoryStream = new MemoryStream(size - 30);
+                //dataStream.CopyBytes(memoryStream, size-30);
+                //memoryStream.Position = 0;
+                //return memoryStream;
+                
                 byte[] data = reader.ReadBytes(size - 30);
-
                 return new MemoryStream(data);
             }
         }

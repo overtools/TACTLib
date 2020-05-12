@@ -11,59 +11,57 @@ namespace TACTLib.Core.Product.Tank {
     public class ApplicationPackageManifest {
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
         public struct APMHeader {
-            public ulong Build;
-            public uint Unknown1;
-            public uint Unknown2;
-            public uint Unknown3;
-            public uint Unknown4;
-            public int PackageCount;
-            public uint Unknown5;
-            public int EntryCount;
-            public uint Checksum;
+            public ulong m_buildVersion;
+            public uint m_unknown1;
+            public uint m_unknown2;
+            public uint m_unknown3;
+            public uint m_unknown4;
+            public int m_packageCount;
+            public uint m_unknown5;
+            public int m_entryCount;
+            public uint m_checksum; // ?
         }
             
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
         public struct Entry {
-            public uint Index;
-            public ulong HashA;
-            public ulong HashB;
+            public uint m_index;
+            public ulong m_hashA;
+            public ulong m_hashB;
         }
         
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
         public struct PackageEntry {
-            public ulong PackageGUID; // 077 file
-            public uint Unknown1;
-            public uint Unknown2;
-            public uint Unknown3;
-            public uint Unknown4;
+            public ulong m_packageGUID; // 077 file
+            public ulong m_keyID;
+            public uint m_unknown1;
+            public uint m_unknown2;
         }
         
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
-        public struct Package {
-            public long OffsetRecords;
-            public long OffsetUnknown1;
-            public long OffsetUnknown2; // streamed?
-            public long OffsetUnknown3;
-            public long OffsetUnknown4;
-            public long OffsetUnknown5;
+        public struct PackageHeader {
+            public long m_offsetRecords;  // 0
+            public long m_offset8; // 8
+            public long m_offset16; // 16
+            public long m_offset24; // 24
+            public long m_offsetBundles;  // 32
+            public long m_offset40; // 40
             
-            public uint RecordCount;
-            public uint SiblingCount;
-            
-            public uint Unknown1;
-            public uint Unknown2;
-            public uint Unknown3;
-            public uint Unknown4;
-            
-            public uint BundleCount;
+            public uint m_recordCount;  // 48
+            public uint m_count52; // 52
+            public uint m_count56;  // 56
+            public uint m_count60;  // 60
+            public uint m_count64;  // 64
+            public uint m_count68; // 68
+            public uint m_bundleCount;  // 72
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 4, Size = 12)]  // size = 12
         public struct PackageRecord {
-            public ulong GUID;
-            public short Unknown1;
-            public byte Unknown2;
-            public RecordFlags Flags;
+            public ulong m_GUID;
+            
+            public short m_unknown1; // this lot is 1 uint
+            public byte m_unknown2;
+            public RecordFlags m_flags;
         }
 
         [Flags]
@@ -72,51 +70,50 @@ namespace TACTLib.Core.Product.Tank {
             Bundle = 0x40
         }
 
-        public APMHeader Header;
-        public Entry[] Entries;
-        public PackageEntry[] PackageEntries;
-        public Package[] Packages;
-        public PackageRecord[][] Records;
-
-        public ulong[][] PackageBundles;
+        public APMHeader m_header;
+        public Entry[] m_entries;
+        public PackageEntry[] m_packageEntries;
+        public PackageHeader[] m_packages;
+        public PackageRecord[][] m_packageRecords;
+        public ulong[][] m_packageBundles;
         
         public ApplicationPackageManifest(ClientHandler client, ProductHandler_Tank tankHandler, Stream stream, string name) {
             ClientCreateArgs_Tank args = client.CreateArgs.HandlerArgs as ClientCreateArgs_Tank ?? new ClientCreateArgs_Tank();
 
-            var cmf = tankHandler.MainContentManifest;
+            var cmf = tankHandler.m_rootContentManifest;
             
             using (BinaryReader reader = new BinaryReader(stream)) {
-                Header = reader.Read<APMHeader>();
+                m_header = reader.Read<APMHeader>();
 
-                if(Header.Build >= 12923648 || Header.Build < 52320) {
+                if(m_header.m_buildVersion >= 12923648 || m_header.m_buildVersion < 52320) {
                     throw new NotSupportedException("Overwatch 1.29 or earlier is not supported");
                 }
                 
-                Entries = reader.ReadArray<Entry>(Header.EntryCount);
-                PackageEntries = reader.ReadArray<PackageEntry>(Header.PackageCount);
+                m_entries = reader.ReadArray<Entry>(m_header.m_entryCount);
+                m_packageEntries = reader.ReadArray<PackageEntry>(m_header.m_packageCount);
 
                 if (!VerifyEntries(cmf)) {
                     Logger.Debug("APM", "Entry hash invalid. IV may be wrong");
                 }
                 
-                Packages = new Package[Header.PackageCount];
-                Records = new PackageRecord[Header.PackageCount][];
-                PackageBundles = new ulong[Header.PackageCount][];
+                m_packages = new PackageHeader[m_header.m_packageCount];
+                m_packageRecords = new PackageRecord[m_header.m_packageCount][];
+                m_packageBundles = new ulong[m_header.m_packageCount][];
 
                 int c = 0;
                 using (PerfCounter _ = new PerfCounter("APM:LoadPackages"))
-                Parallel.For(0, Header.PackageCount, new ParallelOptions {
-                    MaxDegreeOfParallelism = 4
-                }, i => {
-                    c++;
-                    if (c % 1000 == 0) {
-                        if (!Console.IsOutputRedirected) {
-                            Console.Out.Write($"Loading packages: {Math.Floor(c / (float)Header.PackageCount * 10000) / 100:F0}% ({c}/{Header.PackageCount})\r");
+                    Parallel.For(0, m_header.m_packageCount, new ParallelOptions {
+                        MaxDegreeOfParallelism = 4
+                    }, i => {
+                        c++;
+                        if (c % 1000 == 0) {
+                            if (!Console.IsOutputRedirected) {
+                                Console.Out.Write($"Loading packages: {Math.Floor(c / (float)m_header.m_packageCount * 10000) / 100:F0}% ({c}/{m_header.m_packageCount})\r");
+                            }
                         }
-                    }
                     
-                    LoadPackage(i, client, cmf);
-                });
+                        LoadPackage(i, client, cmf);
+                    });
                 
                 if (!Console.IsOutputRedirected) {
                     Console.Write(new string(' ', Console.WindowWidth-1)+"\r");
@@ -125,36 +122,36 @@ namespace TACTLib.Core.Product.Tank {
         }
 
         private void LoadPackage(int i, ClientHandler client, ContentManifestFile cmf) {
-            PackageEntry entry = PackageEntries[i];
-            using (Stream packageStream = cmf.OpenFile(client, entry.PackageGUID))
+            PackageEntry entry = m_packageEntries[i];
+            using (Stream packageStream = cmf.OpenFile(client, entry.m_packageGUID))
             using (BinaryReader packageReader = new BinaryReader(packageStream)) {
-                var package = packageReader.Read<Package>();
-                Packages[i] = package;
+                var package = packageReader.Read<PackageHeader>();
+                m_packages[i] = package;
 
-                if (package.RecordCount == 0) {
-                    Records[i] = new PackageRecord[0];
+                if (package.m_recordCount == 0) {
+                    m_packageRecords[i] = new PackageRecord[0];
                     return;
                 }
                 
-                if (package.BundleCount > 0) {
-                    packageStream.Position = package.OffsetUnknown4;
-                    PackageBundles[i] = packageReader.ReadArray<ulong>((int)package.BundleCount);
+                if (package.m_bundleCount > 0) {
+                    packageStream.Position = package.m_offsetBundles;
+                    m_packageBundles[i] = packageReader.ReadArray<ulong>((int)package.m_bundleCount);
                 }
 
-                packageStream.Position = package.OffsetRecords;
+                packageStream.Position = package.m_offsetRecords;
                 using (GZipStream decompressedStream = new GZipStream(packageStream, CompressionMode.Decompress))
                 using (BinaryReader decompressedReader = new BinaryReader(decompressedStream)) {
-                    Records[i] = decompressedReader.ReadArray<PackageRecord>((int) package.RecordCount);
+                    m_packageRecords[i] = decompressedReader.ReadArray<PackageRecord>((int) package.m_recordCount);
                 }
             }
         }
 
         private bool VerifyEntries(ContentManifestFile cmf) {
-            for (int i = 0; i < Header.EntryCount; i++) {
-                Entry a = Entries[i];
-                Entry b = cmf.Entries[i];
+            for (int i = 0; i < m_header.m_entryCount; i++) {
+                Entry a = m_entries[i];
+                Entry b = cmf.m_entries[i];
 
-                if (a.HashA != b.HashA) {
+                if (a.m_hashA != b.m_hashA) {
                     return false;
                 }
                 // todo: HashB is always 0 in APM. what does this mean?

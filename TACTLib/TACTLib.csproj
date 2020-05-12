@@ -111,7 +111,8 @@
     <Compile Include="Core\Product\MNDX\TSparseArray.cs" />
     <Compile Include="Core\Product\Tank\ApplicationPackageManifest.cs" />
     <Compile Include="Core\Product\Tank\Bundle.cs" />
-    <Compile Include="Core\Product\Tank\CMFCryptHandler.cs" />
+    <Compile Include="Core\Product\Tank\IManifestCrypto.cs" />
+    <Compile Include="Core\Product\Tank\ManifestCryptoHandler.cs" />
     <Compile Include="Core\Product\Tank\CMF\ProCMF_49656.cs" />
     <Compile Include="Core\Product\Tank\CMF\ProCMF_35328.cs" />
     <Compile Include="Core\Product\Tank\CMF\ProCMF_35455.cs" />
@@ -225,8 +226,8 @@
     <Compile Include="Core\Product\Tank\CMF\ProCMF_67664.cs" />
     <Compile Include="Core\Product\Tank\CMF\ProCMF_68126.cs" />
     <Compile Include="Core\Product\Tank\ContentManifestFile.cs" />
-    <Compile Include="Core\Product\Tank\ICMFEncryptionProc.cs" />
     <Compile Include="Core\Product\Tank\ProductHandler_Tank.cs" />
+    <Compile Include="Core\Product\Tank\ResourceGraph.cs" />
     <Compile Include="Core\Product\WorldOfWarcraftV6\CASWarcraftV6.cs" />
     <Compile Include="Core\Product\WorldOfWarcraftV6\CASWarcraftV6Record.cs" />
     <Compile Include="Core\Product\WorldOfWarcraftV6\ProductHandler_WorldOfWarcraftV6.cs" />

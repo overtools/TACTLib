@@ -109,12 +109,16 @@ namespace TACTLib.Helpers {
         }
         
         /// <summary>Copy bytes from one stream to another</summary>
-        public static void CopyBytes(this Stream input, Stream output, int bytes) {
-            byte[] buffer = new byte[32768];
-            int read;
-            while (bytes > 0 && (read = input.Read(buffer, 0, Math.Min(buffer.Length, bytes))) > 0) {
-                output.Write(buffer, 0, read);
-                bytes -= read;
+        public static void CopyBytes(this Stream input, Stream output, int bytes, int bufferSize=81920) {
+            byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
+            try {
+                int read;
+                while (bytes > 0 && (read = input.Read(buffer, 0, Math.Min(buffer.Length, bytes))) > 0) {
+                    output.Write(buffer, 0, read);
+                    bytes -= read;
+                }
+            } finally {
+                ArrayPool<byte>.Shared.Return(buffer);
             }
         }
 
