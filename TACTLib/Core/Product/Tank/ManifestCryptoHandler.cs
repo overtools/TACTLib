@@ -77,16 +77,18 @@ namespace TACTLib.Core.Product.Tank {
         public static BinaryReader GetDecryptedReader<T>(string name, string manifestType, T header, uint buildVersion, TACTProduct product, Stream stream) {
             GenerateKeyIV(name, manifestType, header, buildVersion, product, out byte[] key, out byte[] iv);
 
-            using RijndaelManaged rijndael = new RijndaelManaged {Key = key, IV = iv, Mode = CipherMode.CBC};
-            var cryptoStream = new CryptoStream(stream, rijndael.CreateDecryptor(), CryptoStreamMode.Read);
-            return new BinaryReader(cryptoStream);
+            using (RijndaelManaged rijndael = new RijndaelManaged {Key = key, IV = iv, Mode = CipherMode.CBC}) {
+                var cryptoStream = new CryptoStream(stream, rijndael.CreateDecryptor(), CryptoStreamMode.Read);
+                return new BinaryReader(cryptoStream);
+            }
         }
         
         private static byte[] CreateDigest(string value) {
             byte[] digest;
-            using SHA1 shaM = new SHA1Managed();
-            byte[] stringBytes = Encoding.ASCII.GetBytes(value);
-            digest = shaM.ComputeHash(stringBytes);
+            using (SHA1 shaM = new SHA1Managed()) {
+                byte[] stringBytes = Encoding.ASCII.GetBytes(value);
+                digest = shaM.ComputeHash(stringBytes);
+            }
             return digest;
         }
 

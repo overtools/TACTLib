@@ -103,21 +103,22 @@ namespace TACTLib.Core.Product.Tank {
         public Dictionary<ulong, Skin> m_skins;
 
         public ResourceGraph(ClientHandler client, Stream stream, string name) {
-            using BinaryReader reader = new BinaryReader(stream);
-            m_header = reader.Read<TRGHeader>();
+            using (BinaryReader reader = new BinaryReader(stream)) {
+                m_header = reader.Read<TRGHeader>();
                 
-            var version = m_header.GetVersion();
-            if (version != 5) {
-                throw new InvalidDataException($"unable to parse TRG. invalid version {version}, expected 5");
-            }
+                var version = m_header.GetVersion();
+                if (version != 5) {
+                    throw new InvalidDataException($"unable to parse TRG. invalid version {version}, expected 5");
+                }
 
-            var isEnc = m_header.IsEncrypted();
+                var isEnc = m_header.IsEncrypted();
 
-            if (!isEnc) {
-                ParseBlocks(reader, name);
-            } else {
-                using var decryptedReader = ManifestCryptoHandler.GetDecryptedReader(name, "TRG", m_header, m_header.m_buildVersion, client.Product, stream);
-                ParseBlocks(decryptedReader, name);
+                if (!isEnc) {
+                    ParseBlocks(reader, name);
+                } else {
+                    using (var decryptedReader = ManifestCryptoHandler.GetDecryptedReader(name, "TRG", m_header, m_header.m_buildVersion, client.Product, stream))
+                        ParseBlocks(decryptedReader, name);
+                }
             }
         }
 

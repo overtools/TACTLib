@@ -109,8 +109,8 @@ namespace TACTLib.Core.Product.Tank {
                     //    cmfStream.CopyTo(file);
                     //}
                     try {
-                        using Stream cmfStream = client.OpenCKey(rootFile.MD5);
-                        cmf = new ContentManifestFile(client, cmfStream, manifestFileName);
+                        using (Stream cmfStream = client.OpenCKey(rootFile.MD5))
+                            cmf = new ContentManifestFile(client, cmfStream, manifestFileName);
                     } catch (CryptographicException) {
                         Logger.Error("CASC", "Fatal - Manifest decryption failed. Please update TACTLib.");
                         if (Debugger.IsAttached) {
@@ -128,18 +128,18 @@ namespace TACTLib.Core.Product.Tank {
                     totalAssetCount += cmf.m_header.m_dataCount;
                 } else if (extension == ".apm") {
                     if (locale != client.CreateArgs.TextLanguage) continue;
-                    using Stream apmStream = client.OpenCKey(rootFile.MD5);
-                    m_packageManifest = new ApplicationPackageManifest(client, this, apmStream, manifestName);
+                    using (Stream apmStream = client.OpenCKey(rootFile.MD5))
+                        m_packageManifest = new ApplicationPackageManifest(client, this, apmStream, manifestName);
                 } else if (extension == ".trg") {
                     try {
-                        using Stream trgStream = client.OpenCKey(rootFile.MD5);
+                        using (Stream trgStream = client.OpenCKey(rootFile.MD5)) {
+                            //using (Stream file = File.OpenWrite($"{manifestName}.trg")) {
+                            //    trgStream.CopyTo(file);
+                            //}
                         
-                        //using (Stream file = File.OpenWrite($"{manifestName}.trg")) {
-                        //    trgStream.CopyTo(file);
-                        //}
-                        
-                        // todo: disabled, v6 format needs to be supported properly
-                        //m_resourceGraph = new ResourceGraph(client, trgStream, manifestFileName);
+                            // todo: disabled, v6 format needs to be supported properly
+                            //m_resourceGraph = new ResourceGraph(client, trgStream, manifestFileName);
+                        }
                     } catch (CryptographicException) {
                         Logger.Error("CASC", "Fatal - Manifest decryption failed. Please update TACTLib.");
                         if (Debugger.IsAttached) {
@@ -283,17 +283,20 @@ namespace TACTLib.Core.Product.Tank {
             lock (m_bundleCache) {
                 if (m_bundleCache.TryGetValue(bundleGuid, out var cache)) return cache;
                 var cmf = GetContentManifestForAsset(bundleGuid);
-                    
-                using Stream bundleStream = cmf.OpenFile(m_client, bundleGuid);
-                Memory<byte> buf = new byte[(int) bundleStream.Length];
-                bundleStream.Read(buf);
-                bundleStream.Position = 0;
 
-                //using (Stream outStr = File.OpenWrite($"{bundleGuid:X16}.bndl")) {
-                //    bundleStream.CopyTo(outStr);
-                //}
+                Bundle bundle;
+                Memory<byte> buf;
+                using (Stream bundleStream = cmf.OpenFile(m_client, bundleGuid)) {
+                    buf = new byte[(int) bundleStream.Length];
+                    bundleStream.Read(buf);
+                    bundleStream.Position = 0;
+
+                    //using (Stream outStr = File.OpenWrite($"{bundleGuid:X16}.bndl")) {
+                    //    bundleStream.CopyTo(outStr);
+                    //}
                 
-                Bundle bundle = new Bundle(bundleStream, m_usingResourceGraph);
+                    bundle = new Bundle(bundleStream, m_usingResourceGraph);
+                }
                 var offsetMap = bundle.Entries.ToDictionary(x => x.GUID, x => x.Offset);
                     
                 cache = new BundleCache {
@@ -307,8 +310,8 @@ namespace TACTLib.Core.Product.Tank {
         
         private Bundle OpenBundle(ulong bundleGuid) {
             var cmf = GetContentManifestForAsset(bundleGuid);
-            using Stream bundleStream = cmf.OpenFile(m_client, bundleGuid);
-            return new Bundle(bundleStream, m_usingResourceGraph);
+            using (Stream bundleStream = cmf.OpenFile(m_client, bundleGuid))
+                return new Bundle(bundleStream, m_usingResourceGraph);
         }
 
         private Stream OpenFileFromBundle(ulong bundleGuid, ulong guid) {

@@ -110,8 +110,8 @@ namespace TACTLib.Core.Product.Tank {
                 }
 
                 if (m_header.IsEncrypted()) {
-                    using var decryptedReader = ManifestCryptoHandler.GetDecryptedReader(name, "CMF", m_header, m_header.m_buildVersion, client.Product, stream);
-                    ParseEntries(decryptedReader);
+                    using (var decryptedReader = ManifestCryptoHandler.GetDecryptedReader(name, "CMF", m_header, m_header.m_buildVersion, client.Product, stream))
+                        ParseEntries(decryptedReader);
                 } else {
                     ParseEntries(reader);
                 }

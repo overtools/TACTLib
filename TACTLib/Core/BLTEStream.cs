@@ -223,8 +223,8 @@ namespace TACTLib.Core {
             Keys.Add(keyName.ToString("X16"));
 
             if (encType == EncryptionSalsa20) {
-                using ICryptoTransform decryptor = SalsaInstance.CreateDecryptor(key, iv);
-                return decryptor.TransformFinalBlock(data, dataOffset, data.Length - dataOffset);
+                using (ICryptoTransform decryptor = SalsaInstance.CreateDecryptor(key, iv))
+                    return decryptor.TransformFinalBlock(data, dataOffset, data.Length - dataOffset);
             }
 
             // ARC4 ?
