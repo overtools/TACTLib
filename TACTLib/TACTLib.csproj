@@ -111,6 +111,7 @@
     <Compile Include="Core\Product\MNDX\TSparseArray.cs" />
     <Compile Include="Core\Product\Tank\ApplicationPackageManifest.cs" />
     <Compile Include="Core\Product\Tank\Bundle.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_68780.cs" />
     <Compile Include="Core\Product\Tank\IManifestCrypto.cs" />
     <Compile Include="Core\Product\Tank\ManifestCryptoHandler.cs" />
     <Compile Include="Core\Product\Tank\CMF\ProCMF_49656.cs" />
