@@ -136,9 +136,8 @@ namespace TACTLib.Core.Product.Tank {
                             //using (Stream file = File.OpenWrite($"{manifestName}.trg")) {
                             //    trgStream.CopyTo(file);
                             //}
-                        
-                            // todo: disabled, v6 format needs to be supported properly
-                            //m_resourceGraph = new ResourceGraph(client, trgStream, manifestFileName);
+                            
+                            m_resourceGraph = new ResourceGraph(client, trgStream, manifestFileName);
                         }
                     } catch (CryptographicException) {
                         Logger.Error("CASC", "Fatal - Manifest decryption failed. Please update TACTLib.");

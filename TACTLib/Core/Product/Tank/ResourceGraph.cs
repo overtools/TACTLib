@@ -88,14 +88,18 @@ namespace TACTLib.Core.Product.Tank {
             public uint m_wtf1;
             public uint m_wtf2;
 
-            public SkinAsset6 Upgrade() => throw new NotImplementedException();
-            //new SkinAsset6 {
-            //    m_assetGUID = m_assetGUID
-            //}; // please check
+            public SkinAsset6 Upgrade() => new SkinAsset6 {
+                m_srcAsset = m_assetGUID,
+                m_wtf1 = m_wtf1,
+                m_wtf2 = m_wtf2
+            };
         }
         
         public struct SkinAsset6 {
-            // todo: 
+            public ulong m_srcAsset;
+            public ulong m_destAsset;
+            public uint m_wtf1;
+            public uint m_wtf2;
         }
 
         public TRGHeader m_header;
@@ -107,8 +111,8 @@ namespace TACTLib.Core.Product.Tank {
                 m_header = reader.Read<TRGHeader>();
                 
                 var version = m_header.GetVersion();
-                if (version != 5) {
-                    throw new InvalidDataException($"unable to parse TRG. invalid version {version}, expected 5");
+                if (version != 5 && version != 6) {
+                    throw new InvalidDataException($"unable to parse TRG. invalid version {version}, expected 5 or 6");
                 }
 
                 var isEnc = m_header.IsEncrypted();
