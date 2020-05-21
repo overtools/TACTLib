@@ -171,9 +171,9 @@ namespace TACTLib.Core.Product.Tank {
                         skin.m_assets = skinReader.ReadArray<SkinAsset6>(skinHeader.m_assetCount);
                     }
 
-                    //Logger.Info("trg", $"{skin.m_skinGUID:X16}");
+                    //Logger.Info("TRG", $"{skin.m_skinGUID:X16}");
                     //foreach (SkinAsset asset in assets) {
-                    //    Logger.Info("trg", $"    {asset.m_assetGUID:X16}");
+                    //    Logger.Info("TRG", $"    {asset.m_assetGUID:X16}");
                     //}
                 }
             }

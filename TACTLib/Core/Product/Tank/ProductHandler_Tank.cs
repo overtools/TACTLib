@@ -187,7 +187,7 @@ namespace TACTLib.Core.Product.Tank {
             
                 var cmf = GetContentManifestForAsset(asset.Key);
                 if (!cmf.Exists(asset.Key)) {
-                    Logger.Debug("trg", $"bundle {asset.Key:X16} is goned???");
+                    Logger.Debug("TRG", $"bundle {asset.Key:X16} is goned???");
                     continue;
                 }
 
@@ -195,7 +195,7 @@ namespace TACTLib.Core.Product.Tank {
                 try {
                     bundle = OpenBundle(asset.Key);
                 } catch (BLTEKeyException e) {
-                    Logger.Debug("trg", $"can't load bundle {asset.Key:X16} cos key {e.MissingKey:X8} is missing");
+                    Logger.Debug("TRG", $"can't load bundle {asset.Key:X16} because key {e.MissingKey:X8} is missing from the keyring.");
                     continue;
                 }
                 foreach (Bundle.Entry4 valuePair in bundle.Entries) {
