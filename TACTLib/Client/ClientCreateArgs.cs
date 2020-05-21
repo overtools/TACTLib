@@ -107,5 +107,15 @@ namespace TACTLib.Client {
         /// The depot product flavor to load
         /// </summary>
         public string Product { get; set; } = "pro";
+
+        /// <summary>
+        /// When true, it will load a support keyring for salsa keys not in the keyring.
+        /// </summary>
+        public bool LoadSupportKeyring { get; set; } = true;
+
+        /// <summary>
+        /// Support keyring to load, if null it will attempt to load "{TACTProduct}.keyring"
+        /// </summary>
+        public string SupportKeyring { get; set; } = null;
     }
 }

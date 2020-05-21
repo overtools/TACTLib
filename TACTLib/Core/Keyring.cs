@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Reflection;
 using TACTLib.Client;
+using TACTLib.Core.Product.Tank;
 using static TACTLib.Utils;
 
 namespace TACTLib.Core {
@@ -25,6 +27,14 @@ namespace TACTLib.Core {
                 Keys[keyID] = StringToByteArray(pair.Value[0]);
                 
                 //Console.Out.WriteLine(pair.Value[0]);
+            }
+
+
+            if (client.CreateArgs.LoadSupportKeyring) {
+                string keyFile = client.CreateArgs.SupportKeyring ?? Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @$"\{client.Product:G}.keyring";
+                if (File.Exists(keyFile)) {
+                    LoadSupportFile(keyFile);
+                }
             }
         }
 
