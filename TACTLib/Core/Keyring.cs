@@ -31,7 +31,7 @@ namespace TACTLib.Core {
 
 
             if (client.CreateArgs.LoadSupportKeyring) {
-                string keyFile = client.CreateArgs.SupportKeyring ?? Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @$"\{client.Product:G}.keyring";
+                string keyFile = client.CreateArgs.SupportKeyring ?? Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + $@"\{client.Product:G}.keyring";
                 if (File.Exists(keyFile)) {
                     LoadSupportFile(keyFile);
                 }
