@@ -114,6 +114,7 @@
     <Compile Include="Core\Product\Tank\CMF\ProCMF_68780.cs" />
     <Compile Include="Core\Product\Tank\CMF\ProCMF_69340.cs" />
     <Compile Include="Core\Product\Tank\CMF\ProCMF_69939.cs" />
+    <Compile Include="Core\Product\Tank\CMF\ProCMF_70250.cs" />
     <Compile Include="Core\Product\Tank\IManifestCrypto.cs" />
     <Compile Include="Core\Product\Tank\ManifestCryptoHandler.cs" />
     <Compile Include="Core\Product\Tank\CMF\ProCMF_49656.cs" />
@@ -234,6 +235,7 @@
     <Compile Include="Core\Product\Tank\TRG\ProTRG_68780.cs" />
     <Compile Include="Core\Product\Tank\TRG\ProTRG_69340.cs" />
     <Compile Include="Core\Product\Tank\TRG\ProTRG_69939.cs" />
+    <Compile Include="Core\Product\Tank\TRG\ProTRG_70250.cs" />
     <Compile Include="Core\Product\WorldOfWarcraftV6\CASWarcraftV6.cs" />
     <Compile Include="Core\Product\WorldOfWarcraftV6\CASWarcraftV6Record.cs" />
     <Compile Include="Core\Product\WorldOfWarcraftV6\ProductHandler_WorldOfWarcraftV6.cs" />
