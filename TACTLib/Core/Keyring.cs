@@ -43,6 +43,7 @@ namespace TACTLib.Core {
         }
 
         public void LoadSupportFile(string path) {
+            var debugFileKeyCache = new Dictionary<ulong, byte[]>();
             using (TextReader r = new StreamReader(path)) {
                 string line;
                 while ((line = r.ReadLine()) != null) {
@@ -66,9 +67,16 @@ namespace TACTLib.Core {
                         continue;
                     }
 
+                    var keyByte = StringToByteArray(c[1]);
+                    
+                    if (debugFileKeyCache.ContainsKey(v))
+                        Logger.Debug("TACT", $"Duplicate key detected in keyring file. {c[0]}");
+                    else
+                        debugFileKeyCache.Add(v, keyByte);
+
                     if (enabled) {
                         if (!Keys.ContainsKey(v)) {
-                            Keys.Add(v, StringToByteArray(c[1]));
+                            Keys.Add(v, keyByte);
                         }
                     } else {
                         if (Keys.ContainsKey(v)) {
