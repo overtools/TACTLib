@@ -4,58 +4,19 @@ using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
-using TACTLib.Client;
 using TACTLib.Config;
 
 namespace TACTLib.Protocol.Ribbit {
-    public class RibbitClient : CDNClient {
-        public RibbitClient(ClientHandler handler) : base(handler) { }
-
-        private static Dictionary<string, string> RenameMapVersions = new Dictionary<string, string> {
-            {"Region", "Branch"},
-            {"BuildConfig", "BuildKey"},
-            {"CDNConfig", "CDNKey"},
-            {"KeyRing", "Keyring"},
-            {"VersionsName", "Version"},
-        };
-
-        private static Dictionary<string, string> RenameMapCDNs = new Dictionary<string, string> {
-            {"Path", "CDNPath"},
-            {"Hosts", "CDNHosts"},
-            {"Servers", "CDNServers"},
-        };
-
-        public override Dictionary<string, string> CreateInstallationInfo(string region) {
-            using (StreamReader cdnsReader = new StreamReader(GetRoot(client.CreateArgs.OnlineRootHost, $"v1/products/{ProductHelpers.UIDFromProduct(client.Product)}/cdns"))) {
-                using (StreamReader versionReader = new StreamReader(GetRoot(client.CreateArgs.OnlineRootHost, $"v1/products/{ProductHelpers.UIDFromProduct(client.Product)}/versions"))) {
-                    var cdns = InstallationInfo.ParseInternal(cdnsReader).FirstOrDefault(x => x["Name"] == region);
-                    var versions = InstallationInfo.ParseInternal(versionReader).FirstOrDefault(x => x["Region"] == region);
-                    var bi = new Dictionary<string, string> {
-                        {"Active", "1"},
-                        {"InstallKey", ""},
-                        {"IMSize", ""},
-                        {"Tags", "Online Ribbit"},
-                        {"Armadillo", ""},
-                        {"LastActivated", "0"},
-                        {"BuildComplete", "1"}
-                    };
-
-                    foreach (var pair in RenameMapVersions) {
-                        bi[pair.Value] = versions?[pair.Key];
-                    }
-
-                    foreach (var pair in RenameMapCDNs) {
-                        bi[pair.Value] = cdns?[pair.Key];
-                    }
-
-                    return bi;
-                }
-            }
+    public class RibbitClient {
+        public readonly string m_host;
+        
+        public RibbitClient(string host) {
+            m_host = host;
         }
-
-        private static Stream GetRoot(string host, string query) {
+        
+        public Stream Get(string query) {
             using (TcpClient client = new TcpClient()) {
-                if (!Uri.TryCreate(host, UriKind.RelativeOrAbsolute, out var uri)) {
+                if (!Uri.TryCreate(m_host, UriKind.RelativeOrAbsolute, out var uri)) {
                     return null;
                 }
                 client.Connect(uri.Host, uri.Port);
@@ -73,6 +34,7 @@ namespace TACTLib.Protocol.Ribbit {
                     var data = text.SkipWhile(x => x.Trim() != "--" + boundary).Skip(1).TakeWhile(x => x.Trim() != "--" + boundary).Skip(1);
                     using (StreamWriter writer = new StreamWriter(ms, Encoding.ASCII, 1024, true)) {
                         foreach (var line in data) {
+                            if (line.StartsWith("##")) continue;
                             writer.WriteLine(line);
                         }
                     }
@@ -82,6 +44,42 @@ namespace TACTLib.Protocol.Ribbit {
                 
                 return ms;
             }
+        }
+
+        public List<Dictionary<string, string>> GetKV(string query) {
+            using (var stream = Get(query)) {
+                if (stream == null) return null;
+                using (var streamReader = new StreamReader(stream))
+                    return InstallationInfo.ParseToDict(streamReader);
+            }
+        }
+
+        public List<Dictionary<string, string>> GetVersions(string product) {
+            return GetKV($"v1/products/{product}/versions");
+        }
+        
+        public Dictionary<string, string> GetVersion(string product, string region) {
+            return GetKV($"v1/products/{product}/versions").FirstOrDefault(x => x["Region"] == region);
+        }
+        
+        public List<Dictionary<string, string>> GetBGDL(string product) {
+            return GetKV($"v1/products/{product}/bgdl");
+        }
+        
+        public Dictionary<string, string> GetBGDL(string product, string region) {
+            return GetKV($"v1/products/{product}/bgdl").FirstOrDefault(x => x["Region"] == region);
+        }
+        
+        public List<Dictionary<string, string>> GetCDNs(string product) {
+            return GetKV($"v1/products/{product}/cdns");
+        }
+        
+        public Dictionary<string, string> GetCDNs(string product, string region) {
+            return GetKV($"v1/products/{product}/cdns").FirstOrDefault(x => x["Region"] == region);
+        }
+        
+        public List<Dictionary<string, string>> GetSummary() {
+            return GetKV("v1/summary");
         }
     }
 }

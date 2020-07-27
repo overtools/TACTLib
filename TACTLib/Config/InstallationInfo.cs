@@ -17,7 +17,7 @@ namespace TACTLib.Config {
             Values = netHandle.CreateInstallationInfo(region);
         }
 
-        public static IEnumerable<IDictionary<string, string>> ParseToDict(TextReader reader) {
+        public static List<Dictionary<string, string>> ParseToDict(TextReader reader) {
             string[] keys = null;
             List<Dictionary<string, string>> ret = new List<Dictionary<string, string>>();
             

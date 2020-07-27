@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using TACTLib.Agent;
@@ -145,7 +145,7 @@ namespace TACTLib.Client {
             if (createArgs.Online) {
                 using (var _ = new PerfCounter("INetworkHandler::ctor`ClientHandler"))
                     if (createArgs.Mode.ToString() == "Ribbit") {
-                        NetHandle = new RibbitClient(this);
+                        NetHandle = new RibbitCDNClient(this);
                     } else {
                         NetHandle = new NGDPClient(this);
                     }
@@ -260,5 +260,7 @@ namespace TACTLib.Client {
 
             return CreateArgs.Online ? NetHandle.OpenConfig(key) : null;
         }
+
+        public string GetProduct() => CreateArgs.Product ?? ProductHelpers.UIDFromProduct(Product);
     }
 }
