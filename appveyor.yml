@@ -1,5 +1,5 @@
 version: 0.1-{build}
-image: Visual Studio 2017
+image: Visual Studio 2019
 configuration: Release
 platform: Any CPU
 assembly_info:
@@ -17,17 +17,16 @@ before_build:
 build:
   project: TACTLib.sln
   verbosity: minimal
-before_package:
-- cmd: >-
-    del /F /Q TACTLibTest\bin\Release\*.pdb
-    del /F /Q TACTLibTest\bin\Release\*.xml
-
-    del /F /Q TACTLib\bin\Release\*.pdb
-    del /F /Q TACTLib\bin\Release\*.xml
+#before_package:
+#- cmd: >-
+#    del /F /Q TACTLibTest\bin\Release\*.pdb
+#    del /F /Q TACTLibTest\bin\Release\*.xml
+#    del /F /Q TACTLib\bin\Release\*.pdb
+#    del /F /Q TACTLib\bin\Release\*.xml
 artifacts:
-- path: TACTLibTest\bin\Release\TACTLibTest.exe
+- path: TACTLibTest\bin\Release\net471\TACTLibTest.exe
   name: TACTLibTest
-- path: TACTLib\bin\Release\TACTLib.dll
+- path: TACTLib\bin\Release\net471\TACTLib.dll
   name: TACTLib
 cache:
   - packages -> **\packages.config 
