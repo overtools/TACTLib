@@ -17,7 +17,7 @@ namespace TACTLib.Config {
             Values = netHandle.CreateInstallationInfo(region);
         }
 
-        internal static IEnumerable<IDictionary<string, string>> ParseInternal(TextReader reader) {
+        public static IEnumerable<IDictionary<string, string>> ParseToDict(TextReader reader) {
             string[] keys = null;
             List<Dictionary<string, string>> ret = new List<Dictionary<string, string>>();
             
@@ -38,7 +38,7 @@ namespace TACTLib.Config {
                         keys[j] = tokens[j].Split('!')[0].Replace(" ", "");
                     }
                 } else {
-                    if (keys == null) break;
+                    if (keys == null) break; // todo: this can't happen...
                     
                     Dictionary<string, string> vals = new Dictionary<string, string>();
                     for (int j = 0; j < tokens.Length; ++j) {
@@ -53,7 +53,7 @@ namespace TACTLib.Config {
         }
 
         private void Parse(TextReader reader, string product) {
-            var vals = ParseInternal(reader);
+            var vals = ParseToDict(reader);
             Values = (Dictionary<string, string>) vals.FirstOrDefault(x => {
                 if (x.TryGetValue("Product", out var entryProduct) && !entryProduct.Equals(product)) {
                     return false;
