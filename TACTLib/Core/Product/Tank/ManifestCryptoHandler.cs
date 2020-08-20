@@ -67,7 +67,12 @@ namespace TACTLib.Core.Product.Tank {
 
             var provider = (IManifestCrypto<T>) providerRaw;
             key = provider.Key(header, 32);
-            iv = provider.IV(header, digest, 16);
+            try {
+                iv = provider.IV(header, digest, 16);
+            } catch (Exception ex) {
+                iv = new byte[16];
+                Logger.Error("Manifest", $"Error generating IV but we dont care i guess: {ex}");
+            }
 
             name = Path.GetFileNameWithoutExtension(name);
             Logger.Debug(manifestType, $"{name} key:{string.Join(" ", key.Select(x => x.ToString("X2")))}");
