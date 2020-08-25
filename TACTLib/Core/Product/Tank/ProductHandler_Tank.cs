@@ -59,6 +59,9 @@ namespace TACTLib.Core.Product.Tank {
         public const string TEXT_MANIFEST_NAME = "text";
         public const string ROOT_FILE_FIELD_ORDER_CHECK = @"#FILEID|MD5|CHUNK_ID|PRIORITY|MPRIORITY|FILENAME|INSTALLPATH";
 
+        private const string OutdatedTACTLibErrorMessage =
+            "Fatal - Manifest decryption failed. Please update TACTLib. This can happen due the game receiving a new patch that is not supported by this version of TACTLib.";
+
         public ProductHandler_Tank(ClientHandler client, Stream stream) {
             m_client = client;
 
@@ -112,7 +115,7 @@ namespace TACTLib.Core.Product.Tank {
                         using (Stream cmfStream = client.OpenCKey(rootFile.MD5))
                             cmf = new ContentManifestFile(client, cmfStream, manifestFileName);
                     } catch (CryptographicException) {
-                        Logger.Error("CASC", "Fatal - Manifest decryption failed. Please update TACTLib.");
+                        Logger.Error("CASC", OutdatedTACTLibErrorMessage);
                         if (Debugger.IsAttached) {
                             Debugger.Break();
                         }
@@ -140,7 +143,7 @@ namespace TACTLib.Core.Product.Tank {
                             m_resourceGraph = new ResourceGraph(client, trgStream, manifestFileName);
                         }
                     } catch (CryptographicException) {
-                        Logger.Error("CASC", "Fatal - Manifest decryption failed. Please update TACTLib.");
+                        Logger.Error("CASC", OutdatedTACTLibErrorMessage);
                         if (Debugger.IsAttached) {
                             Debugger.Break();
                         }

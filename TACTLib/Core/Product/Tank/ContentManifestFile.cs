@@ -127,7 +127,7 @@ namespace TACTLib.Core.Product.Tank {
             }
 
             if (m_entries.Length >= 1 && m_entries[0].m_index != 1) {
-                Logger.Warn("CMF", "CMF crypto using invalid IV");
+                Logger.Warn("CMF", "CMF Crypto using invalid IV. This can probably be ignored.");
             }
 
             m_indexMap = new Dictionary<ulong, int>(m_header.m_dataCount);
