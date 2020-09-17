@@ -10,7 +10,7 @@ using TACTLib.Helpers;
 namespace TACTLib.Core.Product.Tank {
     public class ResourceGraph {
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
-        public struct TRGHeader { // version 5 and 6
+        public struct TRGHeader6 { // version 5 and 6
             public uint m_0; // 0
             public uint m_buildVersion; // 4
             public uint m_8; // 8
@@ -25,6 +25,46 @@ namespace TACTLib.Core.Product.Tank {
             public uint m_44; // 44
             public int m_graphBlockSize; // 48
             public uint m_footerMagic; // 52
+
+            public TRGHeader Upgrade() => new TRGHeader
+            {
+                m_0 = m_0,
+                m_buildVersion = m_buildVersion,
+                m_8 = m_8,
+                m_12 = m_12,
+                m_16 = m_16,
+                m_20 = m_20,
+                m_packageCount = m_packageCount,
+                m_packageBlockSize = m_packageBlockSize,
+                m_skinCount = m_skinCount,
+                m_skinBlockSize = m_skinBlockSize,
+                m_typeBundleIndexCount = 0,
+                m_typeBundleIndexBlockSize = 0,
+                m_48 = m_40,
+                m_52 = m_44,
+                m_graphBlockSize = m_graphBlockSize,
+                m_footerMagic = m_footerMagic
+            };
+        }
+        
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
+        public struct TRGHeader { // version 7
+            public uint m_0; // 0
+            public uint m_buildVersion; // 4
+            public uint m_8; // 8
+            public uint m_12; // 12
+            public uint m_16; // 16
+            public uint m_20; // 20
+            public int m_packageCount; // 24
+            public int m_packageBlockSize; // 28
+            public int m_skinCount; // 32
+            public int m_skinBlockSize; // 36
+            public int m_typeBundleIndexCount; // 40
+            public int m_typeBundleIndexBlockSize; // 44
+            public uint m_48; // 48
+            public uint m_52; // 52
+            public int m_graphBlockSize; // 56
+            public uint m_footerMagic; // 60
 
             public const uint UNENCRYPTED_MAGIC = 0x747267;
             public const uint ENCRYPTED_MAGIC = 0x677274;
@@ -105,14 +145,23 @@ namespace TACTLib.Core.Product.Tank {
         public TRGHeader m_header;
         public Dictionary<ulong, Package> m_packages;
         public Dictionary<ulong, Skin> m_skins;
+        
+        public static bool IsPre152(TRGHeader header)
+        {
+            return header.m_buildVersion < ProductHandler_Tank.VERSION_152_PTR || header.m_buildVersion == 72604; // 72604 = 1.51 on proc2
+        }
 
         public ResourceGraph(ClientHandler client, Stream stream, string name) {
             using (BinaryReader reader = new BinaryReader(stream)) {
                 m_header = reader.Read<TRGHeader>();
+                if (IsPre152(m_header)) {
+                    stream.Position = 0;
+                    m_header = reader.Read<TRGHeader6>().Upgrade();
+                }
                 
                 var version = m_header.GetVersion();
-                if (version != 5 && version != 6) {
-                    throw new InvalidDataException($"unable to parse TRG. invalid version {version}, expected 5 or 6");
+                if (version != 5 && version != 6 && version != 7) {
+                    throw new InvalidDataException($"unable to parse TRG. invalid version {version}, expected 5, 6 or 7");
                 }
 
                 var isEnc = m_header.IsEncrypted();
@@ -132,6 +181,10 @@ namespace TACTLib.Core.Product.Tank {
             byte[] packageBlockTest = reader.ReadBytes(m_header.m_packageBlockSize);
             byte[] skinBlockTest = reader.ReadBytes(m_header.m_skinBlockSize);
             byte[] graphBlockTest = reader.ReadBytes(m_header.m_graphBlockSize);
+            if (version == 7) {
+                byte[] typeBundleIndexBlock = reader.ReadBytes(m_header.m_typeBundleIndexBlockSize);
+                //File.WriteAllBytes(name + "_typeBundleIndex", typeBundleIndexBlock);
+            }
             
             // todo: don't waste time and memory by loading into byte arrays
 

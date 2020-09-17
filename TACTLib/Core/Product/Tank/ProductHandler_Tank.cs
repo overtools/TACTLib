@@ -49,7 +49,8 @@ namespace TACTLib.Core.Product.Tank {
         private readonly Dictionary<ulong, BundleCache> m_bundleCache = new Dictionary<ulong, BundleCache>();
 
         public const uint VERSION_148_PTR = 68309;
-        
+        public const uint VERSION_152_PTR = 72317;
+
         public const int PACKAGE_IDX_FAKE_TEXT_CMF = -1;
         public const int PACKAGE_IDX_FAKE_SPEECH_CMF = -2;
         public const int PACKAGE_IDX_FAKE_ROOT_CMF = -3;
