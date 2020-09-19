@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using TACTLib.Client;
 using TACTLib.Client.HandlerArgs;
 using TACTLib.Core.Product.CommonV2;
+using TACTLib.Exceptions;
 using TACTLib.Helpers;
 
 namespace TACTLib.Core.Product.Tank {

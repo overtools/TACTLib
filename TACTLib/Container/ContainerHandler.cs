@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using TACTLib.Client;
+using TACTLib.Exceptions;
 using TACTLib.Helpers;
 using static TACTLib.Utils;
 
@@ -121,33 +122,38 @@ namespace TACTLib.Container {
         /// <param name="indexEntry">Source index entry</param>
         /// <returns>Encoded stream</returns>
         private Stream OpenIndexEntry(IndexEntry indexEntry) {
-            using (Stream dataStream = OpenDataFile(indexEntry.Index))
-            using (BinaryReader reader = new BinaryReader(dataStream, Encoding.ASCII, false)) {  // ASCII = important. one byte per char
-                dataStream.Position = indexEntry.Offset;
+            using (FileStream dataStream = OpenDataFile(indexEntry.Index)) {
+                try {
+                    using (BinaryReader reader = new BinaryReader(dataStream, Encoding.ASCII, false)) { // ASCII = important. one byte per char
+                        dataStream.Position = indexEntry.Offset;
 
-                //CKey cKey = reader.Read<CKey>();
-                dataStream.Position += 16;
-                
-                int size = reader.ReadInt32();
-                
-                // 2+8 byte block of something?
-                dataStream.Position += 10;
-                
-                // todo: maybe this?
-                // var memoryStream = new MemoryStream(size - 30);
-                //dataStream.CopyBytes(memoryStream, size-30);
-                //memoryStream.Position = 0;
-                //return memoryStream;
-                
-                byte[] data = reader.ReadBytes(size - 30);
-                return new MemoryStream(data);
+                        //CKey cKey = reader.Read<CKey>();
+                        dataStream.Position += 16;
+
+                        int size = reader.ReadInt32();
+
+                        // 2+8 byte block of something?
+                        dataStream.Position += 10;
+
+                        // todo: maybe this?
+                        // var memoryStream = new MemoryStream(size - 30);
+                        //dataStream.CopyBytes(memoryStream, size-30);
+                        //memoryStream.Position = 0;
+                        //return memoryStream;
+
+                        byte[] data = reader.ReadBytes(size - 30);
+                        return new MemoryStream(data);
+                    }
+                } catch (Exception e) {
+                    throw new CASCException(indexEntry, $"Failed to process index with file data.{indexEntry.Index:D3} at offset {indexEntry.Offset:X16}", e);
+                }
             }
         }
 
         /// <summary>Open a data file</summary>
         /// <param name="index">Data file index ("data.{index}")</param>
         /// <returns>Data stream</returns>
-        private Stream OpenDataFile(int index) {
+        private FileStream OpenDataFile(int index) {
             return File.OpenRead(Path.Combine(ContainerDirectory, DataDirectory, $"data.{index:D3}") + _client.CreateArgs.ExtraFileEnding);
         }
         
