@@ -203,6 +203,12 @@ namespace TACTLib.Core.Product.Tank {
                     Logger.Debug("TRG", $"can't load bundle {asset.Key:X16} because key {e.MissingKey:X8} is missing from the keyring.");
                     continue;
                 }
+
+                if (bundle.Entries == null) {
+                    // Logger.Debug("TRG", $"can't load bundle {asset.Key:X16} everything is fucked.");
+                    continue;
+                }
+                
                 foreach (Bundle.Entry4 valuePair in bundle.Entries) {
                     m_hackedBundleLookup[valuePair.GUID] = asset.Key;
                 }

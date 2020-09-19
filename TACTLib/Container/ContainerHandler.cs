@@ -65,7 +65,7 @@ namespace TACTLib.Container {
                         selectedVersion = version;
                     }
                 }
-                
+
                 LoadIndexFile(selectedFile, i);
             }
         }
@@ -94,11 +94,29 @@ namespace TACTLib.Container {
                 int entryCount = eKey1Block.BlockSize / sizeof(EKeyEntry);
 
                 EKeyEntry[] entries = reader.ReadArray<EKeyEntry>(entryCount);
+                Dictionary<int, long> dataFileSizes = new Dictionary<int, long>();
                 for (int i = 0; i < entryCount; i++) {
                     EKeyEntry entry = entries[i];
-                    if (IndexEntries.ContainsKey(entry.EKey)) continue;
+                    if (IndexEntries.ContainsKey(entry.EKey)) {
+                        continue;
+                    }
+
+                    IndexEntry indexEntry = new IndexEntry(entry); 
+
+                    if (!dataFileSizes.TryGetValue(indexEntry.Index, out long dataFileSize)) {
+                        var path = GetDataFilePath(indexEntry.Index);
+                        if (!File.Exists(path)) {
+                            continue;
+                        }
+                        dataFileSize = new FileInfo(path).Length;
+                        dataFileSizes[indexEntry.Index] = dataFileSize;
+                    }
+
+                    if (indexEntry.Offset >= dataFileSize) {
+                        continue;
+                    }
                     
-                    IndexEntries[entry.EKey] = new IndexEntry(entry);
+                    IndexEntries[entry.EKey] = indexEntry;
                 }
             }
         }
@@ -150,11 +168,15 @@ namespace TACTLib.Container {
             }
         }
 
+        private string GetDataFilePath(int index) {
+            return Path.Combine(ContainerDirectory, DataDirectory, $"data.{index:D3}") + _client.CreateArgs.ExtraFileEnding;
+        }
+
         /// <summary>Open a data file</summary>
         /// <param name="index">Data file index ("data.{index}")</param>
         /// <returns>Data stream</returns>
         private FileStream OpenDataFile(int index) {
-            return File.OpenRead(Path.Combine(ContainerDirectory, DataDirectory, $"data.{index:D3}") + _client.CreateArgs.ExtraFileEnding);
+            return File.OpenRead(GetDataFilePath(index));
         }
         
         /// <summary>
@@ -231,8 +253,7 @@ namespace TACTLib.Container {
 
             public unsafe IndexEntry(EKeyEntry entry) {
                 int indexHigh = entry.FileOffsetBE[0];
-                int indexLow = Int32FromPtrBE(entry.FileOffsetBE+1);
-
+                int indexLow = Int32FromPtrBE(entry.FileOffsetBE + 1);
                 Index = indexHigh << 2 | (byte) ((indexLow & 0xC0000000) >> 30);
                 Offset = indexLow & 0x3FFFFFFF;
             }

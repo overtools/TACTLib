@@ -46,6 +46,7 @@ namespace TACTLib.Core.Product.Tank {
         }
 
         public Bundle(Stream stream, bool is148) {
+            if (stream == null) return;
             using (BinaryReader reader = new BinaryReader(stream)) {
                 if (is148) {
                     Header = reader.Read<HeaderData148>();
