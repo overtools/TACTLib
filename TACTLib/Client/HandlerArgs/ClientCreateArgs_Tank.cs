@@ -1,3 +1,5 @@
+using TACTLib.Core.Product.Tank;
+
 namespace TACTLib.Client.HandlerArgs {
     /// <inheritdoc />
     /// <summary>
@@ -13,5 +15,10 @@ namespace TACTLib.Client.HandlerArgs {
         /// Load manifest files, for development purposes
         /// </summary>
         public bool LoadManifest { get; set; } = true;
+
+        /// <summary>
+        ///     Manifest Region declaration. Only two valid values are RDEV and RCN.
+        /// </summary>
+        public string ManifestRegion { get; set; } = ProductHandler_Tank.REGION_DEV;
     }
 }

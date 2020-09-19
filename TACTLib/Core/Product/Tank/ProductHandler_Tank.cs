@@ -57,6 +57,7 @@ namespace TACTLib.Core.Product.Tank {
         public const int PACKAGE_IDX_FAKE_ROOT_CMF = -3;
         
         public const string REGION_DEV = "RDEV";
+        public const string REGION_CN = "RCN";
         public const string SPEECH_MANIFEST_NAME = "speech";
         public const string TEXT_MANIFEST_NAME = "text";
         public const string ROOT_FILE_FIELD_ORDER_CHECK = @"#FILEID|MD5|CHUNK_ID|PRIORITY|MPRIORITY|FILENAME|INSTALLPATH";
@@ -94,7 +95,7 @@ namespace TACTLib.Core.Product.Tank {
                 var manifestName = Path.GetFileNameWithoutExtension(rootFile.FileName);
                 var manifestFileName = Path.GetFileName(rootFile.FileName);
 
-                if (!manifestName.Contains(REGION_DEV)) continue; // is a CN (china) CMF. todo: support this
+                if (!manifestName.Contains(clientArgs.ManifestRegion ?? REGION_DEV)) continue; // is a CN (china) CMF. todo: support this
                 var locale = GetManifestLocale(manifestName);
                 
                 // ReSharper disable once ConvertIfStatementToSwitchStatement
@@ -206,7 +207,7 @@ namespace TACTLib.Core.Product.Tank {
 
                 if (bundle.Entries == null) {
                     // Logger.Debug("TRG", $"can't load bundle {asset.Key:X16} everything is fucked.");
-                    continue;
+                    throw new TankException("Bundle is fragmented: run, repair, or reinstall the game");
                 }
                 
                 foreach (Bundle.Entry4 valuePair in bundle.Entries) {
