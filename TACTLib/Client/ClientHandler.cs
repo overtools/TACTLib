@@ -1,3 +1,4 @@
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -52,6 +53,8 @@ namespace TACTLib.Client {
         public readonly string BasePath;
 
         public readonly ClientCreateArgs CreateArgs;
+
+        public readonly CDNIndexHandler m_cdnIdx;
 
         public ClientHandler(string basePath, ClientCreateArgs createArgs) {
             basePath = basePath ?? "";
@@ -183,6 +186,11 @@ namespace TACTLib.Client {
                     VFS = new VFSFileTree(this);
             }
 
+            if (createArgs.Online)
+            {
+                m_cdnIdx = CDNIndexHandler.Initialize(this);
+            }
+
             using (var _ = new PerfCounter("ProductHandlerFactory::GetHandler`TACTProduct`ClientHandler`Stream"))
                 ProductHandler = ProductHandlerFactory.GetHandler(Product, this, OpenCKey(ConfigHandler.BuildConfig.Root.ContentKey));
             
@@ -198,15 +206,9 @@ namespace TACTLib.Client {
             if (EncodingHandler != null && EncodingHandler.TryGetEncodingEntry(key, out EncodingHandler.CKeyEntry entry)) {
                 return OpenEKey(entry.EKey);
             }
-            if (CreateArgs.Online) {
-                using (var stream = NetHandle.OpenData(key)) {
-                    if (stream != null) {
-                        var ms = new MemoryStream();
-                        stream.CopyTo(ms);
-                        ms.Position = 0;
-                        return new BLTEStream(this, ms);
-                    }
-                }
+            if (CreateArgs.Online)
+            {
+                return new BLTEStream(this, NetHandle.OpenData(key));
             }
             Debugger.Log(0, "ContainerHandler", $"Missing encoding entry for CKey {key.ToHexString()}\n");
             return null;
@@ -221,6 +223,7 @@ namespace TACTLib.Client {
             Stream stream = default;
             if (CreateArgs.Mode == ClientCreateArgs.InstallMode.CASC) {
                 stream = ContainerHandler?.OpenEKey(key);
+                // can't return null
             }
             return stream == null ? null : new BLTEStream(this, stream);
         }
@@ -231,19 +234,28 @@ namespace TACTLib.Client {
         /// <param name="key">The Long Encoding Key</param>
         /// <returns>Loaded file</returns>
         public Stream OpenEKey(CKey key) {  // ekey = value of ckey in encoding table
-            Stream stream = default;
             if (CreateArgs.Mode == ClientCreateArgs.InstallMode.CASC) {
-                stream = ContainerHandler?.OpenEKey(key.AsEKey());
+                try {
+                    var cascBlte = OpenEKey(key.AsEKey());
+                    return cascBlte;
+                } catch (Exception e) {
+                    if (!CreateArgs.Online) throw;
+                    Logger.Warn("CASC", $"Unable to open {key.ToHexString()} from CASC. Will try to download. Exception: {e}");
+                }
+            }
+            if (!CreateArgs.Online) return null;
+            
+            var netMemStream = NetHandle.OpenData(key);
+            if (netMemStream == null)
+            {
+                if (m_cdnIdx.CDNIndexData.TryGetValue(key, out var cdnIdx))
+                {
+                    netMemStream = m_cdnIdx.OpenDataFile(cdnIdx);
+                }
             }
 
-            if (stream != null || !CreateArgs.Online) return stream == null ? null : new BLTEStream(this, stream);
-            
-            stream = NetHandle.OpenData(key);
-            if (stream == null) return null;
-            var ms = new MemoryStream();
-            stream.CopyTo(ms);
-            ms.Position = 0;
-            return new BLTEStream(this, ms);
+            if (netMemStream == null) return null;
+            return new BLTEStream(this, netMemStream);
         }
 
         public Stream OpenConfigKey(string key) {
