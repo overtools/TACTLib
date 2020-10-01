@@ -153,13 +153,18 @@ namespace TACTLib.Container {
                         // 2+8 byte block of something?
                         dataStream.Position += 10;
 
+                        var sizeToRead = size - 30;
+                        if (sizeToRead <= 0) {
+                            throw new InvalidDataException($"size to read from data is {sizeToRead} bytes which is invalid");
+                        }
+
                         // todo: maybe this?
                         // var memoryStream = new MemoryStream(size - 30);
                         //dataStream.CopyBytes(memoryStream, size-30);
                         //memoryStream.Position = 0;
                         //return memoryStream;
 
-                        byte[] data = reader.ReadBytes(size - 30);
+                        byte[] data = reader.ReadBytes(sizeToRead);
                         return new MemoryStream(data);
                     }
                 } catch (Exception e) {
