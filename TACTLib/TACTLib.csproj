@@ -12,5 +12,6 @@
   <ItemGroup>
     <PackageReference Include="Google.Protobuf" Version="3.14.0" />
     <PackageReference Include="lz4net" Version="1.0.15.93" />
+    <PackageReference Include="Microsoft.Toolkit.HighPerformance" Version="6.1.1" />
   </ItemGroup>
 </Project>

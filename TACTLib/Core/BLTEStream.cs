@@ -5,6 +5,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Security.Cryptography;
+using Microsoft.Toolkit.HighPerformance.Buffers;
 using TACTLib.Client;
 using TACTLib.Container;
 using TACTLib.Exceptions;
@@ -20,18 +21,20 @@ namespace TACTLib.Core {
 
     /// <summary>BLTE encoded stream</summary>
     public class BLTEStream : Stream {
-        public static Salsa20 SalsaInstance = new Salsa20();
+        public static Salsa20 s_salsa20 = new Salsa20();
         
+        public const int Magic = 0x45544C42;
         private const byte EncryptionSalsa20 = 0x53;
         private const byte EncryptionArc4 = 0x41;
-        public const int Magic = 0x45544C42;
 
-        private BinaryReader _reader;
-        private MemoryStream _memStream;
-        private DataBlock[] _dataBlocks;
-        private Stream _stream;
-        private int _blocksIndex;
-        private long _length;
+        private Stream m_inputStream;
+        private BinaryReader m_inputReader;
+        private DataBlock[] m_blocks;
+        private int m_blockCount;
+
+        private MemoryStream m_decodedStream;
+        private long m_length;
+
         public HashSet<string> Keys { get; set; } = new HashSet<string>();
 
         private readonly ClientHandler _client;
@@ -39,49 +42,48 @@ namespace TACTLib.Core {
         public override bool CanRead => true;
         public override bool CanSeek => true;
         public override bool CanWrite => false;
-        public override long Length => _length;
+        public override long Length => m_length;
         
         public override long Position {
-            get => _memStream.Position;
+            get => m_decodedStream.Position;
             set {
-                while (value > _memStream.Length)
+                while (value > m_decodedStream.Length)
                     if (!ProcessNextBlock())
                         break;
-
-                _memStream.Position = value;
+                m_decodedStream.Position = value;
             }
         }
 
         public BLTEStream(ClientHandler client, Stream src) {
             _client = client;
-            _stream = src;
-            _reader = new BinaryReader(src);
+            m_inputStream = src;
+            m_inputReader = new BinaryReader(src);
 
             Init();
         }
         
         public byte[] Dump() {
-            byte[] data = new byte[_stream.Length];
-            long tmp = _stream.Position;
-            _stream.Position = 0;
-            _stream.Read(data, 0, data.Length);
-            _stream.Position = tmp;
+            byte[] data = new byte[m_inputStream.Length];
+            long tmp = m_inputStream.Position;
+            m_inputStream.Position = 0;
+            m_inputStream.Read(data, 0, data.Length);
+            m_inputStream.Position = tmp;
             return data;
         }
 
         private void Init() {
-            int size = (int) _reader.BaseStream.Length;
+            int size = (int) m_inputReader.BaseStream.Length;
 
             if (size < 8)
                 throw new BLTEDecoderException(Dump(), "not enough data: {0}", 8);
 
-            int magic = _reader.ReadInt32();
+            int magic = m_inputReader.ReadInt32();
 
             if (magic != Magic) {
                 throw new BLTEDecoderException(Dump(), "frame header mismatch (bad BLTE file)");
             }
 
-            int headerSize = _reader.ReadInt32BE();
+            int headerSize = m_inputReader.ReadInt32BE();
 
             /*if (CASCConfig.ValidateData)
             {
@@ -103,7 +105,7 @@ namespace TACTLib.Core {
                 if (size < 12)
                     throw new BLTEDecoderException(Dump(), "not enough data: {0}", 12);
 
-                byte[] fcbytes = _reader.ReadBytes(4);
+                byte[] fcbytes = m_inputReader.ReadBytes(4);
 
                 numBlocks = (fcbytes[1] << 16) | (fcbytes[2] << 8) | (fcbytes[3] << 0);
 
@@ -119,29 +121,29 @@ namespace TACTLib.Core {
                     throw new BLTEDecoderException(Dump(), "not enough data: {0}", frameHeaderSize);
             }
 
-            _dataBlocks = new DataBlock[numBlocks];
+            m_blocks = new DataBlock[numBlocks];
 
             for (int i = 0; i < numBlocks; i++) {
-                DataBlock block = new DataBlock();
+                var block = new DataBlock();
 
                 if (headerSize != 0) {
-                    block.CompSize = _reader.ReadInt32BE();
-                    block.DecompSize = _reader.ReadInt32BE();
-                    block.Hash = _reader.Read<CKey>();
+                    block.CompSize = m_inputReader.ReadInt32BE();
+                    block.DecompSize = m_inputReader.ReadInt32BE();
+                    block.Hash = m_inputReader.Read<CKey>();
                 } else {
                     block.CompSize = size - 8;
                     block.DecompSize = size - 8 - 1;
                     block.Hash = default;
                 }
 
-                _dataBlocks[i] = block;
+                m_blocks[i] = block;
             }
 
-            _memStream = new MemoryStream(_dataBlocks.Sum(b => b.DecompSize));
+            m_decodedStream = new MemoryStream(m_blocks.Sum(b => b.DecompSize));
 
             ProcessNextBlock();
 
-            _length = headerSize == 0 ? _memStream.Length : _memStream.Capacity;
+            m_length = headerSize == 0 ? m_decodedStream.Length : m_decodedStream.Capacity;
 
             //for (int i = 0; i < _dataBlocks.Length; i++)
             //{
@@ -149,43 +151,55 @@ namespace TACTLib.Core {
             //}
         }
 
-        private void HandleDataBlock(byte[] data, int index) {
-            switch (data[0]) {
-                case 0x45: // E (encrypted)
-                    byte[] decrypted = Decrypt(data, index);
-                    HandleDataBlock(decrypted, index);
+        private void HandleDataBlock(BinaryReader reader, int index) {
+            var c = (char)reader.ReadByte();
+            switch (c) {
+                case 'E': // E (encrypted)
+                {
+                    reader.BaseStream.Position--;
+                    using var dataBuffer = SpanOwner<byte>.Allocate((int)reader.BaseStream.Length);
+                    reader.Read(dataBuffer.Span);
+                    byte[] decrypted = Decrypt(dataBuffer.Span, index);
+                    using var decryptedStream = new MemoryStream(decrypted);
+                    using var decryptedReader = new BinaryReader(decryptedStream);
+                    HandleDataBlock(decryptedReader, index);
                     break;
-                case 0x46: // F (frame, recursive)
+                }
+                case 'F': // F (frame, recursive)
+                {
                     throw new BLTEDecoderException(Dump(), "DecoderFrame not implemented");
-                case 0x4E: // N (not compressed)
-                    _memStream.Write(data, 1, data.Length - 1);
+                }
+                case 'N': // N (not compressed)
+                {
+                    NoAllocCopyTo(reader.BaseStream, m_decodedStream);
                     break;
-                case 0x5A: // Z (zlib compressed)
-                    Decompress(data, _memStream);
+                }
+                case 'Z': // Z (zlib compressed)
+                {
+                    Decompress(reader, m_decodedStream);
                     break;
+                }
                 default:
-                    throw new BLTEDecoderException(Dump(), "unknown BLTE block type {0} (0x{1:X2})!", (char) data[0], data[0]);
+                    throw new BLTEDecoderException(Dump(), "unknown BLTE block type {0} (0x{1:X2})!", c, (byte)c);
             }
         }
 
-        private byte[] Decrypt(byte[] data, int index) {
+        private byte[] Decrypt(ReadOnlySpan<byte> data, int index) {
+            var dataSpan = data;
+            
             byte keyNameSize = data[1];
 
             if (keyNameSize == 0 || keyNameSize != 8)
                 throw new BLTEDecoderException(Dump(), "keyNameSize == 0 || keyNameSize != 8");
-
-            byte[] keyNameBytes = new byte[keyNameSize];
-            Array.Copy(data, 2, keyNameBytes, 0, keyNameSize);
-
-            ulong keyName = BitConverter.ToUInt64(keyNameBytes, 0);
+            
+            var keyName = BitConverter.ToUInt64(dataSpan.Slice(2, keyNameSize));
 
             byte ivSize = data[keyNameSize + 2];
 
             if (ivSize != 4 || ivSize > 0x10)
                 throw new BLTEDecoderException(Dump(), "IVSize != 4 || IVSize > 0x10");
 
-            byte[] ivPart = new byte[ivSize];
-            Array.Copy(data, keyNameSize + 3, ivPart, 0, ivSize);
+            var ivPart = dataSpan.Slice(keyNameSize + 3, ivSize);
 
             if (data.Length < ivSize + keyNameSize + 4)
                 throw new BLTEDecoderException(Dump(), "data.Length < IVSize + keyNameSize + 4");
@@ -201,7 +215,7 @@ namespace TACTLib.Core {
 
             // expand to 8 bytes
             byte[] iv = new byte[8];
-            Array.Copy(ivPart, iv, ivPart.Length);
+            ivPart.CopyTo(new Span<byte>(iv));
 
             // magic
             for (int shift = 0, i = 0; i < sizeof(int); shift += 8, i++) iv[i] ^= (byte) ((index >> shift) & 0xFF);
@@ -215,72 +229,56 @@ namespace TACTLib.Core {
             Keys.Add(keyName.ToString("X16"));
 
             if (encType == EncryptionSalsa20) {
-                using (ICryptoTransform decryptor = SalsaInstance.CreateDecryptor(key, iv))
-                    return decryptor.TransformFinalBlock(data, dataOffset, data.Length - dataOffset);
+                using var decryptor = s_salsa20.CreateDecryptor2(key, iv);
+                return decryptor.TransformFinalBlock(data, dataOffset, data.Length - dataOffset);
             }
 
             // ARC4 ?
             throw new BLTEDecoderException(Dump(), "encType ENCRYPTION_ARC4 not implemented");
         }
         
-        public static void NoAllocCopyTo(Stream dis, Stream destination, int bufferSize=81920)
-        {
-            byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
-            try {
-                int count;
-                while ((count = dis.Read(buffer, 0, buffer.Length)) != 0)
-                    destination.Write(buffer, 0, count);
-            } finally {
-                ArrayPool<byte>.Shared.Return(buffer);
-            }
+        public static void NoAllocCopyTo(Stream dis, Stream destination, int bufferSize=81920) {
+            using var bufferOwner = SpanOwner<byte>.Allocate(bufferSize);
+            
+            int count;
+            while ((count = dis.Read(bufferOwner.Span)) != 0)
+                destination.Write(bufferOwner.Span.Slice(0, count));
         }
 
-        private static void Decompress(byte[] data, Stream outStream) {
-            // skip first 3 bytes (zlib)
-            using (MemoryStream ms = new MemoryStream(data, 3, data.Length - 3))
-            using (DeflateStream dfltStream = new DeflateStream(ms, CompressionMode.Decompress)) {
-                NoAllocCopyTo(dfltStream, outStream);
-            }
+        private static void Decompress(BinaryReader reader, Stream outStream) {
+            reader.BaseStream.Position += 2; // skip first 2 bytes (zlib)
+            using var dfltStream = new DeflateStream(reader.BaseStream, CompressionMode.Decompress);
+            NoAllocCopyTo(dfltStream, outStream);
         }
 
         public override void Flush() {
-            _stream.Flush();
-            _memStream.Flush();
+            m_inputStream.Flush();
+            m_decodedStream.Flush();
         }
 
         public override int Read(byte[] buffer, int offset, int count) {
-            if (_memStream.Position + count > _memStream.Length && _blocksIndex < _dataBlocks.Length) {
+            while (m_decodedStream.Position + count > m_decodedStream.Length && m_blockCount < m_blocks.Length) {
                 if (!ProcessNextBlock())
                     return 0;
-
-                return Read(buffer, offset, count);
             }
 
-            return _memStream.Read(buffer, offset, count);
+            return m_decodedStream.Read(buffer, offset, count);
         }
 
         private bool ProcessNextBlock() {
-            if (_blocksIndex == _dataBlocks.Length)
+            if (m_blockCount == m_blocks.Length)
                 return false;
 
-            long oldPos = _memStream.Position;
-            _memStream.Position = _memStream.Length;
+            long oldPos = m_decodedStream.Position;
+            m_decodedStream.Position = m_decodedStream.Length;
 
-            DataBlock block = _dataBlocks[_blocksIndex];
-            var blockData = _reader.ReadBytes(block.CompSize);
+            var block = m_blocks[m_blockCount];
+            using var subStream = new SliceStream(m_inputStream, block.CompSize, true);
+            using var blockReader = new BinaryReader(subStream);
+            HandleDataBlock(blockReader, m_blockCount);
+            m_blockCount++;
 
-            //            if (!block.Hash.IsZeroed() && CASCConfig.ValidateData)
-            //            {
-            //                byte[] blockHash = _md5.ComputeHash(block.Data);
-            //
-            //                if (!block.Hash.EqualsTo(blockHash))
-            //                    throw new BLTEDecoderException("MD5 mismatch");
-            //            }
-
-            HandleDataBlock(blockData, _blocksIndex);
-            _blocksIndex++;
-
-            _memStream.Position = oldPos;
+            m_decodedStream.Position = oldPos;
 
             return true;
         }
@@ -301,25 +299,20 @@ namespace TACTLib.Core {
             return Position;
         }
 
-        public override void SetLength(long value) {
-            throw new NotSupportedException();
-        }
-
-        public override void Write(byte[] buffer, int offset, int count) {
-            throw new InvalidOperationException();
-        }
+        public override void SetLength(long value) => throw new NotSupportedException();
+        public override void Write(byte[] buffer, int offset, int count) => throw new InvalidOperationException();
 
         protected override void Dispose(bool disposing) {
             try {
                 if (!disposing) return;
-                _stream?.Dispose();
-                _reader?.Dispose();
-                _memStream?.Dispose();
-                _dataBlocks = null;
+                m_inputStream?.Dispose();
+                m_inputReader?.Dispose();
+                m_decodedStream?.Dispose();
+                m_blocks = null;
             } finally {
-                _stream = null;
-                _reader = null;
-                _memStream = null;
+                m_inputStream = null;
+                m_inputReader = null;
+                m_decodedStream = null;
 
                 base.Dispose(disposing);
             }

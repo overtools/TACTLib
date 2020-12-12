@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Toolkit.HighPerformance.Buffers;
 
 namespace TACTLib.Core {
     /// <summary>
@@ -12,6 +13,9 @@ namespace TACTLib.Core {
     ///     <a href="http://code.logos.com/blog/2008/06/salsa20_implementation_in_c_1.html">Salsa20 Implementation in C#</a>.
     /// </remarks>
     public sealed class Salsa20 : SymmetricAlgorithm {
+        private static readonly byte[] Sigma = Encoding.ASCII.GetBytes("expand 32-byte k");
+        private static readonly byte[] Tau = Encoding.ASCII.GetBytes("expand 16-byte k");
+        
         /// <summary>
         ///     Initializes a new instance of the <see cref="Salsa20" /> class.
         /// </summary>
@@ -37,9 +41,9 @@ namespace TACTLib.Core {
         /// <param name="rgbKey">The secret key to use for the symmetric algorithm.</param>
         /// <param name="rgbIV">The initialization vector to use for the symmetric algorithm.</param>
         /// <returns>A symmetric decryptor object.</returns>
-        public override ICryptoTransform CreateDecryptor(byte[] rgbKey, byte[] rgbIV) {
+        public Salsa20CryptoTransform CreateDecryptor2(byte[] rgbKey, byte[] rgbIV) {
             // decryption and encryption are symmetrical
-            return CreateEncryptor(rgbKey, rgbIV);
+            return CreateEncryptor2(rgbKey, rgbIV);
         }
 
         /// <summary>
@@ -49,7 +53,7 @@ namespace TACTLib.Core {
         /// <param name="rgbKey">The secret key to use for the symmetric algorithm.</param>
         /// <param name="rgbIV">The initialization vector to use for the symmetric algorithm.</param>
         /// <returns>A symmetric encryptor object.</returns>
-        public override ICryptoTransform CreateEncryptor(byte[] rgbKey, byte[] rgbIV) {
+        public Salsa20CryptoTransform CreateEncryptor2(byte[] rgbKey, byte[] rgbIV) {
             if (rgbKey == null)
                 throw new ArgumentNullException(nameof(rgbKey));
             if (!ValidKeySize(rgbKey.Length * 8))
@@ -58,6 +62,9 @@ namespace TACTLib.Core {
 
             return new Salsa20CryptoTransform(rgbKey, rgbIV, _rounds);
         }
+
+        public override ICryptoTransform CreateDecryptor(byte[] rgbKey, byte[] rgbIV) => CreateDecryptor2(rgbKey, rgbIV);
+        public override ICryptoTransform CreateEncryptor(byte[] rgbKey, byte[] rgbIV) => CreateEncryptor2(rgbKey, rgbIV);
 
         private new bool ValidKeySize(int size) {
             return size == 128 || size == 256;
@@ -119,7 +126,7 @@ namespace TACTLib.Core {
 
         // Returns a new byte array containing the specified number of random bytes.
         private static byte[] GetRandomBytes(int byteCount) {
-            byte[] bytes = new byte[byteCount];
+            var bytes = new byte[byteCount];
             Random.NextBytes(bytes);
             //using (RandomNumberGenerator rng = new RNGCryptoServiceProvider())
             //    rng.GetBytes(bytes);
@@ -131,18 +138,7 @@ namespace TACTLib.Core {
         /// <summary>
         ///     Salsa20Impl is an implementation of <see cref="ICryptoTransform" /> that uses the Salsa20 algorithm.
         /// </summary>
-        private sealed class Salsa20CryptoTransform : ICryptoTransform {
-            public Salsa20CryptoTransform(byte[] key, byte[] iv, int rounds) {
-                Debug.Assert(key.Length == 16 || key.Length == 32, "abyKey.Length == 16 || abyKey.Length == 32",
-                    "Invalid key size.");
-                Debug.Assert(iv.Length == 8, "abyIV.Length == 8", "Invalid IV size.");
-                Debug.Assert(rounds == 8 || rounds == 12 || rounds == 20, "rounds == 8 || rounds == 12 || rounds == 20",
-                    "Invalid number of rounds.");
-
-                Initialize(key, iv);
-                _rounds = rounds;
-            }
-
+        public sealed class Salsa20CryptoTransform : ICryptoTransform {
             public bool CanReuseTransform => false;
 
             public bool CanTransformMultipleBlocks => true;
@@ -150,9 +146,54 @@ namespace TACTLib.Core {
             public int InputBlockSize => 64;
 
             public int OutputBlockSize => 64;
+            
+            private readonly int _rounds;
+            private MemoryOwner<uint> m_stateOwner;
+            private Span<uint> m_state => m_stateOwner.Span;
 
-            public int TransformBlock(byte[] inputBuffer, int inputOffset, int inputCount, byte[] outputBuffer,
-                int outputOffset) {
+            public Salsa20CryptoTransform(byte[] key, byte[] iv, int rounds) {
+                Debug.Assert(key.Length == 16 || key.Length == 32, "abyKey.Length == 16 || abyKey.Length == 32", "Invalid key size.");
+                Debug.Assert(iv.Length == 8, "abyIV.Length == 8", "Invalid IV size.");
+                Debug.Assert(rounds == 8 || rounds == 12 || rounds == 20, "rounds == 8 || rounds == 12 || rounds == 20", "Invalid number of rounds.");
+
+                Initialize(key, iv);
+                _rounds = rounds;
+            }
+            
+            private void Initialize(byte[] key, byte[] iv) {
+                m_stateOwner = MemoryOwner<uint>.Allocate(16);
+                m_state[1] = ToUInt32(key, 0);
+                m_state[2] = ToUInt32(key, 4);
+                m_state[3] = ToUInt32(key, 8);
+                m_state[4] = ToUInt32(key, 12);
+
+                var constants = key.Length == 32 ? Sigma : Tau;
+                var keyIndex = key.Length - 16;
+
+                m_state[11] = ToUInt32(key, keyIndex + 0);
+                m_state[12] = ToUInt32(key, keyIndex + 4);
+                m_state[13] = ToUInt32(key, keyIndex + 8);
+                m_state[14] = ToUInt32(key, keyIndex + 12);
+                m_state[0] = ToUInt32(constants, 0);
+                m_state[5] = ToUInt32(constants, 4);
+                m_state[10] = ToUInt32(constants, 8);
+                m_state[15] = ToUInt32(constants, 12);
+
+                m_state[6] = ToUInt32(iv, 0);
+                m_state[7] = ToUInt32(iv, 4);
+                m_state[8] = 0;
+                m_state[9] = 0;
+            }
+            
+            public int TransformBlock(byte[] inputBuffer, int inputOffset, int inputCount, byte[] outputBuffer, int outputOffset) {
+                throw new NotImplementedException();
+            }
+
+            public byte[] TransformFinalBlock(byte[] inputBuffer, int inputOffset, int inputCount) {
+                throw new NotImplementedException();
+            }
+
+            public int TransformBlock(ReadOnlySpan<byte> inputBuffer, int inputOffset, int inputCount, byte[] outputBuffer, int outputOffset) {
                 // check arguments
                 if (inputBuffer == null)
                     throw new ArgumentNullException(nameof(inputBuffer));
@@ -164,20 +205,20 @@ namespace TACTLib.Core {
                     throw new ArgumentNullException(nameof(outputBuffer));
                 if (outputOffset < 0 || outputOffset + inputCount > outputBuffer.Length)
                     throw new ArgumentOutOfRangeException(nameof(outputOffset));
-                if (_state == null)
+                if (m_stateOwner == null)
                     throw new ObjectDisposedException(GetType().Name);
 
-                byte[] output = new byte[64];
-                int bytesTransformed = 0;
+                Span<byte> hashOutput = stackalloc byte[64];
+                var bytesTransformed = 0;
 
                 while (inputCount > 0) {
-                    Hash(output, _state);
-                    _state[8] = AddOne(_state[8]);
-                    if (_state[8] == 0) _state[9] = AddOne(_state[9]);
+                    Hash(hashOutput, m_state);
+                    m_state[8] = AddOne(m_state[8]);
+                    if (m_state[8] == 0) m_state[9] = AddOne(m_state[9]);
 
-                    int blockSize = Math.Min(64, inputCount);
-                    for (int i = 0; i < blockSize; i++)
-                        outputBuffer[outputOffset + i] = (byte) (inputBuffer[inputOffset + i] ^ output[i]);
+                    var blockSize = Math.Min(64, inputCount);
+                    for (var i = 0; i < blockSize; i++)
+                        outputBuffer[outputOffset + i] = (byte) (inputBuffer[inputOffset + i] ^ hashOutput[i]);
                     bytesTransformed += blockSize;
 
                     inputCount -= 64;
@@ -188,37 +229,21 @@ namespace TACTLib.Core {
                 return bytesTransformed;
             }
 
-            public byte[] TransformFinalBlock(byte[] inputBuffer, int inputOffset, int inputCount) {
+            public byte[] TransformFinalBlock(ReadOnlySpan<byte> inputBuffer, int inputOffset, int inputCount) {
                 if (inputCount < 0)
                     throw new ArgumentOutOfRangeException(nameof(inputCount));
 
-                byte[] output = new byte[inputCount];
+                var output = new byte[inputCount];
                 TransformBlock(inputBuffer, inputOffset, inputCount, output, 0);
                 return output;
             }
 
-            public void Dispose() {
-                if (_state != null)
-                    Array.Clear(_state, 0, _state.Length);
-                _state = null;
-            }
+            private void Hash(Span<byte> output, ReadOnlySpan<uint> input) {
+                Debug.Assert(input.Length == 16); // should be the existing state buffer
+                Span<uint> state = stackalloc uint[input.Length];
+                input.CopyTo(state);
 
-            private static uint Rotate(uint v, int c) {
-                return (v << c) | (v >> (32 - c));
-            }
-
-            private static uint Add(uint v, uint w) {
-                return unchecked(v + w);
-            }
-
-            private static uint AddOne(uint v) {
-                return unchecked(v + 1);
-            }
-
-            private void Hash(byte[] output, uint[] input) {
-                uint[] state = (uint[]) input.Clone();
-
-                for (int round = _rounds; round > 0; round -= 2) {
+                for (var round = _rounds; round > 0; round -= 2) {
                     state[4] ^= Rotate(Add(state[0], state[12]), 7);
                     state[8] ^= Rotate(Add(state[4], state[0]), 9);
                     state[12] ^= Rotate(Add(state[8], state[4]), 13);
@@ -253,41 +278,27 @@ namespace TACTLib.Core {
                     state[15] ^= Rotate(Add(state[14], state[13]), 18);
                 }
 
-                for (int index = 0; index < 16; index++)
+                for (var index = 0; index < 16; index++)
                     ToBytes(Add(state[index], input[index]), output, 4 * index);
             }
 
-            private void Initialize(byte[] key, byte[] iv) {
-                _state = new uint[16];
-                _state[1] = ToUInt32(key, 0);
-                _state[2] = ToUInt32(key, 4);
-                _state[3] = ToUInt32(key, 8);
-                _state[4] = ToUInt32(key, 12);
+            private static uint Rotate(uint v, int c) {
+                return (v << c) | (v >> (32 - c));
+            }
 
-                byte[] constants = key.Length == 32 ? Sigma : Tau;
-                int keyIndex = key.Length - 16;
+            private static uint Add(uint v, uint w) {
+                return unchecked(v + w);
+            }
 
-                _state[11] = ToUInt32(key, keyIndex + 0);
-                _state[12] = ToUInt32(key, keyIndex + 4);
-                _state[13] = ToUInt32(key, keyIndex + 8);
-                _state[14] = ToUInt32(key, keyIndex + 12);
-                _state[0] = ToUInt32(constants, 0);
-                _state[5] = ToUInt32(constants, 4);
-                _state[10] = ToUInt32(constants, 8);
-                _state[15] = ToUInt32(constants, 12);
-
-                _state[6] = ToUInt32(iv, 0);
-                _state[7] = ToUInt32(iv, 4);
-                _state[8] = 0;
-                _state[9] = 0;
+            private static uint AddOne(uint v) {
+                return unchecked(v + 1);
             }
 
             private static uint ToUInt32(byte[] input, int inputOffset) {
-                return unchecked((uint) (input[inputOffset] | (input[inputOffset + 1] << 8) |
-                                         (input[inputOffset + 2] << 16) | (input[inputOffset + 3] << 24)));
+                return BitConverter.ToUInt32(new ReadOnlySpan<byte>(input).Slice(inputOffset));
             }
 
-            private static void ToBytes(uint input, byte[] output, int outputOffset) {
+            private static void ToBytes(uint input, Span<byte> output, int outputOffset) {
                 unchecked {
                     output[outputOffset] = (byte) input;
                     output[outputOffset + 1] = (byte) (input >> 8);
@@ -296,11 +307,10 @@ namespace TACTLib.Core {
                 }
             }
 
-            private static readonly byte[] Sigma = Encoding.ASCII.GetBytes("expand 32-byte k");
-            private static readonly byte[] Tau = Encoding.ASCII.GetBytes("expand 16-byte k");
-
-            private uint[] _state;
-            private readonly int _rounds;
+            public void Dispose() {
+                m_stateOwner?.Dispose();
+                m_stateOwner = null;
+            }
         }
     }
 }

@@ -140,36 +140,31 @@ namespace TACTLib.Container {
         /// <param name="indexEntry">Source index entry</param>
         /// <returns>Encoded stream</returns>
         private Stream OpenIndexEntry(IndexEntry indexEntry) {
-            using (FileStream dataStream = OpenDataFile(indexEntry.Index)) {
-                try {
-                    using (BinaryReader reader = new BinaryReader(dataStream, Encoding.ASCII, false)) { // ASCII = important. one byte per char
-                        dataStream.Position = indexEntry.Offset;
+            var dataStream = OpenDataFile(indexEntry.Index);
+            try {
+                using var reader = new BinaryReader(dataStream, Encoding.ASCII, true);
+                dataStream.Position = indexEntry.Offset;
 
-                        //CKey cKey = reader.Read<CKey>();
-                        dataStream.Position += 16;
+                //CKey cKey = reader.Read<CKey>();
+                dataStream.Position += 16;
 
-                        int size = reader.ReadInt32();
+                var size = reader.ReadInt32();
 
-                        // 2+8 byte block of something?
-                        dataStream.Position += 10;
+                // 2+8 byte block of something?
+                dataStream.Position += 10;
 
-                        var sizeToRead = size - 30;
-                        if (sizeToRead <= 0) {
-                            throw new InvalidDataException($"size to read from data is {sizeToRead} bytes which is invalid");
-                        }
-
-                        // todo: maybe this?
-                        // var memoryStream = new MemoryStream(size - 30);
-                        //dataStream.CopyBytes(memoryStream, size-30);
-                        //memoryStream.Position = 0;
-                        //return memoryStream;
-
-                        byte[] data = reader.ReadBytes(sizeToRead);
-                        return new MemoryStream(data);
-                    }
-                } catch (Exception e) {
-                    throw new CASCException(indexEntry, $"Failed to process index with file data.{indexEntry.Index:D3} at offset {indexEntry.Offset:X16}", e);
+                var sizeToRead = size - 30;
+                if (sizeToRead <= 0) {
+                    throw new InvalidDataException($"size to read from data is {sizeToRead} bytes which is invalid");
                 }
+
+                var slice = new SliceStream(dataStream, sizeToRead);
+                dataStream = null; // don't dispose
+                return slice;
+            } catch (Exception e) {
+                throw new CASCException(indexEntry, $"Failed to process index with file data.{indexEntry.Index:D3} at offset {indexEntry.Offset:X16}", e);
+            } finally {
+                dataStream?.Dispose();
             }
         }
 
