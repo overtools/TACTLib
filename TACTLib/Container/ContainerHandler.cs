@@ -205,7 +205,7 @@ namespace TACTLib.Container {
                 return "Data";
 
             if (product == TACTProduct.Overwatch)
-                return "data\\casc";
+                return Path.Combine("data", "casc");
             
             throw new NotImplementedException($"Product \"{product}\" is not supported.");
         }
