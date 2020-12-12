@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Security.Cryptography;
+using System.Runtime.InteropServices;
 using Microsoft.Toolkit.HighPerformance.Buffers;
 using TACTLib.Client;
 using TACTLib.Container;
@@ -32,6 +31,7 @@ namespace TACTLib.Core {
         private DataBlock[] m_blocks;
         private int m_blockCount;
 
+        private MemoryOwner<byte> m_decodedMemory;
         private MemoryStream m_decodedStream;
         private long m_length;
 
@@ -139,7 +139,13 @@ namespace TACTLib.Core {
                 m_blocks[i] = block;
             }
 
-            m_decodedStream = new MemoryStream(m_blocks.Sum(b => b.DecompSize));
+            var allBlocksSize = m_blocks.Sum(b => b.DecompSize);
+            m_decodedMemory = MemoryOwner<byte>.Allocate(allBlocksSize);
+            if (!MemoryMarshal.TryGetArray(m_decodedMemory.Memory, out ArraySegment<byte> segment)) {
+                throw new Exception("Unable to get pooled buffer for BLTE decode");
+            }
+            m_decodedStream = new MemoryStream(segment.Array, segment.Offset, segment.Count);
+            m_decodedStream.SetLength(0);
 
             ProcessNextBlock();
 
@@ -266,7 +272,7 @@ namespace TACTLib.Core {
         }
 
         private bool ProcessNextBlock() {
-            if (m_blockCount == m_blocks.Length)
+            if (m_blockCount >= m_blocks.Length)
                 return false;
 
             long oldPos = m_decodedStream.Position;
@@ -305,11 +311,13 @@ namespace TACTLib.Core {
         protected override void Dispose(bool disposing) {
             try {
                 if (!disposing) return;
+                m_decodedMemory?.Dispose();
                 m_inputStream?.Dispose();
                 m_inputReader?.Dispose();
                 m_decodedStream?.Dispose();
                 m_blocks = null;
             } finally {
+                m_decodedMemory = null;
                 m_inputStream = null;
                 m_inputReader = null;
                 m_decodedStream = null;
