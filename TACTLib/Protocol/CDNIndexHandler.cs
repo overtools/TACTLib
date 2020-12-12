@@ -86,7 +86,7 @@ namespace TACTLib.Protocol
             try
             {
                 var cdn = (CDNClient) m_client.NetHandle;
-                Stream stream = cdn.FetchCDN("data", archive, null, ".index");
+                using var stream = cdn.FetchCDN("data", archive, null, ".index");
                 ParseIndex(stream, i);
             }
             catch (Exception exc)
@@ -101,10 +101,9 @@ namespace TACTLib.Protocol
             {
                 var dir = m_client.ContainerHandler.ContainerDirectory;
                 string path = Path.Combine(dir, ContainerHandler.CDNIndicesDirectory, archive + ".index");
-                if (File.Exists(path))
-                {
-                    using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
-                        ParseIndex(fs, i);
+                if (File.Exists(path)) {
+                    using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+                    ParseIndex(fs, i);
                 }
                 else
                 {
