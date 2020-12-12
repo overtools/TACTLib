@@ -1,32 +1,27 @@
-version: 0.1-{build}
+version: 1.0-{build}
 image: Visual Studio 2019
 configuration: Release
 platform: Any CPU
-assembly_info:
+dotnet_csproj:
   patch: true
-  file: '**\AssemblyInfo.*'
+  file: '**\*.csproj'
+  version: '{version}'
   assembly_version: '{version}'
-  assembly_file_version: '{version}'
-  assembly_informational_version: $(appveyor_repo_commit)
+  file_version: '{version}'
+  informational_version: $(appveyor_repo_commit)
 before_build:
-- ps: '[System.IO.File]::AppendAllText("C:\Windows\System32\drivers\etc\hosts", "`n93.184.221.200  api.nuget.org")'
-- cmd: >-
-    git submodule update --init --recursive
-
-    nuget restore TACTLib.sln
-build:
-  project: TACTLib.sln
-  verbosity: minimal
-#before_package:
-#- cmd: >-
-#    del /F /Q TACTLibTest\bin\Release\*.pdb
-#    del /F /Q TACTLibTest\bin\Release\*.xml
-#    del /F /Q TACTLib\bin\Release\*.pdb
-#    del /F /Q TACTLib\bin\Release\*.xml
+  - cmd: git submodule update --init --recursive
+  - cmd: dotnet --version
+  - cmd: dotnet restore TACTLib.sln --verbosity m
+build_script:
+  - cmd: dotnet publish --configuration Release -r win7-x64 --self-contained false -o dist/Release
+  - cmd: dotnet publish --configuration Debug -r win7-x64 --self-contained false -o dist/Debug
+branches:
+  only:
+    - master
 artifacts:
-- path: TACTLibTest\bin\Release\net471\TACTLibTest.exe
-  name: TACTLibTest
-- path: TACTLib\bin\Release\net471\TACTLib.dll
-  name: TACTLib
-cache:
-  - packages -> **\packages.config 
+  - path: dist/Release
+    name: TACTLib-Release
+  - path: dist/Debug
+    name: TACTLib-Debug
+deploy: false
