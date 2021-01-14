@@ -81,9 +81,16 @@ namespace TACTLib.Core.Product.Tank {
 
         public static BinaryReader GetDecryptedReader<T>(string name, string manifestType, T header, uint buildVersion, TACTProduct product, Stream stream) {
             GenerateKeyIV(name, manifestType, header, buildVersion, product, out byte[] key, out byte[] iv);
-
-            using (RijndaelManaged rijndael = new RijndaelManaged {Key = key, IV = iv, Mode = CipherMode.CBC}) {
-                var cryptoStream = new CryptoStream(stream, rijndael.CreateDecryptor(), CryptoStreamMode.Read);
+            
+            using (Aes aes = Aes.Create()) {
+                aes.KeySize = 128;
+                aes.FeedbackSize = 128;
+                aes.BlockSize = 128;
+                aes.Key = key;
+                aes.IV = iv;
+                aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.None;
+                var cryptoStream = new CryptoStream(stream, aes.CreateDecryptor(), CryptoStreamMode.Read);
                 return new BinaryReader(cryptoStream);
             }
         }
