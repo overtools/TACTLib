@@ -62,9 +62,9 @@ namespace TACTLib.Client {
             CreateArgs = createArgs;
             string flavorInfoProductCode = null;
             
-            if (!Directory.Exists(basePath)) throw new FileNotFoundException("invalid archive directory");
+            if (createArgs.UseContainer && !Directory.Exists(basePath)) throw new FileNotFoundException("invalid archive directory");
 
-            string dbPath = Path.Combine(basePath, createArgs.ProductDatabaseFilename);
+            var dbPath = Path.Combine(basePath, createArgs.ProductDatabaseFilename);
 
             try {
                 if (File.Exists(dbPath)) {
@@ -102,7 +102,7 @@ namespace TACTLib.Client {
                     try {
                         Product = ProductHelpers.ProductFromLocalInstall(basePath);
                     } catch {
-                        if (createArgs.Mode == ClientCreateArgs.InstallMode.CASC) {  // if we need an archive then we should be able to detect the product
+                        if (createArgs.VersionSource == ClientCreateArgs.InstallMode.Local) {  // if we need an archive then we should be able to detect the product
                             throw;
                         }
                         
@@ -146,33 +146,33 @@ namespace TACTLib.Client {
             }
             
             if (createArgs.Online) {
-                using (var _ = new PerfCounter("INetworkHandler::ctor`ClientHandler"))
-                    if (createArgs.Mode.ToString() == "Ribbit") {
-                        NetHandle = new RibbitCDNClient(this);
-                    } else {
-                        NetHandle = new NGDPClient(this);
-                    }
+                using var _ = new PerfCounter("INetworkHandler::ctor`ClientHandler");
+                if (createArgs.OnlineRootHost.StartsWith("ribbit:")) {
+                    NetHandle = new RibbitCDNClient(this);
+                } else {
+                    NetHandle = new NGDPClient(this);
+                }
             }
             
-            if(createArgs.Mode == ClientCreateArgs.InstallMode.CASC) {
-                string installationInfoPath = Path.Combine(basePath, createArgs.InstallInfoFileName) + createArgs.ExtraFileEnding;
+            if(createArgs.VersionSource == ClientCreateArgs.InstallMode.Local) {
+                var installationInfoPath = Path.Combine(basePath, createArgs.InstallInfoFileName) + createArgs.ExtraFileEnding;
                 if (!File.Exists(installationInfoPath)) {
                     throw new FileNotFoundException(installationInfoPath);
                 }
 
-                using (var _ = new PerfCounter("InstallationInfo::ctor`string"))
-                    InstallationInfo = new InstallationInfo(installationInfoPath, AgentProduct.ProductCode);
+                using var _ = new PerfCounter("InstallationInfo::ctor`string");
+                InstallationInfo = new InstallationInfo(installationInfoPath, AgentProduct.ProductCode);
             } else {
-                using (var _ = new PerfCounter("InstallationInfo::ctor`INetworkHandler"))
-                    InstallationInfo = new InstallationInfo(NetHandle, createArgs.OnlineRegion);
+                using var _ = new PerfCounter("InstallationInfo::ctor`INetworkHandler");
+                InstallationInfo = new InstallationInfo(NetHandle, createArgs.OnlineRegion);
             }
 
             Logger.Info("CASC", $"{Product} build {InstallationInfo.Values["Version"]}");
 
-            if (createArgs.Mode == ClientCreateArgs.InstallMode.CASC) {
+            if (createArgs.UseContainer) {
                 Logger.Info("CASC", "Initializing...");
-                using (var _ = new PerfCounter("ContainerHandler::ctor`ClientHandler"))
-                    ContainerHandler = new ContainerHandler(this);
+                using var _ = new PerfCounter("ContainerHandler::ctor`ClientHandler");
+                ContainerHandler = new ContainerHandler(this);
             }
 
             using (var _ = new PerfCounter("ConfigHandler::ctor`ClientHandler"))
@@ -182,8 +182,8 @@ namespace TACTLib.Client {
                 EncodingHandler = new EncodingHandler(this);
 
             if (ConfigHandler.BuildConfig.VFSRoot != null) {
-                using (var _ = new PerfCounter("VFSFileTree::ctor`ClientHandler"))
-                    VFS = new VFSFileTree(this);
+                using var _ = new PerfCounter("VFSFileTree::ctor`ClientHandler");
+                VFS = new VFSFileTree(this);
             }
 
             if (createArgs.Online)
@@ -220,11 +220,7 @@ namespace TACTLib.Client {
         /// <param name="key">The Encoding Key</param>
         /// <returns>Loaded file</returns>
         public Stream OpenEKey(EKey key) {  // ekey = value of ckey in encoding table
-            Stream stream = default;
-            if (CreateArgs.Mode == ClientCreateArgs.InstallMode.CASC) {
-                stream = ContainerHandler?.OpenEKey(key);
-                // can't return null
-            }
+            var stream = ContainerHandler?.OpenEKey(key);
             return stream == null ? null : new BLTEStream(this, stream);
         }
 
@@ -234,24 +230,25 @@ namespace TACTLib.Client {
         /// <param name="key">The Long Encoding Key</param>
         /// <returns>Loaded file</returns>
         public Stream OpenEKey(CKey key) {  // ekey = value of ckey in encoding table
-            if (CreateArgs.Mode == ClientCreateArgs.InstallMode.CASC) {
+            if (ContainerHandler != null) {
                 try {
                     var cascBlte = OpenEKey(key.AsEKey());
-                    return cascBlte;
+                    if (cascBlte != null) return cascBlte;
                 } catch (Exception e) {
                     if (!CreateArgs.Online) throw;
                     Logger.Warn("CASC", $"Unable to open {key.ToHexString()} from CASC. Will try to download. Exception: {e}");
                 }
             }
             if (!CreateArgs.Online) return null;
-            
-            var netMemStream = NetHandle.OpenData(key);
+
+            Stream netMemStream = null;
+            if (m_cdnIdx.CDNIndexData.TryGetValue(key, out var cdnIdx))
+            {
+                netMemStream = m_cdnIdx.OpenDataFile(cdnIdx);
+            }
             if (netMemStream == null)
             {
-                if (m_cdnIdx.CDNIndexData.TryGetValue(key, out var cdnIdx))
-                {
-                    netMemStream = m_cdnIdx.OpenDataFile(cdnIdx);
-                }
+                netMemStream = NetHandle.OpenData(key);
             }
 
             if (netMemStream == null) return null;
@@ -259,8 +256,8 @@ namespace TACTLib.Client {
         }
 
         public Stream OpenConfigKey(string key) {
-            if (CreateArgs.Mode == ClientCreateArgs.InstallMode.CASC) {
-                var path = Path.Combine(ContainerHandler?.ContainerDirectory, ContainerHandler.ConfigDirectory, key.Substring(0, 2), key.Substring(2, 2), key);
+            if (ContainerHandler != null) {
+                var path = Path.Combine(ContainerHandler.ContainerDirectory, ContainerHandler.ConfigDirectory, key.Substring(0, 2), key.Substring(2, 2), key);
                 if (File.Exists(path + CreateArgs.ExtraFileEnding)) {
                     return File.OpenRead(path + CreateArgs.ExtraFileEnding);
                 }

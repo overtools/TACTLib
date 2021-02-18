@@ -6,18 +6,8 @@ namespace TACTLib.Client {
     /// </summary>
     public class ClientCreateArgs {
         public enum InstallMode {
-            /// <summary>
-            /// Local file loading
-            /// </summary>
-            CASC,
-            /// <summary>
-            /// Online Ribbit
-            /// </summary>
-            Ribbit,
-            /// <summary>
-            /// Online NGDP
-            /// </summary>
-            NGDP,
+            Local,
+            Remote
         }
 
         public const string US_NGDP = "http://us.patch.battle.net:1119";
@@ -43,16 +33,23 @@ namespace TACTLib.Client {
         /// <seealso cref="TACTLib.Client.HandlerArgs.ClientCreateArgs_Tank"/>
         /// <seealso cref="TACTLib.Client.HandlerArgs.ClientCreateArgs_WorldOfWarcraftV6"/> 
         public IHandlerArgs HandlerArgs { get; set; } = null;
+        
+        public InstallMode VersionSource { get; set; } = InstallMode.Local;
 
-        /// <summary>
-        /// Sets 
-        /// </summary>
-        public InstallMode Mode { get; set; } = InstallMode.CASC;
+        private bool m_useContainerBacking = true;
+        public bool UseContainer {
+            get => m_useContainerBacking || VersionSource == InstallMode.Local;
+            set => m_useContainerBacking = value;
+        }
 
+        private bool m_onlineBacking = true;
         /// <summary>
         /// Download erroring files
         /// </summary>
-        public bool Online { get; set; } = true;
+        public bool Online {
+            get => m_onlineBacking || VersionSource == InstallMode.Remote;
+            set => m_onlineBacking = value;
+        }
 
         /// <summary>
         /// Region to load from NGDP/Ribbit.
