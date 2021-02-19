@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Reflection;
 using TACTLib.Client;
+using TACTLib.Core.Product.Tank;
 using static TACTLib.Utils;
 
 namespace TACTLib.Core {
@@ -26,6 +28,14 @@ namespace TACTLib.Core {
                 
                 //Console.Out.WriteLine(pair.Value[0]);
             }
+
+
+            if (client.CreateArgs.LoadSupportKeyring) {
+                string keyFile = client.CreateArgs.SupportKeyring ?? Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + $@"\{client.Product:G}.keyring";
+                if (File.Exists(keyFile)) {
+                    LoadSupportFile(keyFile);
+                }
+            }
         }
 
         public void AddKey(ulong keyName, byte[] value) {
@@ -33,6 +43,7 @@ namespace TACTLib.Core {
         }
 
         public void LoadSupportFile(string path) {
+            var debugFileKeyCache = new Dictionary<ulong, byte[]>();
             using (TextReader r = new StreamReader(path)) {
                 string line;
                 while ((line = r.ReadLine()) != null) {
@@ -56,9 +67,16 @@ namespace TACTLib.Core {
                         continue;
                     }
 
+                    var keyByte = StringToByteArray(c[1]);
+                    
+                    if (debugFileKeyCache.ContainsKey(v))
+                        Logger.Debug("TACT", $"Duplicate key detected in keyring file. {c[0]}");
+                    else
+                        debugFileKeyCache.Add(v, keyByte);
+
                     if (enabled) {
                         if (!Keys.ContainsKey(v)) {
-                            Keys.Add(v, StringToByteArray(c[1]));
+                            Keys.Add(v, keyByte);
                         }
                     } else {
                         if (Keys.ContainsKey(v)) {

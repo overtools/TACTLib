@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using TACTLib.Client;
@@ -19,7 +20,7 @@ namespace TACTLib.Core.Product.MNDX
     }
 
     [ProductHandler(TACTProduct.HeroesOfTheStorm), ProductHandler(TACTProduct.StarCraft2)]
-    class ProductHandler_MNDX : IProductHandler
+    public class ProductHandler_MNDX : IProductHandler
     {
         private const int CASC_MNDX_SIGNATURE = 0x58444E4D;          // 'MNDX'
         private const int CASC_MAX_MAR_FILES = 3;
@@ -33,6 +34,7 @@ namespace TACTLib.Core.Product.MNDX
         private Dictionary<int, CASC_ROOT_ENTRY_MNDX> mndxRootEntriesValid;
 
         private Dictionary<int, string> Packages = new Dictionary<int, string>();
+        private Dictionary<string, int> PackagesValue = new Dictionary<string, int>();
 
         public List<MNDXEntry> Entries = new List<MNDXEntry>();
 
@@ -141,6 +143,9 @@ namespace TACTLib.Core.Product.MNDX
                         packagesLocale.Add(result.FileNameIndex, Locale.All);
                 }
 
+                Packages = Packages.OrderByDescending(x => x.Value.Length).ToDictionary(x => x.Key, x => x.Value);
+                PackagesValue = Packages.ToDictionary(x => x.Value, x => x.Key);
+                
                 foreach (var result in MarFiles[2].EnumerateFiles())
                 {
                     var file = result.FoundPath;
@@ -158,28 +163,19 @@ namespace TACTLib.Core.Product.MNDX
 
         private int FindMNDXPackage(string fileName)
         {
-            int nMaxLength = 0;
-            int pMatching = -1;
-
-            int fileNameLen = fileName.Length;
-
-            foreach (var package in Packages)
+            var index = fileName.LastIndexOf('/');
+            if (index == -1) return -1;
+            while(index > -1)
             {
-                string pkgName = package.Value;
-                int pkgNameLen = pkgName.Length;
-
-                if (pkgNameLen < fileNameLen && pkgNameLen > nMaxLength)
+                if (PackagesValue.TryGetValue(fileName.Substring(0, index), out var packageId))
                 {
-                    // Compare the package name
-                    if (string.CompareOrdinal(fileName, 0, pkgName, 0, pkgNameLen) == 0)
-                    {
-                        pMatching = package.Key;
-                        nMaxLength = pkgNameLen;
-                    }
+                    return packageId;
                 }
+
+                index = fileName.LastIndexOf('/', index - 1);
             }
 
-            return pMatching;
+            return -1;
         }
 
         private CASC_ROOT_ENTRY_MNDX FindMNDXInfo(string path, int dwPackage)

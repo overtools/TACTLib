@@ -1,7 +1,6 @@
-﻿using System.IO;
-using TACTLib;
+﻿using TACTLib;
 using TACTLib.Client;
-using TACTLib.Core.Product.Tank;
+using TACTLib.Protocol.Ribbit;
 
 namespace TACTLibTest {
     internal static class Program {
@@ -10,6 +9,10 @@ namespace TACTLibTest {
             //const string path = @"D:\Games\Call of Duty Black Ops 4";
             
             Logger.RegisterBasic();
+
+            var ribbit = new RibbitClient(ClientCreateArgs.US_RIBBIT);
+            var summary = ribbit.GetSummary();
+            var ver = ribbit.GetVersions("pro");
             
             //System.Diagnostics.Debugger.Break();
             ClientHandler clientHandler = new ClientHandler(args[0], new ClientCreateArgs

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -6,33 +7,15 @@ using System.Linq;
 using System.Security.Cryptography;
 using TACTLib.Client;
 using TACTLib.Container;
+using TACTLib.Exceptions;
 using TACTLib.Helpers;
 
 namespace TACTLib.Core {
-    /// <summary>Thrown when the BLTE reader encounters invalid data</summary>
-    [Serializable]
-    public class BLTEDecoderException : Exception {
-        public BLTEDecoderException(string message) : base(message) { }
-
-        public BLTEDecoderException(string fmt, params object[] args) : base(string.Format(fmt, args)) { }
-    }
-
-    /// <summary>Thrown when the BLTE reader is missing a key</summary>
-    [Serializable]
-    public class BLTEKeyException : Exception {
-        public ulong MissingKey;
-
-        public BLTEKeyException(ulong key) : base($"unknown key {key:X16}") {
-            MissingKey = key;
-        }
-    }
-
     /// <summary>BLTE block</summary>
     internal class DataBlock {
         public int CompSize;
         public int DecompSize;
         public CKey Hash;
-        public byte[] Data;
     }
 
     /// <summary>BLTE encoded stream</summary>
@@ -79,17 +62,26 @@ namespace TACTLib.Core {
 
             Init();
         }
+        
+        public byte[] Dump() {
+            byte[] data = new byte[_stream.Length];
+            long tmp = _stream.Position;
+            _stream.Position = 0;
+            _stream.Read(data, 0, data.Length);
+            _stream.Position = tmp;
+            return data;
+        }
 
         private void Init() {
             int size = (int) _reader.BaseStream.Length;
 
             if (size < 8)
-                throw new BLTEDecoderException("not enough data: {0}", 8);
+                throw new BLTEDecoderException(Dump(), "not enough data: {0}", 8);
 
             int magic = _reader.ReadInt32();
 
             if (magic != Magic) {
-                throw new BLTEDecoderException("frame header mismatch (bad BLTE file)");
+                throw new BLTEDecoderException(Dump(), "frame header mismatch (bad BLTE file)");
             }
 
             int headerSize = _reader.ReadInt32BE();
@@ -112,22 +104,22 @@ namespace TACTLib.Core {
 
             if (headerSize > 0) {
                 if (size < 12)
-                    throw new BLTEDecoderException("not enough data: {0}", 12);
+                    throw new BLTEDecoderException(Dump(), "not enough data: {0}", 12);
 
                 byte[] fcbytes = _reader.ReadBytes(4);
 
                 numBlocks = (fcbytes[1] << 16) | (fcbytes[2] << 8) | (fcbytes[3] << 0);
 
                 if (fcbytes[0] != 0x0F || numBlocks == 0)
-                    throw new BLTEDecoderException("bad table format 0x{0:x2}, numBlocks {1}", fcbytes[0], numBlocks);
+                    throw new BLTEDecoderException(Dump(), "bad table format 0x{0:x2}, numBlocks {1}", fcbytes[0], numBlocks);
 
                 int frameHeaderSize = 24 * numBlocks + 12;
 
                 if (headerSize != frameHeaderSize)
-                    throw new BLTEDecoderException("header size mismatch");
+                    throw new BLTEDecoderException(Dump(), "header size mismatch");
 
                 if (size < frameHeaderSize)
-                    throw new BLTEDecoderException("not enough data: {0}", frameHeaderSize);
+                    throw new BLTEDecoderException(Dump(), "not enough data: {0}", frameHeaderSize);
             }
 
             _dataBlocks = new DataBlock[numBlocks];
@@ -142,7 +134,7 @@ namespace TACTLib.Core {
                 } else {
                     block.CompSize = size - 8;
                     block.DecompSize = size - 8 - 1;
-                    block.Hash = default(CKey);
+                    block.Hash = default;
                 }
 
                 _dataBlocks[i] = block;
@@ -172,7 +164,7 @@ namespace TACTLib.Core {
                     HandleDataBlock(decrypted, index);
                     break;
                 case 0x46: // F (frame, recursive)
-                    throw new BLTEDecoderException("DecoderFrame not implemented");
+                    throw new BLTEDecoderException(Dump(), "DecoderFrame not implemented");
                 case 0x4E: // N (not compressed)
                     _memStream.Write(data, 1, data.Length - 1);
                     break;
@@ -180,7 +172,7 @@ namespace TACTLib.Core {
                     Decompress(data, _memStream);
                     break;
                 default:
-                    throw new BLTEDecoderException("unknown BLTE block type {0} (0x{1:X2})!", (char) data[0], data[0]);
+                    throw new BLTEDecoderException(Dump(), "unknown BLTE block type {0} (0x{1:X2})!", (char) data[0], data[0]);
             }
         }
 
@@ -188,7 +180,7 @@ namespace TACTLib.Core {
             byte keyNameSize = data[1];
 
             if (keyNameSize == 0 || keyNameSize != 8)
-                throw new BLTEDecoderException("keyNameSize == 0 || keyNameSize != 8");
+                throw new BLTEDecoderException(Dump(), "keyNameSize == 0 || keyNameSize != 8");
 
             byte[] keyNameBytes = new byte[keyNameSize];
             Array.Copy(data, 2, keyNameBytes, 0, keyNameSize);
@@ -198,20 +190,20 @@ namespace TACTLib.Core {
             byte ivSize = data[keyNameSize + 2];
 
             if (ivSize != 4 || ivSize > 0x10)
-                throw new BLTEDecoderException("IVSize != 4 || IVSize > 0x10");
+                throw new BLTEDecoderException(Dump(), "IVSize != 4 || IVSize > 0x10");
 
             byte[] ivPart = new byte[ivSize];
             Array.Copy(data, keyNameSize + 3, ivPart, 0, ivSize);
 
             if (data.Length < ivSize + keyNameSize + 4)
-                throw new BLTEDecoderException("data.Length < IVSize + keyNameSize + 4");
+                throw new BLTEDecoderException(Dump(), "data.Length < IVSize + keyNameSize + 4");
 
             int dataOffset = keyNameSize + ivSize + 3;
 
             byte encType = data[dataOffset];
 
             if (encType != EncryptionSalsa20 && encType != EncryptionArc4) // 'S' or 'A'
-                throw new BLTEDecoderException("encType != ENCRYPTION_SALSA20 && encType != ENCRYPTION_ARC4");
+                throw new BLTEDecoderException(Dump(), "encType != ENCRYPTION_SALSA20 && encType != ENCRYPTION_ARC4");
 
             dataOffset++;
 
@@ -231,20 +223,31 @@ namespace TACTLib.Core {
             Keys.Add(keyName.ToString("X16"));
 
             if (encType == EncryptionSalsa20) {
-                ICryptoTransform decryptor = SalsaInstance.CreateDecryptor(key, iv);
-
-                return decryptor.TransformFinalBlock(data, dataOffset, data.Length - dataOffset);
+                using (ICryptoTransform decryptor = SalsaInstance.CreateDecryptor(key, iv))
+                    return decryptor.TransformFinalBlock(data, dataOffset, data.Length - dataOffset);
             }
 
             // ARC4 ?
-            throw new BLTEDecoderException("encType ENCRYPTION_ARC4 not implemented");
+            throw new BLTEDecoderException(Dump(), "encType ENCRYPTION_ARC4 not implemented");
+        }
+        
+        public static void NoAllocCopyTo(Stream dis, Stream destination, int bufferSize=81920)
+        {
+            byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
+            try {
+                int count;
+                while ((count = dis.Read(buffer, 0, buffer.Length)) != 0)
+                    destination.Write(buffer, 0, count);
+            } finally {
+                ArrayPool<byte>.Shared.Return(buffer);
+            }
         }
 
         private static void Decompress(byte[] data, Stream outStream) {
             // skip first 3 bytes (zlib)
             using (MemoryStream ms = new MemoryStream(data, 3, data.Length - 3))
             using (DeflateStream dfltStream = new DeflateStream(ms, CompressionMode.Decompress)) {
-                dfltStream.CopyTo(outStream);
+                NoAllocCopyTo(dfltStream, outStream);
             }
         }
 
@@ -272,8 +275,7 @@ namespace TACTLib.Core {
             _memStream.Position = _memStream.Length;
 
             DataBlock block = _dataBlocks[_blocksIndex];
-
-            block.Data = _reader.ReadBytes(block.CompSize);
+            var blockData = _reader.ReadBytes(block.CompSize);
 
             //            if (!block.Hash.IsZeroed() && CASCConfig.ValidateData)
             //            {
@@ -283,7 +285,7 @@ namespace TACTLib.Core {
             //                    throw new BLTEDecoderException("MD5 mismatch");
             //            }
 
-            HandleDataBlock(block.Data, _blocksIndex);
+            HandleDataBlock(blockData, _blocksIndex);
             _blocksIndex++;
 
             _memStream.Position = oldPos;
@@ -321,6 +323,7 @@ namespace TACTLib.Core {
                 _stream?.Dispose();
                 _reader?.Dispose();
                 _memStream?.Dispose();
+                _dataBlocks = null;
             } finally {
                 _stream = null;
                 _reader = null;
@@ -328,6 +331,7 @@ namespace TACTLib.Core {
 
                 base.Dispose(disposing);
             }
+            GC.SuppressFinalize(this);
         }
     }
 }

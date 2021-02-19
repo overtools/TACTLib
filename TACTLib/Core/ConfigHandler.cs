@@ -22,7 +22,7 @@ namespace TACTLib.Core {
         }
 
         private void LoadFromInstallationInfo<T>(ClientHandler client, string name, out T @out) where T : Config.Config {
-            if (client.InstallationInfo.Values.TryGetValue(name, out string key)) {
+            if (client.InstallationInfo.Values.TryGetValue(name, out string key) && !string.IsNullOrWhiteSpace(key)) {
                 using (Stream stream = client.OpenConfigKey(key)) {
                     LoadConfig(client, stream, out @out);
                 }

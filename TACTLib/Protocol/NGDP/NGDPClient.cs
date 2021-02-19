@@ -24,10 +24,10 @@ namespace TACTLib.Protocol.NGDP {
         };
 
         public override Dictionary<string, string> CreateInstallationInfo(string region) {
-            using (StreamReader cdnsReader = new StreamReader(GetRoot($"/{ProductHelpers.UIDFromProduct(client.Product)}/cdns"))) {
-                using (StreamReader versionReader = new StreamReader(GetRoot($"/{ProductHelpers.UIDFromProduct(client.Product)}/versions"))) {
-                    var cdns = InstallationInfo.ParseInternal(cdnsReader).FirstOrDefault(x => x["Name"] == region);
-                    var versions = InstallationInfo.ParseInternal(versionReader).FirstOrDefault(x => x["Region"] == region);
+            using (StreamReader cdnsReader = new StreamReader(GetRoot($"/{client.GetProduct()}/cdns"))) {
+                using (StreamReader versionReader = new StreamReader(GetRoot($"/{client.GetProduct()}/versions"))) {
+                    var cdns = InstallationInfo.ParseToDict(cdnsReader).FirstOrDefault(x => x["Name"] == region);
+                    var versions = InstallationInfo.ParseToDict(versionReader).FirstOrDefault(x => x["Region"] == region);
                     var bi = new Dictionary<string, string> {
                         {"Active", "1"},
                         {"InstallKey", ""},

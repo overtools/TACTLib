@@ -159,7 +159,7 @@ namespace TACTLib {
             if (File.Exists(Path.Combine(path, "Warcraft III.exe")))
                 return TACTProduct.Warcraft3;
 
-            if (Directory.Exists(Path.Combine(path, "Data"))) {
+            if (Directory.Exists(Path.Combine(path, "Data")) || Directory.Exists(Path.Combine(path, "data"))) {
                 if (File.Exists(Path.Combine(path, "Diablo III.exe")))
                     return TACTProduct.Diablo3;
 

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using TACTLib.Client;
+using TACTLib.Exceptions;
 using TACTLib.Helpers;
 using static TACTLib.Utils;
 
@@ -64,7 +65,7 @@ namespace TACTLib.Container {
                         selectedVersion = version;
                     }
                 }
-                
+
                 LoadIndexFile(selectedFile, i);
             }
         }
@@ -93,11 +94,29 @@ namespace TACTLib.Container {
                 int entryCount = eKey1Block.BlockSize / sizeof(EKeyEntry);
 
                 EKeyEntry[] entries = reader.ReadArray<EKeyEntry>(entryCount);
+                Dictionary<int, long> dataFileSizes = new Dictionary<int, long>();
                 for (int i = 0; i < entryCount; i++) {
                     EKeyEntry entry = entries[i];
-                    if (IndexEntries.ContainsKey(entry.EKey)) continue;
+                    if (IndexEntries.ContainsKey(entry.EKey)) {
+                        continue;
+                    }
+
+                    IndexEntry indexEntry = new IndexEntry(entry); 
+
+                    if (!dataFileSizes.TryGetValue(indexEntry.Index, out long dataFileSize)) {
+                        var path = GetDataFilePath(indexEntry.Index);
+                        if (!File.Exists(path)) {
+                            continue;
+                        }
+                        dataFileSize = new FileInfo(path).Length;
+                        dataFileSizes[indexEntry.Index] = dataFileSize;
+                    }
+
+                    if (indexEntry.Offset >= dataFileSize) {
+                        continue;
+                    }
                     
-                    IndexEntries[entry.EKey] = new IndexEntry(entry);
+                    IndexEntries[entry.EKey] = indexEntry;
                 }
             }
         }
@@ -121,29 +140,48 @@ namespace TACTLib.Container {
         /// <param name="indexEntry">Source index entry</param>
         /// <returns>Encoded stream</returns>
         private Stream OpenIndexEntry(IndexEntry indexEntry) {
-            using (Stream dataStream = OpenDataFile(indexEntry.Index))
-            using (BinaryReader reader = new BinaryReader(dataStream, Encoding.ASCII, false)) {  // ASCII = important. one byte per char
-                dataStream.Position = indexEntry.Offset;
+            using (FileStream dataStream = OpenDataFile(indexEntry.Index)) {
+                try {
+                    using (BinaryReader reader = new BinaryReader(dataStream, Encoding.ASCII, false)) { // ASCII = important. one byte per char
+                        dataStream.Position = indexEntry.Offset;
 
-                //CKey cKey = reader.Read<CKey>();
-                dataStream.Position += 16;
-                
-                int size = reader.ReadInt32();
-                
-                // 2+8 byte block of something?
-                dataStream.Position += 10;
-                
-                byte[] data = reader.ReadBytes(size - 30);
+                        //CKey cKey = reader.Read<CKey>();
+                        dataStream.Position += 16;
 
-                return new MemoryStream(data);
+                        int size = reader.ReadInt32();
+
+                        // 2+8 byte block of something?
+                        dataStream.Position += 10;
+
+                        var sizeToRead = size - 30;
+                        if (sizeToRead <= 0) {
+                            throw new InvalidDataException($"size to read from data is {sizeToRead} bytes which is invalid");
+                        }
+
+                        // todo: maybe this?
+                        // var memoryStream = new MemoryStream(size - 30);
+                        //dataStream.CopyBytes(memoryStream, size-30);
+                        //memoryStream.Position = 0;
+                        //return memoryStream;
+
+                        byte[] data = reader.ReadBytes(sizeToRead);
+                        return new MemoryStream(data);
+                    }
+                } catch (Exception e) {
+                    throw new CASCException(indexEntry, $"Failed to process index with file data.{indexEntry.Index:D3} at offset {indexEntry.Offset:X16}", e);
+                }
             }
+        }
+
+        private string GetDataFilePath(int index) {
+            return Path.Combine(ContainerDirectory, DataDirectory, $"data.{index:D3}") + _client.CreateArgs.ExtraFileEnding;
         }
 
         /// <summary>Open a data file</summary>
         /// <param name="index">Data file index ("data.{index}")</param>
         /// <returns>Data stream</returns>
-        private Stream OpenDataFile(int index) {
-            return File.OpenRead(Path.Combine(ContainerDirectory, DataDirectory, $"data.{index:D3}") + _client.CreateArgs.ExtraFileEnding);
+        private FileStream OpenDataFile(int index) {
+            return File.OpenRead(GetDataFilePath(index));
         }
         
         /// <summary>
@@ -167,7 +205,7 @@ namespace TACTLib.Container {
                 return "Data";
 
             if (product == TACTProduct.Overwatch)
-                return "data\\casc";
+                return Path.Combine("data", "casc");
             
             throw new NotImplementedException($"Product \"{product}\" is not supported.");
         }
@@ -220,8 +258,7 @@ namespace TACTLib.Container {
 
             public unsafe IndexEntry(EKeyEntry entry) {
                 int indexHigh = entry.FileOffsetBE[0];
-                int indexLow = Int32FromPtrBE(entry.FileOffsetBE+1);
-
+                int indexLow = Int32FromPtrBE(entry.FileOffsetBE + 1);
                 Index = indexHigh << 2 | (byte) ((indexLow & 0xC0000000) >> 30);
                 Offset = indexLow & 0x3FFFFFFF;
             }

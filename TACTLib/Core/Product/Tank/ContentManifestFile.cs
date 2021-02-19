@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 using TACTLib.Client;
 using TACTLib.Container;
 using TACTLib.Helpers;
@@ -11,7 +10,7 @@ using TACTLib.Helpers;
 namespace TACTLib.Core.Product.Tank {
     public class ContentManifestFile {
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct HashData {
+        public struct HashData { // version 25?
             public ulong GUID;
             public uint Size;
             public byte Unknown;
@@ -19,7 +18,7 @@ namespace TACTLib.Core.Product.Tank {
         }
         
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct HashDataStormSettled {
+        public struct HashData24 { // version 24?
             public ulong GUID;
             public uint Size;
             public CKey ContentKey;
@@ -33,21 +32,44 @@ namespace TACTLib.Core.Product.Tank {
                 };
             }
         }
-        
+
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
-        public struct CMFHeader {  // 1.22+
-            public uint BuildVersion; // 0
-            public uint Unk01; // 4
-            public uint Unk02; // 8
-            public uint Unk03; // 12
-            public uint Unk04; // 16
-            public uint Unk05; // 20
-            public int DataCount; // 24
-            public uint Unk06; // 28
-            public int EntryCount; // 32
-            // 0x16666D63 '\x16fmc' -> Not Encrypted
-            // 0x636D6616 'cmf\x16' -> Encrypted
-            public uint Magic; // 36
+        public struct CMFHeader25 { // 1.22+
+            public uint m_buildVersion;
+            public uint m_unk04;
+            public uint m_unk08;
+            public uint m_unk0C;
+            public uint m_unk10;
+            public uint m_unk14;
+            public int m_dataCount;
+            public uint m_unk1C;
+            public int m_entryCount;
+            public uint m_magic;
+
+            public CMFHeader Upgrade() {
+                return new CMFHeader {
+                    m_buildVersion = m_buildVersion,
+                    m_dataCount = m_dataCount,
+                    m_entryCount = m_entryCount,
+                    m_magic = m_magic
+                };
+            }
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
+        public struct CMFHeader {  // 1.48+, version 26
+            public uint m_buildVersion;
+            public uint m_unk04;
+            public uint m_unk08;
+            public uint m_unk0C;
+            public uint m_unk10;
+            public uint m_unk14;
+            public uint m_unk18;
+            public int m_dataPatchRecordCount;
+            public int m_dataCount;
+            public int m_entryPatchRecordCount;
+            public int m_entryCount;
+            public uint m_magic;
             
             public uint GetNonEncryptedMagic()
             {
@@ -56,85 +78,81 @@ namespace TACTLib.Core.Product.Tank {
             
             public byte GetVersion()
             {
-                return IsEncrypted() ? (byte)(Magic & 0x000000FF) : (byte)((Magic & 0xFF000000) >> 24);
+                return IsEncrypted() ? (byte)(m_magic & 0x000000FF) : (byte)((m_magic & 0xFF000000) >> 24);
             }
             
             public bool IsEncrypted()
             {
-                return (Magic >> 8) == ENCRYPTED_MAGIC;
+                return (m_magic >> 8) == ENCRYPTED_MAGIC;
             }
         }
 
-        public CMFHeader Header;
+        public CMFHeader m_header;
         
-        public HashData[] HashList;
-        public ApplicationPackageManifest.Entry[] Entries;
-        public Dictionary<ulong, int> IndexMap;
-        private Dictionary<ulong, HashData> _map;
+        public ApplicationPackageManifest.Entry[] m_entries;
+        public HashData[] m_hashList;
+        public Dictionary<ulong, int> m_indexMap;
+        private Dictionary<ulong, HashData> m_hashDataMap;
 
         // ReSharper disable once InconsistentNaming
         public const int ENCRYPTED_MAGIC = 0x636D66; // todo: use the thingy again?
         
         public ContentManifestFile(ClientHandler client, Stream stream, string name) {
             using (BinaryReader reader = new BinaryReader(stream)) {
-                Header = reader.Read<CMFHeader>();
+                m_header = reader.Read<CMFHeader>();
+                if (m_header.m_buildVersion < ProductHandler_Tank.VERSION_148_PTR) { // before 1.48
+                    stream.Position = 0;
+                    m_header = reader.Read<CMFHeader25>().Upgrade();
+                }
                 
-                if(Header.BuildVersion >= 12923648 || Header.BuildVersion < 52320) {
+                if(m_header.m_buildVersion >= 12923648 || m_header.m_buildVersion < 52320) {
                     throw new NotSupportedException("Overwatch 1.29 or earlier is not supported");
                 }
 
-                if (Header.IsEncrypted()) {
-                    using (BinaryReader decryptedReader = DecryptCMF(client, stream, name)) {
+                if (m_header.IsEncrypted()) {
+                    using (var decryptedReader = ManifestCryptoHandler.GetDecryptedReader(name, "CMF", m_header, m_header.m_buildVersion, client.Product, stream))
                         ParseEntries(decryptedReader);
-                    }
                 } else {
                     ParseEntries(reader);
                 }
             }
         }
 
-        protected BinaryReader DecryptCMF(ClientHandler client, Stream stream, string name) {
-            CMFCryptHandler.GenerateKeyIV(name, Header, client.Product, out byte[] key, out byte[] iv); 
-            
-            using (RijndaelManaged rijndael = new RijndaelManaged {Key = key, IV = iv, Mode = CipherMode.CBC}) {
-                CryptoStream cryptoStream = new CryptoStream(stream, rijndael.CreateDecryptor(),
-                    CryptoStreamMode.Read);
-                
-                return new BinaryReader(cryptoStream);
-            }
-        }
-
         private void ParseEntries(BinaryReader reader) {
-            Entries = reader.ReadArray<ApplicationPackageManifest.Entry>(Header.EntryCount);
-            if (Header.BuildVersion >= 57230) {
-                HashList = reader.ReadArray<HashData>(Header.DataCount);
+            m_entries = reader.ReadArray<ApplicationPackageManifest.Entry>(m_header.m_entryCount);
+            if (m_header.m_buildVersion >= 57230) { // 1.35+
+                m_hashList = reader.ReadArray<HashData>(m_header.m_dataCount);
             } else {
-                HashList = reader.ReadArray<HashDataStormSettled>(Header.DataCount).Select(x => x.ToHashData()).ToArray();
+                m_hashList = reader.ReadArray<HashData24>(m_header.m_dataCount).Select(x => x.ToHashData()).ToArray();
             }
 
-            IndexMap = new Dictionary<ulong, int>(Header.DataCount);
-            _map = new Dictionary<ulong, HashData>(Header.DataCount); 
-            for (int i = 0; i < Header.DataCount; i++) {
-                var hashData = HashList[i];
-                IndexMap[hashData.GUID] = i;
+            if (m_entries.Length >= 1 && m_entries[0].m_index != 1) {
+                Logger.Warn("CMF", "CMF Crypto using invalid IV. This can probably be ignored.");
+            }
 
-                _map[hashData.GUID] = hashData;
+            m_indexMap = new Dictionary<ulong, int>(m_header.m_dataCount);
+            m_hashDataMap = new Dictionary<ulong, HashData>(m_header.m_dataCount); 
+            for (int i = 0; i < m_header.m_dataCount; i++) {
+                var hashData = m_hashList[i];
+                m_indexMap[hashData.GUID] = i;
+
+                m_hashDataMap[hashData.GUID] = hashData;
             }
         }
 
         public bool TryGet(ulong guid, out HashData hashData) {
-            return _map.TryGetValue(guid, out hashData);
+            return m_hashDataMap.TryGetValue(guid, out hashData);
         }
 
         public bool Exists(ulong guid) {
-            return _map.ContainsKey(guid);
+            return m_hashDataMap.ContainsKey(guid);
         }
 
         public HashData GetHashData(ulong guid) {
-            if (_map.TryGetValue(guid, out var data)) {
+            if (m_hashDataMap.TryGetValue(guid, out var data)) {
                 return data;
             }
-            throw new FileNotFoundException(); // todo
+            throw new FileNotFoundException($"{guid:X16}");
         }
 
         public Stream OpenFile(ClientHandler client, ulong guid) {

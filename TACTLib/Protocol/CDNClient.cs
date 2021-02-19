@@ -24,18 +24,31 @@ namespace TACTLib.Protocol {
             return FetchCDN("config", key);
         }
 
-        private Stream FetchCDN(string type, string key) {
+        public Stream FetchCDN(string type, string key, (int, int)? range=null, string suffix=null) {
             key = key.ToLower();
             using (WebClient web = new WebClient()) {
                 var hosts = client.InstallationInfo.Values["CDNHosts"].Split(' ');
                 foreach (var host in hosts) {
                     try {
-                        if (host == "cdn.blizzard.com") {
+                        if (host == "cdn.blizzard.com" || host == "us.cdn.blizzard.com") {
                             continue; // satan was here
                         }
-                        var stream = web.OpenRead($"http://{host}/{client.InstallationInfo.Values["CDNPath"]}/{type}/{key.Substring(0, 2)}/{key.Substring(2, 2)}/{key}");
-                        if (stream != null) {
-                            return stream;
+                        var url = $"http://{host}/{client.InstallationInfo.Values["CDNPath"]}/{type}/{key.Substring(0, 2)}/{key.Substring(2, 2)}/{key}";
+                        if (suffix != null) url += suffix;
+                        HttpWebRequest req = WebRequest.CreateHttp(url);
+                        if (range != null)
+                        {
+                            req.AddRange(range.Value.Item1, range.Value.Item2);
+                        }
+
+                        using (HttpWebResponse resp = (HttpWebResponse) req.GetResponse())
+                        {
+                            using var respStr = resp.GetResponseStream();
+                            
+                            MemoryStream ms = new MemoryStream();
+                            respStr.CopyTo(ms);
+                            ms.Position = 0;
+                            return ms;
                         }
                     } catch {
                         // ignored
