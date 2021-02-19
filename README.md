@@ -28,7 +28,6 @@ Logger.RegisterBasic();
 (none of this is true yet)
  
 ##### VFS: (Black Ops 4)
-Not all features are implemented yet. GetFiles(string subDir) is just an idea for now.
 ```cs
 ClientHandler client = new ClientHandler(path);
 if (client.VFS == null) {
@@ -39,8 +38,10 @@ VFSFileTree vfs = client.VFS;
 using (Stream stream = vfs.Open(@"zone\base.xpak")) {
     // do whatever
 }
-foreach (string folder in vfs.Root.GetFiles(@"zone\")) {
-    // could maybe do this too
+foreach (string fileName in vfs.Files.Where(x => x.StartsWith(@"zone\"))) {
+    using(Stream stream = vfs.Open(fileName)) {
+        // could do this too
+    }
 }
 ```
 ##### Tank: (Overwatch)
