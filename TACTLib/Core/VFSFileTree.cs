@@ -13,7 +13,7 @@ namespace TACTLib.Core {
         private readonly Dictionary<string, VFSFile> _files;
         private readonly VFSManifestReader.Manifest _manifest;
 
-        public readonly ReadOnlyCollection<string> FileKeys;
+        public readonly ReadOnlyCollection<string> Files;
 
         public VFSFileTree(ClientHandler client) {
             _client = client;
@@ -33,7 +33,7 @@ namespace TACTLib.Core {
                 }
             }
 
-            FileKeys = Array.AsReadOnly(_files.Keys.ToArray());
+            Files = Array.AsReadOnly(_files.Keys.ToArray());
         }
 
         /// <summary>
