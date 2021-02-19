@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Text;
 using TACTLib.Client;
 
@@ -9,7 +12,9 @@ namespace TACTLib.Core {
 
         private readonly Dictionary<string, VFSFile> _files;
         private readonly VFSManifestReader.Manifest _manifest;
-        
+
+        public readonly ReadOnlyCollection<string> FileKeys;
+
         public VFSFileTree(ClientHandler client) {
             _client = client;
             using (Stream stream = client.OpenCKey(client.ConfigHandler.BuildConfig.VFSRoot.ContentKey))
@@ -27,6 +32,8 @@ namespace TACTLib.Core {
                     _files[file.Name] = file;
                 }
             }
+
+            FileKeys = Array.AsReadOnly(_files.Keys.ToArray());
         }
 
         /// <summary>

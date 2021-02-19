@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 
 namespace TACTLib {
@@ -43,7 +43,10 @@ namespace TACTLib {
         Warcraft3,
 
         /// <summary>wow, wow_beta, wowdev, wowe1, wowe2, wowe3, wowt, wowv, wowz</summary>
-        WorldOfWarcraft
+        WorldOfWarcraft,
+
+        /// <summary>odin</summary>
+        ModernWarfare,
     }
 
     public static class ProductHelpers {
@@ -91,11 +94,15 @@ namespace TACTLib {
                 return TACTProduct.BlackOps4;
             }
 
+            if(uid.StartsWith("odin")) {
+	            return TACTProduct.ModernWarfare;
+            }
+
             throw new NotImplementedException($"Product \"{uid}\" is not supported.");
         }
 
         /// <summary>
-        /// Get product uid from <see cref="TACTProduct"/> 
+        /// Get product uid from <see cref="TACTProduct"/>
         /// </summary>
         /// <param name="product">product</param>
         /// <returns>Product type</returns>
@@ -128,6 +135,8 @@ namespace TACTLib {
                     return "viper";
                 case TACTProduct.Catalog:
                     return "catalogs";
+                case TACTProduct.ModernWarfare:
+	                return "odin";
                 default:
                     throw new ArgumentOutOfRangeException(nameof(product), product, null);
             }
@@ -171,6 +180,10 @@ namespace TACTLib {
 
                 if (File.Exists(Path.Combine(path, "BlackOps4.exe")))
                     return TACTProduct.BlackOps4;
+
+                if(File.Exists(Path.Combine(path, "ModernWarfare.exe"))) {
+	                return TACTProduct.ModernWarfare;
+                }
             }
 
             throw new NotImplementedException("unable to detect product. ensure that the archive directory is correct");  // hmm
