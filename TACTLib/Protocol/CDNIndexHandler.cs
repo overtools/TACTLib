@@ -35,9 +35,9 @@ namespace TACTLib.Protocol
                 string archive = clientHandler.ConfigHandler.CDNConfig.Archives[i];
 
                 if (handler.m_client.ContainerHandler != null)
-                    handler.DownloadIndexFile(archive, i);
-                else
                     handler.OpenOrDownloadIndexFile(archive, i);
+                else
+                    handler.DownloadIndexFile(archive, i);
             }
             return handler;
         }
