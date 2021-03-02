@@ -47,6 +47,12 @@ namespace TACTLib {
 
         /// <summary>odin</summary>
         ModernWarfare,
+
+        /// <summary>lazr</summary>
+        ModernWarfare2Campaign,
+
+        /// <summary>zeus</summary>
+        BlackOps5,
     }
 
     public static class ProductHelpers {
@@ -90,13 +96,17 @@ namespace TACTLib {
             if (uid.StartsWith("dst2"))
                 return TACTProduct.Destiny2;
 
-            if (uid.StartsWith("viper")) {
+            if (uid.StartsWith("viper"))
                 return TACTProduct.BlackOps4;
-            }
 
-            if(uid.StartsWith("odin")) {
-	            return TACTProduct.ModernWarfare;
-            }
+            if(uid.StartsWith("odin"))
+                return TACTProduct.ModernWarfare;
+
+            if(uid.StartsWith("lazr"))
+                return TACTProduct.ModernWarfare2Campaign;
+
+            if(uid.StartsWith("zeus"))
+                return TACTProduct.BlackOps5;
 
             throw new NotImplementedException($"Product \"{uid}\" is not supported.");
         }
@@ -136,7 +146,11 @@ namespace TACTLib {
                 case TACTProduct.Catalog:
                     return "catalogs";
                 case TACTProduct.ModernWarfare:
-	                return "odin";
+                    return "odin";
+                case TACTProduct.ModernWarfare2Campaign:
+                    return "lazr";
+                case TACTProduct.BlackOps5:
+                    return "zeus";
                 default:
                     throw new ArgumentOutOfRangeException(nameof(product), product, null);
             }
@@ -182,7 +196,15 @@ namespace TACTLib {
                     return TACTProduct.BlackOps4;
 
                 if(File.Exists(Path.Combine(path, "ModernWarfare.exe"))) {
-	                return TACTProduct.ModernWarfare;
+                    return TACTProduct.ModernWarfare;
+                }
+
+                if(File.Exists(Path.Combine(path, "MW2CR.exe"))) {
+                    return TACTProduct.ModernWarfare2Campaign;
+                }
+
+                if(File.Exists(Path.Combine(path, "BlackOpsColdWar.exe"))) {
+                    return TACTProduct.BlackOps5;
                 }
             }
 
