@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using TACTLib.Client;
-using TACTView.Models;
+using TACTView.Api.Models;
 
 namespace TACTView.Connectors {
     public class CommonV2Connector : IConnector {
@@ -9,7 +9,7 @@ namespace TACTView.Connectors {
             throw new System.NotImplementedException();
         }
 
-        public Task<List<FileEntry>> GetFiles() {
+        public Task<ObservableCollection<IDirectoryEntry>> GetFiles() {
             throw new System.NotImplementedException();
         }
     }

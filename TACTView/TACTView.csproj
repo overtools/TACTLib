@@ -9,6 +9,11 @@
 
     <ItemGroup>
       <ProjectReference Include="..\TACTLib\TACTLib.csproj" />
+      <ProjectReference Include="..\TACTView.Api\TACTView.Api.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="JetBrains.Annotations" Version="2020.3.0" />
     </ItemGroup>
 
 </Project>

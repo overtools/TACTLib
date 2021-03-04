@@ -3,10 +3,29 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:TACTView"
+        xmlns:viewModels="clr-namespace:TACTView.ViewModels"
+        xmlns:models="clr-namespace:TACTView.Models"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="TACTView" Height="450" Width="800">
+    <Window.DataContext>
+        <viewModels:TACTViewModel/>
+    </Window.DataContext>
     <Grid>
-
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition MinWidth="200"/>
+            <ColumnDefinition Width="5"/>
+            <ColumnDefinition MinWidth="600" Width="*"/>
+        </Grid.ColumnDefinitions>
+        <TreeView ItemsSource="{Binding RootDirectory}">
+            <TreeView.ItemTemplate>  
+                <HierarchicalDataTemplate DataType="{x:Type models:DirectoryEntry}" ItemsSource="{Binding SubDirectories}">
+                    <Label Content="{Binding Name}"/>
+                </HierarchicalDataTemplate>
+            </TreeView.ItemTemplate>  
+        </TreeView>
+        <GridSplitter Grid.Column="1" Grid.Row="0" HorizontalAlignment="Stretch"/>
+        <ListView Grid.Column="2">
+            
+        </ListView>
     </Grid>
 </Window>
