@@ -1,13 +1,15 @@
 ﻿using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using TACTLib;
 using TACTLib.Core.Product;
 using TACTView.Api;
 using TACTView.Api.Models;
 
 namespace TACTView.Connectors {
-    // TODO: move to separate DLL
-    public class TankConnector : IConnector {
-        public void Initialize(IProductHandler handler) {
+    public class TankConnector : IProductConnector {
+        public TACTProduct[] GetValidProducts() => new[] {TACTProduct.Overwatch};
+
+            public void Initialize(IProductHandler handler) {
             throw new System.NotImplementedException();
         }
 

@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Library</OutputType>
+        <TargetFramework>net5.0-windows</TargetFramework>
+        <Nullable>enable</Nullable>
+        <RootNamespace>TACTView.Connectors</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\TACTLib\TACTLib.csproj" />
+        <ProjectReference Include="..\TACTView.Api\TACTView.Api.csproj" />
+    </ItemGroup>
+
+</Project>
