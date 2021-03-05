@@ -21,11 +21,10 @@ namespace TACTLib.Config {
             string[] keys = null;
             List<Dictionary<string, string>> ret = new List<Dictionary<string, string>>();
             
-            for (int i = 0; i < 0xFF; i++) {
-                string line = reader.ReadLine()?.Trim();
-                if (line == null) break;
-
-                if (line.Length == 0) {
+            string line;
+            do {
+                line = reader.ReadLine()?.Trim();
+                if (string.IsNullOrEmpty(line)) {
                     continue;
                 }
                 
@@ -47,7 +46,7 @@ namespace TACTLib.Config {
                     
                     ret.Add(vals);
                 }
-            }
+            } while(!string.IsNullOrEmpty(line));
 
             return ret;
         }
