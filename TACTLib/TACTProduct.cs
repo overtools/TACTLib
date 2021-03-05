@@ -53,6 +53,12 @@ namespace TACTLib {
 
         /// <summary>zeus</summary>
         BlackOps5,
+
+        /// <summary>wlby</summary>
+        CrashBandicoot4,
+
+        /// <summary>rtro</summary>
+        BlizzardArcade,
     }
 
     public static class ProductHelpers {
@@ -108,6 +114,12 @@ namespace TACTLib {
             if(uid.StartsWith("zeus"))
                 return TACTProduct.BlackOps5;
 
+            if(uid.StartsWith("wlby"))
+                return TACTProduct.CrashBandicoot4;
+
+            if(uid.StartsWith("rtro"))
+                return TACTProduct.BlizzardArcade;
+
             throw new NotImplementedException($"Product \"{uid}\" is not supported.");
         }
 
@@ -151,6 +163,10 @@ namespace TACTLib {
                     return "lazr";
                 case TACTProduct.BlackOps5:
                     return "zeus";
+                case TACTProduct.CrashBandicoot4:
+                    return "wlby";
+                case TACTProduct.BlizzardArcade:
+                    return "rtro";
                 default:
                     throw new ArgumentOutOfRangeException(nameof(product), product, null);
             }
@@ -205,6 +221,14 @@ namespace TACTLib {
 
                 if(File.Exists(Path.Combine(path, "BlackOpsColdWar.exe"))) {
                     return TACTProduct.BlackOps5;
+                }
+
+                if(File.Exists(Path.Combine(path, "CrashBandicoot4.exe"))) {
+                    return TACTProduct.CrashBandicoot4;
+                }
+
+                if(File.Exists(Path.Combine(path, "Blizzard Arcade Collection Launcher.exe"))) {
+                    return TACTProduct.BlizzardArcade;
                 }
             }
 
