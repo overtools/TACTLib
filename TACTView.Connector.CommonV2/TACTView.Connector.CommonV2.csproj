@@ -11,12 +11,12 @@
         <FileVersion>1.0.0.0</FileVersion>
     </PropertyGroup>
 
+    <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+        <OutDir>..\TACTView\bin\Debug\net5.0-windows\Modules\CommonV2</OutDir>
+    </PropertyGroup>
+    
     <ItemGroup>
-        <ProjectReference Include="..\TACTLib\TACTLib.csproj">
-            <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-        </ProjectReference>
-        <ProjectReference Include="..\TACTView.Api\TACTView.Api.csproj">
-            <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-        </ProjectReference>
+        <ProjectReference Include="..\TACTLib\TACTLib.csproj" />
+        <ProjectReference Include="..\TACTView.Api\TACTView.Api.csproj" />
     </ItemGroup>
 </Project>

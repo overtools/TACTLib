@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using TACTLib;
+using TACTLib.Container;
 using TACTView.Api.Models;
 
 namespace TACTView.Models {
@@ -23,6 +25,12 @@ namespace TACTView.Models {
                 lastDir = existing != null ? (DirectoryEntry) existing : new DirectoryEntry(part, lastDir);
             }
             return lastDir;
+        }
+
+        public IFileEntry CreateFile(string name, Locale locale, CKey key, long size) {
+            var file = new FileEntry(name, size, locale, key, this);
+            Children.Add(file);
+            return file;
         }
 
         private IDirectoryEntry? FindChild(string name, StringComparison comparisonType) {

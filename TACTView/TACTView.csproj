@@ -20,33 +20,4 @@
       <PackageReference Include="JetBrains.Annotations" Version="2020.3.0" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
     </ItemGroup>
-
-    <Target Name="PublishAPI" AfterTargets="Publish">
-        <ConvertToAbsolutePath Paths="$(PublishDir)">
-            <Output TaskParameter="AbsolutePaths" PropertyName="AbsolutePublishDir"/>
-        </ConvertToAbsolutePath>
-        <MSBuild Projects="../TACTView.Connector.CommonV2/TACTView.Connector.CommonV2.csproj" Targets="Publish"
-                 Properties="PublishDir=$(AbsolutePublishDir)/Modules/" BuildInParallel="false"/>
-        <MSBuild Projects="../TACTView.Connector.MNDX/TACTView.Connector.MNDX.csproj" Targets="Publish"
-                 Properties="PublishDir=$(AbsolutePublishDir)/Modules/" BuildInParallel="false"/>
-        <MSBuild Projects="../TACTView.Connector.Tank/TACTView.Connector.Tank.csproj" Targets="Publish"
-                 Properties="PublishDir=$(AbsolutePublishDir)/Modules/" BuildInParallel="false"/>
-        <MSBuild Projects="../TACTView.Connector.WorldOfWarcraftV6/TACTView.Connector.WorldOfWarcraftV6.csproj" Targets="Publish"
-                 Properties="PublishDir=$(AbsolutePublishDir)/Modules/" BuildInParallel="false"/>
-    </Target>
-
-    <Target Name="BuildAPI" AfterTargets="Build">
-        <ConvertToAbsolutePath Paths="$(OutputPath)">
-            <Output TaskParameter="AbsolutePaths" PropertyName="AbsoluteOutputPath"/>
-        </ConvertToAbsolutePath>
-        <Message Text="Output -> $(AbsoluteOutputPath)" Importance="high"/>
-        <MSBuild Projects="../TACTView.Connector.CommonV2/TACTView.Connector.CommonV2.csproj" Targets="Build"
-                 Properties="OutputPath=$(AbsoluteOutputPath)/Modules/" BuildInParallel="false"/>
-        <MSBuild Projects="../TACTView.Connector.MNDX/TACTView.Connector.MNDX.csproj" Targets="Build"
-                 Properties="OutputPath=$(AbsoluteOutputPath)/Modules/" BuildInParallel="false"/>
-        <MSBuild Projects="../TACTView.Connector.Tank/TACTView.Connector.Tank.csproj" Targets="Build"
-                 Properties="OutputPath=$(AbsoluteOutputPath)/Modules/" BuildInParallel="false"/>
-        <MSBuild Projects="../TACTView.Connector.WorldOfWarcraftV6/TACTView.Connector.WorldOfWarcraftV6.csproj" Targets="Build"
-                 Properties="OutputPath=$(AbsoluteOutputPath)/Modules/" BuildInParallel="false"/>
-    </Target>
 </Project>

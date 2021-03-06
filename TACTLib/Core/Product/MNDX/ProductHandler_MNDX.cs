@@ -14,7 +14,7 @@ namespace TACTLib.Core.Product.MNDX
 {
     public class MNDXEntry
     {
-        public CKey Key { get; set; }
+        public MNDXRootEntry Info { get; set; }
         public string Path { get; set; }
         public Locale Locale { get; set; }
     }
@@ -30,8 +30,8 @@ namespace TACTLib.Core.Product.MNDX
         //[2] - complete file names
         private MARFileNameDB[] MarFiles = new MARFileNameDB[CASC_MAX_MAR_FILES];
 
-        private Dictionary<int, CASC_ROOT_ENTRY_MNDX> mndxRootEntries = new Dictionary<int, CASC_ROOT_ENTRY_MNDX>();
-        private Dictionary<int, CASC_ROOT_ENTRY_MNDX> mndxRootEntriesValid;
+        private Dictionary<int, MNDXRootEntry> mndxRootEntries = new Dictionary<int, MNDXRootEntry>();
+        private Dictionary<int, MNDXRootEntry> mndxRootEntriesValid;
 
         private Dictionary<int, string> Packages = new Dictionary<int, string>();
         private Dictionary<string, int> PackagesValue = new Dictionary<string, int>();
@@ -83,23 +83,23 @@ namespace TACTLib.Core.Product.MNDX
 
                 stream.Position = MndxEntriesOffset;
 
-                CASC_ROOT_ENTRY_MNDX prevEntry = null;
+                MNDXRootEntry prevEntry = null;
 
                 for (int i = 0; i < MndxEntriesTotal; i++)
                 {
-                    CASC_ROOT_ENTRY_MNDX entry = new CASC_ROOT_ENTRY_MNDX();
+                    MNDXRootEntry entry = new MNDXRootEntry();
 
                     if (prevEntry != null)
                         prevEntry.Next = entry;
 
                     prevEntry = entry;
                     entry.Flags = reader.ReadInt32();
-                    entry.MD5 = reader.Read<CKey>();
+                    entry.Key = reader.Read<CKey>();
                     entry.FileSize = reader.ReadInt32();
                     mndxRootEntries.Add(i, entry);
                 }
 
-                mndxRootEntriesValid = new Dictionary<int, CASC_ROOT_ENTRY_MNDX>();
+                mndxRootEntriesValid = new Dictionary<int, MNDXRootEntry>();
 
                 int ValidEntryCount = 1; // edx
                 int index = 0;
@@ -150,11 +150,12 @@ namespace TACTLib.Core.Product.MNDX
                 {
                     var file = result.FoundPath;
                     var package = FindMNDXPackage(file);
+                    var info = FindMNDXInfo(file, package);
                     var entry = new MNDXEntry
                     {
                         Path = file,
                         Locale = packagesLocale[package],
-                        Key = FindMNDXInfo(file, package).MD5
+                        Info = info
                     };
                     Entries.Add(entry);
                 }
@@ -178,7 +179,7 @@ namespace TACTLib.Core.Product.MNDX
             return -1;
         }
 
-        private CASC_ROOT_ENTRY_MNDX FindMNDXInfo(string path, int dwPackage)
+        private MNDXRootEntry FindMNDXInfo(string path, int dwPackage)
         {
             MNDXSearchResult result = new MNDXSearchResult()
             {
@@ -206,7 +207,7 @@ namespace TACTLib.Core.Product.MNDX
             throw new Exception("File not found!");
         }
 
-        private CASC_ROOT_ENTRY_MNDX FindMNDXInfo2(string path, int dwPackage)
+        private MNDXRootEntry FindMNDXInfo2(string path, int dwPackage)
         {
             MNDXSearchResult result = new MNDXSearchResult()
             {
@@ -239,7 +240,7 @@ namespace TACTLib.Core.Product.MNDX
             switch (key)
             {
                 case MNDXEntry entry:
-                    return Handler.OpenCKey(entry.Key);
+                    return Handler.OpenCKey(entry.Info.Key);
                 case CKey ckey:
                     return Handler.OpenCKey(ckey);
                 case EKey ekey:
