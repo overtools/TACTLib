@@ -5,8 +5,8 @@ using TACTLib.Container;
 namespace TACTView.Api.Models {
     [PublicAPI]
     public interface IFileEntry : IDirectoryEntry {
-        public long Size { get; init; }
-        public Locale Locale { get; init; }
-        public CKey Key { get; init; }
+        long Size { get; init; }
+        Locale Locale { get; init; }
+        CKey Key { get; init; }
     }
 }
