@@ -52,6 +52,7 @@ namespace TACTLib.Protocol.NGDP {
         }
 
         private Stream GetRoot(string url) {
+            Logger.Info("CDN", $"Fetching NGDP {url}");
             using (WebClient web = new WebClient()) {
                 return web.OpenRead($"{client.CreateArgs.OnlineRootHost}{url}");
             }

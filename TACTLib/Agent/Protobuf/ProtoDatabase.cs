@@ -40,7 +40,7 @@ namespace TACTLib.Agent.Protobuf {
             "Z2FtZV9zdWJmb2xkZXIYDSABKAkiYAoQSW5zdGFsbEhhbmRzaGFrZRIPCgdw",
             "cm9kdWN0GAEgASgJEgsKA3VpZBgCIAEoCRIuCghzZXR0aW5ncxgDIAEoCzIc",
             "LnByb3RvX2RhdGFiYXNlLlVzZXJTZXR0aW5ncyIyCgtCdWlsZENvbmZpZxIO",
-            "CgZyZWdpb24YASABKAkSEwoLYnVpbGRDb25maWcYAiABKAkimwQKEEJhc2VQ",
+            "CgZyZWdpb24YASABKAkSEwoLYnVpbGRDb25maWcYAiABKAkitwQKEEJhc2VQ",
             "cm9kdWN0U3RhdGUSEQoJaW5zdGFsbGVkGAEgASgIEhAKCHBsYXlhYmxlGAIg",
             "ASgIEhYKDnVwZGF0ZUNvbXBsZXRlGAMgASgIEiMKG2JhY2tncm91bmREb3du",
             "bG9hZEF2YWlsYWJsZRgEIAEoCBIiChpiYWNrZ3JvdW5kRG93bmxvYWRDb21w",
@@ -52,67 +52,69 @@ namespace TACTLib.Agent.Protobuf {
             "bnN0YWxsQWN0aW9ucxgLIAMoCRIaChJjb21wbGV0ZWRCdWlsZEtleXMYDCAD",
             "KAkSGQoRY29tcGxldGVkQmdkbEtleXMYDSADKAkSFgoOYWN0aXZlQnVpbGRL",
             "ZXkYDiABKAkSFQoNYWN0aXZlQmdkbEtleRgPIAEoCRIYChBhY3RpdmVJbnN0",
-            "YWxsS2V5GBAgASgJEhcKD2FjdGl2ZVRhZ1N0cmluZxgRIAEoCSJnChBCYWNr",
-            "ZmlsbFByb2dyZXNzEhAKCHByb2dyZXNzGAEgASgBEhoKEmJhY2tncm91bmRk",
-            "b3dubG9hZBgCIAEoCBIOCgZwYXVzZWQYAyABKAgSFQoNZG93bmxvYWRMaW1p",
-            "dBgEIAEoBCIiCg5SZXBhaXJQcm9ncmVzcxIQCghwcm9ncmVzcxgBIAEoASKE",
-            "AQoOVXBkYXRlUHJvZ3Jlc3MSFwoPbGFzdERpc2NTZXRVc2VkGAEgASgJEhAK",
-            "CHByb2dyZXNzGAIgASgBEhMKC2Rpc2NJZ25vcmVkGAMgASgIEhcKD3RvdGFs",
-            "VG9Eb3dubG9hZBgEIAEoBBIZChFkb3dubG9hZFJlbWFpbmluZxgFIAEoBCL8",
-            "AQoSQ2FjaGVkUHJvZHVjdFN0YXRlEjoKEGJhc2VQcm9kdWN0U3RhdGUYASAB",
-            "KAsyIC5wcm90b19kYXRhYmFzZS5CYXNlUHJvZHVjdFN0YXRlEjoKEGJhY2tm",
-            "aWxsUHJvZ3Jlc3MYAiABKAsyIC5wcm90b19kYXRhYmFzZS5CYWNrZmlsbFBy",
-            "b2dyZXNzEjYKDnJlcGFpclByb2dyZXNzGAMgASgLMh4ucHJvdG9fZGF0YWJh",
-            "c2UuUmVwYWlyUHJvZ3Jlc3MSNgoOdXBkYXRlUHJvZ3Jlc3MYBCABKAsyHi5w",
-            "cm90b19kYXRhYmFzZS5VcGRhdGVQcm9ncmVzcyJZChFQcm9kdWN0T3BlcmF0",
-            "aW9ucxIyCg9hY3RpdmVPcGVyYXRpb24YASABKA4yGS5wcm90b19kYXRhYmFz",
-            "ZS5PcGVyYXRpb24SEAoIcHJpb3JpdHkYAiABKAQihwIKDlByb2R1Y3RJbnN0",
-            "YWxsEgsKA3VpZBgBIAEoCRITCgtwcm9kdWN0Q29kZRgCIAEoCRIuCghzZXR0",
-            "aW5ncxgDIAEoCzIcLnByb3RvX2RhdGFiYXNlLlVzZXJTZXR0aW5ncxI+ChJj",
-            "YWNoZWRQcm9kdWN0U3RhdGUYBCABKAsyIi5wcm90b19kYXRhYmFzZS5DYWNo",
-            "ZWRQcm9kdWN0U3RhdGUSPAoRcHJvZHVjdE9wZXJhdGlvbnMYBSABKAsyIS5w",
-            "cm90b19kYXRhYmFzZS5Qcm9kdWN0T3BlcmF0aW9ucxIVCg1wcm9kdWN0RmFt",
-            "aWx5GAYgASgJEg4KBmhpZGRlbhgHIAEoCCI6Cg1Qcm9kdWN0Q29uZmlnEhMK",
-            "C3Byb2R1Y3RDb2RlGAEgASgJEhQKDG1ldGFkYXRhSGFzaBgCIAEoCSI+Cg1B",
-            "Y3RpdmVQcm9jZXNzEhMKC3Byb2Nlc3NOYW1lGAEgASgJEgsKA3BpZBgCIAEo",
-            "BRILCgN1cmkYAyADKAkiQAoQRG93bmxvYWRTZXR0aW5ncxIVCg1kb3dubG9h",
-            "ZExpbWl0GAEgASgDEhUKDWJhY2tmaWxsTGltaXQYAiABKAMi3AIKCERhdGFi",
-            "YXNlEjYKDnByb2R1Y3RJbnN0YWxsGAEgAygLMh4ucHJvdG9fZGF0YWJhc2Uu",
-            "UHJvZHVjdEluc3RhbGwSOAoOYWN0aXZlSW5zdGFsbHMYAiADKAsyIC5wcm90",
-            "b19kYXRhYmFzZS5JbnN0YWxsSGFuZHNoYWtlEjYKD2FjdGl2ZVByb2Nlc3Nl",
-            "cxgDIAMoCzIdLnByb3RvX2RhdGFiYXNlLkFjdGl2ZVByb2Nlc3MSNQoOcHJv",
-            "ZHVjdENvbmZpZ3MYBCADKAsyHS5wcm90b19kYXRhYmFzZS5Qcm9kdWN0Q29u",
-            "ZmlnEjoKEGRvd25sb2FkU2V0dGluZ3MYBSABKAsyIC5wcm90b19kYXRhYmFz",
-            "ZS5Eb3dubG9hZFNldHRpbmdzEhoKEnZlcnNpb25TdW1tYXJ5U2VxbhgGIAEo",
-            "BBIXCg9wcmlvcml0eVVpZExpc3QYByADKAkqcQoOTGFuZ3VhZ2VPcHRpb24S",
-            "EwoPTEFOR09QVElPTl9OT05FEAASEwoPTEFOR09QVElPTl9URVhUEAESFQoR",
-            "TEFOR09QVElPTl9TUEVFQ0gQAhIeChpMQU5HT1BUSU9OX1RFWFRfQU5EX1NQ",
-            "RUVDSBADKnUKE0xhbmd1YWdlU2V0dGluZ1R5cGUSFAoQTEFOR1NFVFRJTkdf",
-            "Tk9ORRAAEhYKEkxBTkdTRVRUSU5HX1NJTkdMRRABEhYKEkxBTkdTRVRUSU5H",
-            "X1NJTVBMRRACEhgKFExBTkdTRVRUSU5HX0FEVkFOQ0VEEAMqTgoOU2hvcnRj",
-            "dXRPcHRpb24SEQoNU0hPUlRDVVRfTk9ORRAAEhEKDVNIT1JUQ1VUX1VTRVIQ",
-            "ARIWChJTSE9SVENVVF9BTExfVVNFUlMQAipiCglPcGVyYXRpb24SDQoJT1Bf",
-            "VVBEQVRFEAASFAoHT1BfTk9ORRD///////////8BEg8KC09QX0JBQ0tGSUxM",
-            "EAESDQoJT1BfUkVQQUlSEAISEAoMT1BfVU5JTlNUQUxMEANCGaoCFlRBQ1RM",
-            "aWIuQWdlbnQuUHJvdG9idWZiBnByb3RvMw=="));
+            "YWxsS2V5GBAgASgJEhcKD2FjdGl2ZVRhZ1N0cmluZxgRIAEoCRIaChJpbmNv",
+            "bXBsZXRlQnVpbGRLZXkYEiABKAkiZwoQQmFja2ZpbGxQcm9ncmVzcxIQCghw",
+            "cm9ncmVzcxgBIAEoARIaChJiYWNrZ3JvdW5kZG93bmxvYWQYAiABKAgSDgoG",
+            "cGF1c2VkGAMgASgIEhUKDWRvd25sb2FkTGltaXQYBCABKAQiIgoOUmVwYWly",
+            "UHJvZ3Jlc3MSEAoIcHJvZ3Jlc3MYASABKAEiigEKDlVwZGF0ZVByb2dyZXNz",
+            "EhcKD2xhc3REaXNjU2V0VXNlZBgBIAEoCRIQCghwcm9ncmVzcxgCIAEoARIT",
+            "CgtkaXNjSWdub3JlZBgDIAEoCBIaCg90b3RhbFRvRG93bmxvYWQYBCABKAQ6",
+            "ATASHAoRZG93bmxvYWRSZW1haW5pbmcYBSABKAQ6ATAi/AEKEkNhY2hlZFBy",
+            "b2R1Y3RTdGF0ZRI6ChBiYXNlUHJvZHVjdFN0YXRlGAEgASgLMiAucHJvdG9f",
+            "ZGF0YWJhc2UuQmFzZVByb2R1Y3RTdGF0ZRI6ChBiYWNrZmlsbFByb2dyZXNz",
+            "GAIgASgLMiAucHJvdG9fZGF0YWJhc2UuQmFja2ZpbGxQcm9ncmVzcxI2Cg5y",
+            "ZXBhaXJQcm9ncmVzcxgDIAEoCzIeLnByb3RvX2RhdGFiYXNlLlJlcGFpclBy",
+            "b2dyZXNzEjYKDnVwZGF0ZVByb2dyZXNzGAQgASgLMh4ucHJvdG9fZGF0YWJh",
+            "c2UuVXBkYXRlUHJvZ3Jlc3MiYgoRUHJvZHVjdE9wZXJhdGlvbnMSOwoPYWN0",
+            "aXZlT3BlcmF0aW9uGAEgASgOMhkucHJvdG9fZGF0YWJhc2UuT3BlcmF0aW9u",
+            "OgdPUF9OT05FEhAKCHByaW9yaXR5GAIgASgEIq0CCg5Qcm9kdWN0SW5zdGFs",
+            "bBILCgN1aWQYASABKAkSEwoLcHJvZHVjdENvZGUYAiABKAkSLgoIc2V0dGlu",
+            "Z3MYAyABKAsyHC5wcm90b19kYXRhYmFzZS5Vc2VyU2V0dGluZ3MSPgoSY2Fj",
+            "aGVkUHJvZHVjdFN0YXRlGAQgASgLMiIucHJvdG9fZGF0YWJhc2UuQ2FjaGVk",
+            "UHJvZHVjdFN0YXRlEjwKEXByb2R1Y3RPcGVyYXRpb25zGAUgASgLMiEucHJv",
+            "dG9fZGF0YWJhc2UuUHJvZHVjdE9wZXJhdGlvbnMSFQoNcHJvZHVjdEZhbWls",
+            "eRgGIAEoCRIVCgZoaWRkZW4YByABKAg6BWZhbHNlEh0KFXBlcnNpc3RlbnRK",
+            "c29uU3RvcmFnZRgIIAEoCSI6Cg1Qcm9kdWN0Q29uZmlnEhMKC3Byb2R1Y3RD",
+            "b2RlGAEgASgJEhQKDG1ldGFkYXRhSGFzaBgCIAEoCSI+Cg1BY3RpdmVQcm9j",
+            "ZXNzEhMKC3Byb2Nlc3NOYW1lGAEgASgJEgsKA3BpZBgCIAEoBRILCgN1cmkY",
+            "AyADKAkiSAoQRG93bmxvYWRTZXR0aW5ncxIZCg1kb3dubG9hZExpbWl0GAEg",
+            "ASgDOgItMRIZCg1iYWNrZmlsbExpbWl0GAIgASgDOgItMSLcAgoIRGF0YWJh",
+            "c2USNgoOcHJvZHVjdEluc3RhbGwYASADKAsyHi5wcm90b19kYXRhYmFzZS5Q",
+            "cm9kdWN0SW5zdGFsbBI4Cg5hY3RpdmVJbnN0YWxscxgCIAMoCzIgLnByb3Rv",
+            "X2RhdGFiYXNlLkluc3RhbGxIYW5kc2hha2USNgoPYWN0aXZlUHJvY2Vzc2Vz",
+            "GAMgAygLMh0ucHJvdG9fZGF0YWJhc2UuQWN0aXZlUHJvY2VzcxI1Cg5wcm9k",
+            "dWN0Q29uZmlncxgEIAMoCzIdLnByb3RvX2RhdGFiYXNlLlByb2R1Y3RDb25m",
+            "aWcSOgoQZG93bmxvYWRTZXR0aW5ncxgFIAEoCzIgLnByb3RvX2RhdGFiYXNl",
+            "LkRvd25sb2FkU2V0dGluZ3MSGgoSdmVyc2lvblN1bW1hcnlTZXFuGAYgASgE",
+            "EhcKD3ByaW9yaXR5VWlkTGlzdBgHIAMoCSpxCg5MYW5ndWFnZU9wdGlvbhIT",
+            "Cg9MQU5HT1BUSU9OX05PTkUQABITCg9MQU5HT1BUSU9OX1RFWFQQARIVChFM",
+            "QU5HT1BUSU9OX1NQRUVDSBACEh4KGkxBTkdPUFRJT05fVEVYVF9BTkRfU1BF",
+            "RUNIEAMqdQoTTGFuZ3VhZ2VTZXR0aW5nVHlwZRIUChBMQU5HU0VUVElOR19O",
+            "T05FEAASFgoSTEFOR1NFVFRJTkdfU0lOR0xFEAESFgoSTEFOR1NFVFRJTkdf",
+            "U0lNUExFEAISGAoUTEFOR1NFVFRJTkdfQURWQU5DRUQQAypOCg5TaG9ydGN1",
+            "dE9wdGlvbhIRCg1TSE9SVENVVF9OT05FEAASEQoNU0hPUlRDVVRfVVNFUhAB",
+            "EhYKElNIT1JUQ1VUX0FMTF9VU0VSUxACKmIKCU9wZXJhdGlvbhIUCgdPUF9O",
+            "T05FEP///////////wESDQoJT1BfVVBEQVRFEAASDwoLT1BfQkFDS0ZJTEwQ",
+            "ARINCglPUF9SRVBBSVIQAhIQCgxPUF9VTklOU1RBTEwQA0IZqgIWVEFDVExp",
+            "Yi5BZ2VudC5Qcm90b2J1Zg=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::TACTLib.Agent.Protobuf.LanguageOption), typeof(global::TACTLib.Agent.Protobuf.LanguageSettingType), typeof(global::TACTLib.Agent.Protobuf.ShortcutOption), typeof(global::TACTLib.Agent.Protobuf.Operation), }, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::TACTLib.Agent.Protobuf.LanguageSetting), global::TACTLib.Agent.Protobuf.LanguageSetting.Parser, new[]{ "Language", "Option" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TACTLib.Agent.Protobuf.UserSettings), global::TACTLib.Agent.Protobuf.UserSettings.Parser, new[]{ "InstallPath", "PlayRegion", "DesktopShortcut", "StartmenuShortcut", "LanguageSettings", "SelectedTextLanguage", "SelectedSpeechLanguage", "Languages", "AdditionalTags", "VersionBranch", "AccountCountry", "GeoIpCountry", "GameSubfolder" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TACTLib.Agent.Protobuf.InstallHandshake), global::TACTLib.Agent.Protobuf.InstallHandshake.Parser, new[]{ "Product", "Uid", "Settings" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TACTLib.Agent.Protobuf.BuildConfig), global::TACTLib.Agent.Protobuf.BuildConfig.Parser, new[]{ "Region", "BuildConfig_" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TACTLib.Agent.Protobuf.BaseProductState), global::TACTLib.Agent.Protobuf.BaseProductState.Parser, new[]{ "Installed", "Playable", "UpdateComplete", "BackgroundDownloadAvailable", "BackgroundDownloadComplete", "CurrentVersion", "CurrentVersionStr", "InstalledBuildConfig", "BackgroundDownloadBuildConfig", "DecryptionKey", "CompletedInstallActions", "CompletedBuildKeys", "CompletedBgdlKeys", "ActiveBuildKey", "ActiveBgdlKey", "ActiveInstallKey", "ActiveTagString" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TACTLib.Agent.Protobuf.BackfillProgress), global::TACTLib.Agent.Protobuf.BackfillProgress.Parser, new[]{ "Progress", "Backgrounddownload", "Paused", "DownloadLimit" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TACTLib.Agent.Protobuf.RepairProgress), global::TACTLib.Agent.Protobuf.RepairProgress.Parser, new[]{ "Progress" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TACTLib.Agent.Protobuf.UpdateProgress), global::TACTLib.Agent.Protobuf.UpdateProgress.Parser, new[]{ "LastDiscSetUsed", "Progress", "DiscIgnored", "TotalToDownload", "DownloadRemaining" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TACTLib.Agent.Protobuf.CachedProductState), global::TACTLib.Agent.Protobuf.CachedProductState.Parser, new[]{ "BaseProductState", "BackfillProgress", "RepairProgress", "UpdateProgress" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TACTLib.Agent.Protobuf.ProductOperations), global::TACTLib.Agent.Protobuf.ProductOperations.Parser, new[]{ "ActiveOperation", "Priority" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TACTLib.Agent.Protobuf.ProductInstall), global::TACTLib.Agent.Protobuf.ProductInstall.Parser, new[]{ "Uid", "ProductCode", "Settings", "CachedProductState", "ProductOperations", "ProductFamily", "Hidden" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TACTLib.Agent.Protobuf.ProductConfig), global::TACTLib.Agent.Protobuf.ProductConfig.Parser, new[]{ "ProductCode", "MetadataHash" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TACTLib.Agent.Protobuf.ActiveProcess), global::TACTLib.Agent.Protobuf.ActiveProcess.Parser, new[]{ "ProcessName", "Pid", "Uri" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TACTLib.Agent.Protobuf.DownloadSettings), global::TACTLib.Agent.Protobuf.DownloadSettings.Parser, new[]{ "DownloadLimit", "BackfillLimit" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::TACTLib.Agent.Protobuf.Database), global::TACTLib.Agent.Protobuf.Database.Parser, new[]{ "ProductInstall", "ActiveInstalls", "ActiveProcesses", "ProductConfigs", "DownloadSettings", "VersionSummarySeqn", "PriorityUidList" }, null, null, null)
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::TACTLib.Agent.Protobuf.LanguageOption), typeof(global::TACTLib.Agent.Protobuf.LanguageSettingType), typeof(global::TACTLib.Agent.Protobuf.ShortcutOption), typeof(global::TACTLib.Agent.Protobuf.Operation), }, null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::TACTLib.Agent.Protobuf.LanguageSetting), global::TACTLib.Agent.Protobuf.LanguageSetting.Parser, new[]{ "Language", "Option" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TACTLib.Agent.Protobuf.UserSettings), global::TACTLib.Agent.Protobuf.UserSettings.Parser, new[]{ "InstallPath", "PlayRegion", "DesktopShortcut", "StartmenuShortcut", "LanguageSettings", "SelectedTextLanguage", "SelectedSpeechLanguage", "Languages", "AdditionalTags", "VersionBranch", "AccountCountry", "GeoIpCountry", "GameSubfolder" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TACTLib.Agent.Protobuf.InstallHandshake), global::TACTLib.Agent.Protobuf.InstallHandshake.Parser, new[]{ "Product", "Uid", "Settings" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TACTLib.Agent.Protobuf.BuildConfig), global::TACTLib.Agent.Protobuf.BuildConfig.Parser, new[]{ "Region", "BuildConfig_" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TACTLib.Agent.Protobuf.BaseProductState), global::TACTLib.Agent.Protobuf.BaseProductState.Parser, new[]{ "Installed", "Playable", "UpdateComplete", "BackgroundDownloadAvailable", "BackgroundDownloadComplete", "CurrentVersion", "CurrentVersionStr", "InstalledBuildConfig", "BackgroundDownloadBuildConfig", "DecryptionKey", "CompletedInstallActions", "CompletedBuildKeys", "CompletedBgdlKeys", "ActiveBuildKey", "ActiveBgdlKey", "ActiveInstallKey", "ActiveTagString", "IncompleteBuildKey" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TACTLib.Agent.Protobuf.BackfillProgress), global::TACTLib.Agent.Protobuf.BackfillProgress.Parser, new[]{ "Progress", "Backgrounddownload", "Paused", "DownloadLimit" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TACTLib.Agent.Protobuf.RepairProgress), global::TACTLib.Agent.Protobuf.RepairProgress.Parser, new[]{ "Progress" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TACTLib.Agent.Protobuf.UpdateProgress), global::TACTLib.Agent.Protobuf.UpdateProgress.Parser, new[]{ "LastDiscSetUsed", "Progress", "DiscIgnored", "TotalToDownload", "DownloadRemaining" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TACTLib.Agent.Protobuf.CachedProductState), global::TACTLib.Agent.Protobuf.CachedProductState.Parser, new[]{ "BaseProductState", "BackfillProgress", "RepairProgress", "UpdateProgress" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TACTLib.Agent.Protobuf.ProductOperations), global::TACTLib.Agent.Protobuf.ProductOperations.Parser, new[]{ "ActiveOperation", "Priority" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TACTLib.Agent.Protobuf.ProductInstall), global::TACTLib.Agent.Protobuf.ProductInstall.Parser, new[]{ "Uid", "ProductCode", "Settings", "CachedProductState", "ProductOperations", "ProductFamily", "Hidden", "PersistentJsonStorage" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TACTLib.Agent.Protobuf.ProductConfig), global::TACTLib.Agent.Protobuf.ProductConfig.Parser, new[]{ "ProductCode", "MetadataHash" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TACTLib.Agent.Protobuf.ActiveProcess), global::TACTLib.Agent.Protobuf.ActiveProcess.Parser, new[]{ "ProcessName", "Pid", "Uri" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TACTLib.Agent.Protobuf.DownloadSettings), global::TACTLib.Agent.Protobuf.DownloadSettings.Parser, new[]{ "DownloadLimit", "BackfillLimit" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::TACTLib.Agent.Protobuf.Database), global::TACTLib.Agent.Protobuf.Database.Parser, new[]{ "ProductInstall", "ActiveInstalls", "ActiveProcesses", "ProductConfigs", "DownloadSettings", "VersionSummarySeqn", "PriorityUidList" }, null, null, null, null)
           }));
     }
     #endregion
@@ -140,8 +142,8 @@ namespace TACTLib.Agent.Protobuf {
   }
 
   public enum Operation {
-    [pbr::OriginalName("OP_UPDATE")] OpUpdate = 0,
     [pbr::OriginalName("OP_NONE")] OpNone = -1,
+    [pbr::OriginalName("OP_UPDATE")] OpUpdate = 0,
     [pbr::OriginalName("OP_BACKFILL")] OpBackfill = 1,
     [pbr::OriginalName("OP_REPAIR")] OpRepair = 2,
     [pbr::OriginalName("OP_UNINSTALL")] OpUninstall = 3,
@@ -150,9 +152,14 @@ namespace TACTLib.Agent.Protobuf {
   #endregion
 
   #region Messages
-  public sealed partial class LanguageSetting : pb::IMessage<LanguageSetting> {
+  public sealed partial class LanguageSetting : pb::IMessage<LanguageSetting>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<LanguageSetting> _parser = new pb::MessageParser<LanguageSetting>(() => new LanguageSetting());
     private pb::UnknownFieldSet _unknownFields;
+    private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<LanguageSetting> Parser { get { return _parser; } }
 
@@ -175,6 +182,7 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public LanguageSetting(LanguageSetting other) : this() {
+      _hasBits0 = other._hasBits0;
       language_ = other.language_;
       option_ = other.option_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -187,24 +195,49 @@ namespace TACTLib.Agent.Protobuf {
 
     /// <summary>Field number for the "language" field.</summary>
     public const int LanguageFieldNumber = 1;
-    private string language_ = "";
+    private readonly static string LanguageDefaultValue = "";
+
+    private string language_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string Language {
-      get { return language_; }
+      get { return language_ ?? LanguageDefaultValue; }
       set {
         language_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
+    /// <summary>Gets whether the "language" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasLanguage {
+      get { return language_ != null; }
+    }
+    /// <summary>Clears the value of the "language" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearLanguage() {
+      language_ = null;
+    }
 
     /// <summary>Field number for the "option" field.</summary>
     public const int OptionFieldNumber = 2;
-    private global::TACTLib.Agent.Protobuf.LanguageOption option_ = 0;
+    private readonly static global::TACTLib.Agent.Protobuf.LanguageOption OptionDefaultValue = global::TACTLib.Agent.Protobuf.LanguageOption.LangoptionNone;
+
+    private global::TACTLib.Agent.Protobuf.LanguageOption option_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::TACTLib.Agent.Protobuf.LanguageOption Option {
-      get { return option_; }
+      get { if ((_hasBits0 & 1) != 0) { return option_; } else { return OptionDefaultValue; } }
       set {
+        _hasBits0 |= 1;
         option_ = value;
       }
+    }
+    /// <summary>Gets whether the "option" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasOption {
+      get { return (_hasBits0 & 1) != 0; }
+    }
+    /// <summary>Clears the value of the "option" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearOption() {
+      _hasBits0 &= ~1;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -228,8 +261,8 @@ namespace TACTLib.Agent.Protobuf {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Language.Length != 0) hash ^= Language.GetHashCode();
-      if (Option != 0) hash ^= Option.GetHashCode();
+      if (HasLanguage) hash ^= Language.GetHashCode();
+      if (HasOption) hash ^= Option.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -243,26 +276,47 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Language.Length != 0) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (HasLanguage) {
         output.WriteRawTag(10);
         output.WriteString(Language);
       }
-      if (Option != 0) {
+      if (HasOption) {
         output.WriteRawTag(16);
         output.WriteEnum((int) Option);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasLanguage) {
+        output.WriteRawTag(10);
+        output.WriteString(Language);
+      }
+      if (HasOption) {
+        output.WriteRawTag(16);
+        output.WriteEnum((int) Option);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Language.Length != 0) {
+      if (HasLanguage) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Language);
       }
-      if (Option != 0) {
+      if (HasOption) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Option);
       }
       if (_unknownFields != null) {
@@ -276,10 +330,10 @@ namespace TACTLib.Agent.Protobuf {
       if (other == null) {
         return;
       }
-      if (other.Language.Length != 0) {
+      if (other.HasLanguage) {
         Language = other.Language;
       }
-      if (other.Option != 0) {
+      if (other.HasOption) {
         Option = other.Option;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
@@ -287,6 +341,9 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -303,13 +360,41 @@ namespace TACTLib.Agent.Protobuf {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            Language = input.ReadString();
+            break;
+          }
+          case 16: {
+            Option = (global::TACTLib.Agent.Protobuf.LanguageOption) input.ReadEnum();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class UserSettings : pb::IMessage<UserSettings> {
+  public sealed partial class UserSettings : pb::IMessage<UserSettings>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<UserSettings> _parser = new pb::MessageParser<UserSettings>(() => new UserSettings());
     private pb::UnknownFieldSet _unknownFields;
+    private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<UserSettings> Parser { get { return _parser; } }
 
@@ -332,6 +417,7 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public UserSettings(UserSettings other) : this() {
+      _hasBits0 = other._hasBits0;
       installPath_ = other.installPath_;
       playRegion_ = other.playRegion_;
       desktopShortcut_ = other.desktopShortcut_;
@@ -355,79 +441,166 @@ namespace TACTLib.Agent.Protobuf {
 
     /// <summary>Field number for the "install_path" field.</summary>
     public const int InstallPathFieldNumber = 1;
-    private string installPath_ = "";
+    private readonly static string InstallPathDefaultValue = "";
+
+    private string installPath_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string InstallPath {
-      get { return installPath_; }
+      get { return installPath_ ?? InstallPathDefaultValue; }
       set {
         installPath_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
+    /// <summary>Gets whether the "install_path" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasInstallPath {
+      get { return installPath_ != null; }
+    }
+    /// <summary>Clears the value of the "install_path" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearInstallPath() {
+      installPath_ = null;
+    }
 
     /// <summary>Field number for the "play_region" field.</summary>
     public const int PlayRegionFieldNumber = 2;
-    private string playRegion_ = "";
+    private readonly static string PlayRegionDefaultValue = "";
+
+    private string playRegion_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string PlayRegion {
-      get { return playRegion_; }
+      get { return playRegion_ ?? PlayRegionDefaultValue; }
       set {
         playRegion_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
+    /// <summary>Gets whether the "play_region" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasPlayRegion {
+      get { return playRegion_ != null; }
+    }
+    /// <summary>Clears the value of the "play_region" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearPlayRegion() {
+      playRegion_ = null;
+    }
 
     /// <summary>Field number for the "desktop_shortcut" field.</summary>
     public const int DesktopShortcutFieldNumber = 3;
-    private global::TACTLib.Agent.Protobuf.ShortcutOption desktopShortcut_ = 0;
+    private readonly static global::TACTLib.Agent.Protobuf.ShortcutOption DesktopShortcutDefaultValue = global::TACTLib.Agent.Protobuf.ShortcutOption.ShortcutNone;
+
+    private global::TACTLib.Agent.Protobuf.ShortcutOption desktopShortcut_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::TACTLib.Agent.Protobuf.ShortcutOption DesktopShortcut {
-      get { return desktopShortcut_; }
+      get { if ((_hasBits0 & 1) != 0) { return desktopShortcut_; } else { return DesktopShortcutDefaultValue; } }
       set {
+        _hasBits0 |= 1;
         desktopShortcut_ = value;
       }
+    }
+    /// <summary>Gets whether the "desktop_shortcut" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasDesktopShortcut {
+      get { return (_hasBits0 & 1) != 0; }
+    }
+    /// <summary>Clears the value of the "desktop_shortcut" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearDesktopShortcut() {
+      _hasBits0 &= ~1;
     }
 
     /// <summary>Field number for the "startmenu_shortcut" field.</summary>
     public const int StartmenuShortcutFieldNumber = 4;
-    private global::TACTLib.Agent.Protobuf.ShortcutOption startmenuShortcut_ = 0;
+    private readonly static global::TACTLib.Agent.Protobuf.ShortcutOption StartmenuShortcutDefaultValue = global::TACTLib.Agent.Protobuf.ShortcutOption.ShortcutNone;
+
+    private global::TACTLib.Agent.Protobuf.ShortcutOption startmenuShortcut_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::TACTLib.Agent.Protobuf.ShortcutOption StartmenuShortcut {
-      get { return startmenuShortcut_; }
+      get { if ((_hasBits0 & 2) != 0) { return startmenuShortcut_; } else { return StartmenuShortcutDefaultValue; } }
       set {
+        _hasBits0 |= 2;
         startmenuShortcut_ = value;
       }
+    }
+    /// <summary>Gets whether the "startmenu_shortcut" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasStartmenuShortcut {
+      get { return (_hasBits0 & 2) != 0; }
+    }
+    /// <summary>Clears the value of the "startmenu_shortcut" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearStartmenuShortcut() {
+      _hasBits0 &= ~2;
     }
 
     /// <summary>Field number for the "language_settings" field.</summary>
     public const int LanguageSettingsFieldNumber = 5;
-    private global::TACTLib.Agent.Protobuf.LanguageSettingType languageSettings_ = 0;
+    private readonly static global::TACTLib.Agent.Protobuf.LanguageSettingType LanguageSettingsDefaultValue = global::TACTLib.Agent.Protobuf.LanguageSettingType.LangsettingNone;
+
+    private global::TACTLib.Agent.Protobuf.LanguageSettingType languageSettings_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::TACTLib.Agent.Protobuf.LanguageSettingType LanguageSettings {
-      get { return languageSettings_; }
+      get { if ((_hasBits0 & 4) != 0) { return languageSettings_; } else { return LanguageSettingsDefaultValue; } }
       set {
+        _hasBits0 |= 4;
         languageSettings_ = value;
       }
+    }
+    /// <summary>Gets whether the "language_settings" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasLanguageSettings {
+      get { return (_hasBits0 & 4) != 0; }
+    }
+    /// <summary>Clears the value of the "language_settings" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearLanguageSettings() {
+      _hasBits0 &= ~4;
     }
 
     /// <summary>Field number for the "selected_text_language" field.</summary>
     public const int SelectedTextLanguageFieldNumber = 6;
-    private string selectedTextLanguage_ = "";
+    private readonly static string SelectedTextLanguageDefaultValue = "";
+
+    private string selectedTextLanguage_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string SelectedTextLanguage {
-      get { return selectedTextLanguage_; }
+      get { return selectedTextLanguage_ ?? SelectedTextLanguageDefaultValue; }
       set {
         selectedTextLanguage_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
+    /// <summary>Gets whether the "selected_text_language" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasSelectedTextLanguage {
+      get { return selectedTextLanguage_ != null; }
+    }
+    /// <summary>Clears the value of the "selected_text_language" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSelectedTextLanguage() {
+      selectedTextLanguage_ = null;
+    }
 
     /// <summary>Field number for the "selected_speech_language" field.</summary>
     public const int SelectedSpeechLanguageFieldNumber = 7;
-    private string selectedSpeechLanguage_ = "";
+    private readonly static string SelectedSpeechLanguageDefaultValue = "";
+
+    private string selectedSpeechLanguage_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string SelectedSpeechLanguage {
-      get { return selectedSpeechLanguage_; }
+      get { return selectedSpeechLanguage_ ?? SelectedSpeechLanguageDefaultValue; }
       set {
         selectedSpeechLanguage_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
+    }
+    /// <summary>Gets whether the "selected_speech_language" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasSelectedSpeechLanguage {
+      get { return selectedSpeechLanguage_ != null; }
+    }
+    /// <summary>Clears the value of the "selected_speech_language" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearSelectedSpeechLanguage() {
+      selectedSpeechLanguage_ = null;
     }
 
     /// <summary>Field number for the "languages" field.</summary>
@@ -442,57 +615,117 @@ namespace TACTLib.Agent.Protobuf {
 
     /// <summary>Field number for the "additional_tags" field.</summary>
     public const int AdditionalTagsFieldNumber = 9;
-    private string additionalTags_ = "";
+    private readonly static string AdditionalTagsDefaultValue = "";
+
+    private string additionalTags_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string AdditionalTags {
-      get { return additionalTags_; }
+      get { return additionalTags_ ?? AdditionalTagsDefaultValue; }
       set {
         additionalTags_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
+    /// <summary>Gets whether the "additional_tags" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasAdditionalTags {
+      get { return additionalTags_ != null; }
+    }
+    /// <summary>Clears the value of the "additional_tags" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearAdditionalTags() {
+      additionalTags_ = null;
+    }
 
     /// <summary>Field number for the "version_branch" field.</summary>
     public const int VersionBranchFieldNumber = 10;
-    private string versionBranch_ = "";
+    private readonly static string VersionBranchDefaultValue = "";
+
+    private string versionBranch_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string VersionBranch {
-      get { return versionBranch_; }
+      get { return versionBranch_ ?? VersionBranchDefaultValue; }
       set {
         versionBranch_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
+    /// <summary>Gets whether the "version_branch" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasVersionBranch {
+      get { return versionBranch_ != null; }
+    }
+    /// <summary>Clears the value of the "version_branch" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearVersionBranch() {
+      versionBranch_ = null;
+    }
 
     /// <summary>Field number for the "account_country" field.</summary>
     public const int AccountCountryFieldNumber = 11;
-    private string accountCountry_ = "";
+    private readonly static string AccountCountryDefaultValue = "";
+
+    private string accountCountry_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string AccountCountry {
-      get { return accountCountry_; }
+      get { return accountCountry_ ?? AccountCountryDefaultValue; }
       set {
         accountCountry_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
+    /// <summary>Gets whether the "account_country" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasAccountCountry {
+      get { return accountCountry_ != null; }
+    }
+    /// <summary>Clears the value of the "account_country" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearAccountCountry() {
+      accountCountry_ = null;
+    }
 
     /// <summary>Field number for the "geo_ip_country" field.</summary>
     public const int GeoIpCountryFieldNumber = 12;
-    private string geoIpCountry_ = "";
+    private readonly static string GeoIpCountryDefaultValue = "";
+
+    private string geoIpCountry_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string GeoIpCountry {
-      get { return geoIpCountry_; }
+      get { return geoIpCountry_ ?? GeoIpCountryDefaultValue; }
       set {
         geoIpCountry_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
+    /// <summary>Gets whether the "geo_ip_country" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasGeoIpCountry {
+      get { return geoIpCountry_ != null; }
+    }
+    /// <summary>Clears the value of the "geo_ip_country" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearGeoIpCountry() {
+      geoIpCountry_ = null;
+    }
 
     /// <summary>Field number for the "game_subfolder" field.</summary>
     public const int GameSubfolderFieldNumber = 13;
-    private string gameSubfolder_ = "";
+    private readonly static string GameSubfolderDefaultValue = "";
+
+    private string gameSubfolder_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string GameSubfolder {
-      get { return gameSubfolder_; }
+      get { return gameSubfolder_ ?? GameSubfolderDefaultValue; }
       set {
         gameSubfolder_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
+    }
+    /// <summary>Gets whether the "game_subfolder" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasGameSubfolder {
+      get { return gameSubfolder_ != null; }
+    }
+    /// <summary>Clears the value of the "game_subfolder" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearGameSubfolder() {
+      gameSubfolder_ = null;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -527,19 +760,19 @@ namespace TACTLib.Agent.Protobuf {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (InstallPath.Length != 0) hash ^= InstallPath.GetHashCode();
-      if (PlayRegion.Length != 0) hash ^= PlayRegion.GetHashCode();
-      if (DesktopShortcut != 0) hash ^= DesktopShortcut.GetHashCode();
-      if (StartmenuShortcut != 0) hash ^= StartmenuShortcut.GetHashCode();
-      if (LanguageSettings != 0) hash ^= LanguageSettings.GetHashCode();
-      if (SelectedTextLanguage.Length != 0) hash ^= SelectedTextLanguage.GetHashCode();
-      if (SelectedSpeechLanguage.Length != 0) hash ^= SelectedSpeechLanguage.GetHashCode();
+      if (HasInstallPath) hash ^= InstallPath.GetHashCode();
+      if (HasPlayRegion) hash ^= PlayRegion.GetHashCode();
+      if (HasDesktopShortcut) hash ^= DesktopShortcut.GetHashCode();
+      if (HasStartmenuShortcut) hash ^= StartmenuShortcut.GetHashCode();
+      if (HasLanguageSettings) hash ^= LanguageSettings.GetHashCode();
+      if (HasSelectedTextLanguage) hash ^= SelectedTextLanguage.GetHashCode();
+      if (HasSelectedSpeechLanguage) hash ^= SelectedSpeechLanguage.GetHashCode();
       hash ^= languages_.GetHashCode();
-      if (AdditionalTags.Length != 0) hash ^= AdditionalTags.GetHashCode();
-      if (VersionBranch.Length != 0) hash ^= VersionBranch.GetHashCode();
-      if (AccountCountry.Length != 0) hash ^= AccountCountry.GetHashCode();
-      if (GeoIpCountry.Length != 0) hash ^= GeoIpCountry.GetHashCode();
-      if (GameSubfolder.Length != 0) hash ^= GameSubfolder.GetHashCode();
+      if (HasAdditionalTags) hash ^= AdditionalTags.GetHashCode();
+      if (HasVersionBranch) hash ^= VersionBranch.GetHashCode();
+      if (HasAccountCountry) hash ^= AccountCountry.GetHashCode();
+      if (HasGeoIpCountry) hash ^= GeoIpCountry.GetHashCode();
+      if (HasGameSubfolder) hash ^= GameSubfolder.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -553,98 +786,160 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (InstallPath.Length != 0) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (HasInstallPath) {
         output.WriteRawTag(10);
         output.WriteString(InstallPath);
       }
-      if (PlayRegion.Length != 0) {
+      if (HasPlayRegion) {
         output.WriteRawTag(18);
         output.WriteString(PlayRegion);
       }
-      if (DesktopShortcut != 0) {
+      if (HasDesktopShortcut) {
         output.WriteRawTag(24);
         output.WriteEnum((int) DesktopShortcut);
       }
-      if (StartmenuShortcut != 0) {
+      if (HasStartmenuShortcut) {
         output.WriteRawTag(32);
         output.WriteEnum((int) StartmenuShortcut);
       }
-      if (LanguageSettings != 0) {
+      if (HasLanguageSettings) {
         output.WriteRawTag(40);
         output.WriteEnum((int) LanguageSettings);
       }
-      if (SelectedTextLanguage.Length != 0) {
+      if (HasSelectedTextLanguage) {
         output.WriteRawTag(50);
         output.WriteString(SelectedTextLanguage);
       }
-      if (SelectedSpeechLanguage.Length != 0) {
+      if (HasSelectedSpeechLanguage) {
         output.WriteRawTag(58);
         output.WriteString(SelectedSpeechLanguage);
       }
       languages_.WriteTo(output, _repeated_languages_codec);
-      if (AdditionalTags.Length != 0) {
+      if (HasAdditionalTags) {
         output.WriteRawTag(74);
         output.WriteString(AdditionalTags);
       }
-      if (VersionBranch.Length != 0) {
+      if (HasVersionBranch) {
         output.WriteRawTag(82);
         output.WriteString(VersionBranch);
       }
-      if (AccountCountry.Length != 0) {
+      if (HasAccountCountry) {
         output.WriteRawTag(90);
         output.WriteString(AccountCountry);
       }
-      if (GeoIpCountry.Length != 0) {
+      if (HasGeoIpCountry) {
         output.WriteRawTag(98);
         output.WriteString(GeoIpCountry);
       }
-      if (GameSubfolder.Length != 0) {
+      if (HasGameSubfolder) {
         output.WriteRawTag(106);
         output.WriteString(GameSubfolder);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasInstallPath) {
+        output.WriteRawTag(10);
+        output.WriteString(InstallPath);
+      }
+      if (HasPlayRegion) {
+        output.WriteRawTag(18);
+        output.WriteString(PlayRegion);
+      }
+      if (HasDesktopShortcut) {
+        output.WriteRawTag(24);
+        output.WriteEnum((int) DesktopShortcut);
+      }
+      if (HasStartmenuShortcut) {
+        output.WriteRawTag(32);
+        output.WriteEnum((int) StartmenuShortcut);
+      }
+      if (HasLanguageSettings) {
+        output.WriteRawTag(40);
+        output.WriteEnum((int) LanguageSettings);
+      }
+      if (HasSelectedTextLanguage) {
+        output.WriteRawTag(50);
+        output.WriteString(SelectedTextLanguage);
+      }
+      if (HasSelectedSpeechLanguage) {
+        output.WriteRawTag(58);
+        output.WriteString(SelectedSpeechLanguage);
+      }
+      languages_.WriteTo(ref output, _repeated_languages_codec);
+      if (HasAdditionalTags) {
+        output.WriteRawTag(74);
+        output.WriteString(AdditionalTags);
+      }
+      if (HasVersionBranch) {
+        output.WriteRawTag(82);
+        output.WriteString(VersionBranch);
+      }
+      if (HasAccountCountry) {
+        output.WriteRawTag(90);
+        output.WriteString(AccountCountry);
+      }
+      if (HasGeoIpCountry) {
+        output.WriteRawTag(98);
+        output.WriteString(GeoIpCountry);
+      }
+      if (HasGameSubfolder) {
+        output.WriteRawTag(106);
+        output.WriteString(GameSubfolder);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (InstallPath.Length != 0) {
+      if (HasInstallPath) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(InstallPath);
       }
-      if (PlayRegion.Length != 0) {
+      if (HasPlayRegion) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(PlayRegion);
       }
-      if (DesktopShortcut != 0) {
+      if (HasDesktopShortcut) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) DesktopShortcut);
       }
-      if (StartmenuShortcut != 0) {
+      if (HasStartmenuShortcut) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) StartmenuShortcut);
       }
-      if (LanguageSettings != 0) {
+      if (HasLanguageSettings) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) LanguageSettings);
       }
-      if (SelectedTextLanguage.Length != 0) {
+      if (HasSelectedTextLanguage) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(SelectedTextLanguage);
       }
-      if (SelectedSpeechLanguage.Length != 0) {
+      if (HasSelectedSpeechLanguage) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(SelectedSpeechLanguage);
       }
       size += languages_.CalculateSize(_repeated_languages_codec);
-      if (AdditionalTags.Length != 0) {
+      if (HasAdditionalTags) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(AdditionalTags);
       }
-      if (VersionBranch.Length != 0) {
+      if (HasVersionBranch) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(VersionBranch);
       }
-      if (AccountCountry.Length != 0) {
+      if (HasAccountCountry) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(AccountCountry);
       }
-      if (GeoIpCountry.Length != 0) {
+      if (HasGeoIpCountry) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(GeoIpCountry);
       }
-      if (GameSubfolder.Length != 0) {
+      if (HasGameSubfolder) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(GameSubfolder);
       }
       if (_unknownFields != null) {
@@ -658,41 +953,41 @@ namespace TACTLib.Agent.Protobuf {
       if (other == null) {
         return;
       }
-      if (other.InstallPath.Length != 0) {
+      if (other.HasInstallPath) {
         InstallPath = other.InstallPath;
       }
-      if (other.PlayRegion.Length != 0) {
+      if (other.HasPlayRegion) {
         PlayRegion = other.PlayRegion;
       }
-      if (other.DesktopShortcut != 0) {
+      if (other.HasDesktopShortcut) {
         DesktopShortcut = other.DesktopShortcut;
       }
-      if (other.StartmenuShortcut != 0) {
+      if (other.HasStartmenuShortcut) {
         StartmenuShortcut = other.StartmenuShortcut;
       }
-      if (other.LanguageSettings != 0) {
+      if (other.HasLanguageSettings) {
         LanguageSettings = other.LanguageSettings;
       }
-      if (other.SelectedTextLanguage.Length != 0) {
+      if (other.HasSelectedTextLanguage) {
         SelectedTextLanguage = other.SelectedTextLanguage;
       }
-      if (other.SelectedSpeechLanguage.Length != 0) {
+      if (other.HasSelectedSpeechLanguage) {
         SelectedSpeechLanguage = other.SelectedSpeechLanguage;
       }
       languages_.Add(other.languages_);
-      if (other.AdditionalTags.Length != 0) {
+      if (other.HasAdditionalTags) {
         AdditionalTags = other.AdditionalTags;
       }
-      if (other.VersionBranch.Length != 0) {
+      if (other.HasVersionBranch) {
         VersionBranch = other.VersionBranch;
       }
-      if (other.AccountCountry.Length != 0) {
+      if (other.HasAccountCountry) {
         AccountCountry = other.AccountCountry;
       }
-      if (other.GeoIpCountry.Length != 0) {
+      if (other.HasGeoIpCountry) {
         GeoIpCountry = other.GeoIpCountry;
       }
-      if (other.GameSubfolder.Length != 0) {
+      if (other.HasGameSubfolder) {
         GameSubfolder = other.GameSubfolder;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
@@ -700,6 +995,9 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -760,11 +1058,82 @@ namespace TACTLib.Agent.Protobuf {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            InstallPath = input.ReadString();
+            break;
+          }
+          case 18: {
+            PlayRegion = input.ReadString();
+            break;
+          }
+          case 24: {
+            DesktopShortcut = (global::TACTLib.Agent.Protobuf.ShortcutOption) input.ReadEnum();
+            break;
+          }
+          case 32: {
+            StartmenuShortcut = (global::TACTLib.Agent.Protobuf.ShortcutOption) input.ReadEnum();
+            break;
+          }
+          case 40: {
+            LanguageSettings = (global::TACTLib.Agent.Protobuf.LanguageSettingType) input.ReadEnum();
+            break;
+          }
+          case 50: {
+            SelectedTextLanguage = input.ReadString();
+            break;
+          }
+          case 58: {
+            SelectedSpeechLanguage = input.ReadString();
+            break;
+          }
+          case 66: {
+            languages_.AddEntriesFrom(ref input, _repeated_languages_codec);
+            break;
+          }
+          case 74: {
+            AdditionalTags = input.ReadString();
+            break;
+          }
+          case 82: {
+            VersionBranch = input.ReadString();
+            break;
+          }
+          case 90: {
+            AccountCountry = input.ReadString();
+            break;
+          }
+          case 98: {
+            GeoIpCountry = input.ReadString();
+            break;
+          }
+          case 106: {
+            GameSubfolder = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class InstallHandshake : pb::IMessage<InstallHandshake> {
+  public sealed partial class InstallHandshake : pb::IMessage<InstallHandshake>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<InstallHandshake> _parser = new pb::MessageParser<InstallHandshake>(() => new InstallHandshake());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -802,24 +1171,48 @@ namespace TACTLib.Agent.Protobuf {
 
     /// <summary>Field number for the "product" field.</summary>
     public const int ProductFieldNumber = 1;
-    private string product_ = "";
+    private readonly static string ProductDefaultValue = "";
+
+    private string product_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string Product {
-      get { return product_; }
+      get { return product_ ?? ProductDefaultValue; }
       set {
         product_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
+    /// <summary>Gets whether the "product" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasProduct {
+      get { return product_ != null; }
+    }
+    /// <summary>Clears the value of the "product" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearProduct() {
+      product_ = null;
+    }
 
     /// <summary>Field number for the "uid" field.</summary>
     public const int UidFieldNumber = 2;
-    private string uid_ = "";
+    private readonly static string UidDefaultValue = "";
+
+    private string uid_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string Uid {
-      get { return uid_; }
+      get { return uid_ ?? UidDefaultValue; }
       set {
         uid_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
+    }
+    /// <summary>Gets whether the "uid" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasUid {
+      get { return uid_ != null; }
+    }
+    /// <summary>Clears the value of the "uid" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearUid() {
+      uid_ = null;
     }
 
     /// <summary>Field number for the "settings" field.</summary>
@@ -855,8 +1248,8 @@ namespace TACTLib.Agent.Protobuf {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Product.Length != 0) hash ^= Product.GetHashCode();
-      if (Uid.Length != 0) hash ^= Uid.GetHashCode();
+      if (HasProduct) hash ^= Product.GetHashCode();
+      if (HasUid) hash ^= Uid.GetHashCode();
       if (settings_ != null) hash ^= Settings.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -871,11 +1264,14 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Product.Length != 0) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (HasProduct) {
         output.WriteRawTag(10);
         output.WriteString(Product);
       }
-      if (Uid.Length != 0) {
+      if (HasUid) {
         output.WriteRawTag(18);
         output.WriteString(Uid);
       }
@@ -886,15 +1282,37 @@ namespace TACTLib.Agent.Protobuf {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasProduct) {
+        output.WriteRawTag(10);
+        output.WriteString(Product);
+      }
+      if (HasUid) {
+        output.WriteRawTag(18);
+        output.WriteString(Uid);
+      }
+      if (settings_ != null) {
+        output.WriteRawTag(26);
+        output.WriteMessage(Settings);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Product.Length != 0) {
+      if (HasProduct) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Product);
       }
-      if (Uid.Length != 0) {
+      if (HasUid) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Uid);
       }
       if (settings_ != null) {
@@ -911,10 +1329,10 @@ namespace TACTLib.Agent.Protobuf {
       if (other == null) {
         return;
       }
-      if (other.Product.Length != 0) {
+      if (other.HasProduct) {
         Product = other.Product;
       }
-      if (other.Uid.Length != 0) {
+      if (other.HasUid) {
         Uid = other.Uid;
       }
       if (other.settings_ != null) {
@@ -928,6 +1346,9 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -951,11 +1372,45 @@ namespace TACTLib.Agent.Protobuf {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            Product = input.ReadString();
+            break;
+          }
+          case 18: {
+            Uid = input.ReadString();
+            break;
+          }
+          case 26: {
+            if (settings_ == null) {
+              Settings = new global::TACTLib.Agent.Protobuf.UserSettings();
+            }
+            input.ReadMessage(Settings);
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class BuildConfig : pb::IMessage<BuildConfig> {
+  public sealed partial class BuildConfig : pb::IMessage<BuildConfig>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<BuildConfig> _parser = new pb::MessageParser<BuildConfig>(() => new BuildConfig());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -992,24 +1447,48 @@ namespace TACTLib.Agent.Protobuf {
 
     /// <summary>Field number for the "region" field.</summary>
     public const int RegionFieldNumber = 1;
-    private string region_ = "";
+    private readonly static string RegionDefaultValue = "";
+
+    private string region_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string Region {
-      get { return region_; }
+      get { return region_ ?? RegionDefaultValue; }
       set {
         region_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
+    /// <summary>Gets whether the "region" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasRegion {
+      get { return region_ != null; }
+    }
+    /// <summary>Clears the value of the "region" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearRegion() {
+      region_ = null;
+    }
 
     /// <summary>Field number for the "buildConfig" field.</summary>
     public const int BuildConfig_FieldNumber = 2;
-    private string buildConfig_ = "";
+    private readonly static string BuildConfig_DefaultValue = "";
+
+    private string buildConfig_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string BuildConfig_ {
-      get { return buildConfig_; }
+      get { return buildConfig_ ?? BuildConfig_DefaultValue; }
       set {
         buildConfig_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
+    }
+    /// <summary>Gets whether the "buildConfig" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasBuildConfig_ {
+      get { return buildConfig_ != null; }
+    }
+    /// <summary>Clears the value of the "buildConfig" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearBuildConfig_() {
+      buildConfig_ = null;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1033,8 +1512,8 @@ namespace TACTLib.Agent.Protobuf {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Region.Length != 0) hash ^= Region.GetHashCode();
-      if (BuildConfig_.Length != 0) hash ^= BuildConfig_.GetHashCode();
+      if (HasRegion) hash ^= Region.GetHashCode();
+      if (HasBuildConfig_) hash ^= BuildConfig_.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1048,26 +1527,47 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Region.Length != 0) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (HasRegion) {
         output.WriteRawTag(10);
         output.WriteString(Region);
       }
-      if (BuildConfig_.Length != 0) {
+      if (HasBuildConfig_) {
         output.WriteRawTag(18);
         output.WriteString(BuildConfig_);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasRegion) {
+        output.WriteRawTag(10);
+        output.WriteString(Region);
+      }
+      if (HasBuildConfig_) {
+        output.WriteRawTag(18);
+        output.WriteString(BuildConfig_);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Region.Length != 0) {
+      if (HasRegion) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Region);
       }
-      if (BuildConfig_.Length != 0) {
+      if (HasBuildConfig_) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(BuildConfig_);
       }
       if (_unknownFields != null) {
@@ -1081,10 +1581,10 @@ namespace TACTLib.Agent.Protobuf {
       if (other == null) {
         return;
       }
-      if (other.Region.Length != 0) {
+      if (other.HasRegion) {
         Region = other.Region;
       }
-      if (other.BuildConfig_.Length != 0) {
+      if (other.HasBuildConfig_) {
         BuildConfig_ = other.BuildConfig_;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
@@ -1092,6 +1592,9 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -1108,13 +1611,41 @@ namespace TACTLib.Agent.Protobuf {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            Region = input.ReadString();
+            break;
+          }
+          case 18: {
+            BuildConfig_ = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class BaseProductState : pb::IMessage<BaseProductState> {
+  public sealed partial class BaseProductState : pb::IMessage<BaseProductState>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<BaseProductState> _parser = new pb::MessageParser<BaseProductState>(() => new BaseProductState());
     private pb::UnknownFieldSet _unknownFields;
+    private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<BaseProductState> Parser { get { return _parser; } }
 
@@ -1137,6 +1668,7 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public BaseProductState(BaseProductState other) : this() {
+      _hasBits0 = other._hasBits0;
       installed_ = other.installed_;
       playable_ = other.playable_;
       updateComplete_ = other.updateComplete_;
@@ -1154,6 +1686,7 @@ namespace TACTLib.Agent.Protobuf {
       activeBgdlKey_ = other.activeBgdlKey_;
       activeInstallKey_ = other.activeInstallKey_;
       activeTagString_ = other.activeTagString_;
+      incompleteBuildKey_ = other.incompleteBuildKey_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -1164,79 +1697,168 @@ namespace TACTLib.Agent.Protobuf {
 
     /// <summary>Field number for the "installed" field.</summary>
     public const int InstalledFieldNumber = 1;
+    private readonly static bool InstalledDefaultValue = false;
+
     private bool installed_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Installed {
-      get { return installed_; }
+      get { if ((_hasBits0 & 1) != 0) { return installed_; } else { return InstalledDefaultValue; } }
       set {
+        _hasBits0 |= 1;
         installed_ = value;
       }
+    }
+    /// <summary>Gets whether the "installed" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasInstalled {
+      get { return (_hasBits0 & 1) != 0; }
+    }
+    /// <summary>Clears the value of the "installed" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearInstalled() {
+      _hasBits0 &= ~1;
     }
 
     /// <summary>Field number for the "playable" field.</summary>
     public const int PlayableFieldNumber = 2;
+    private readonly static bool PlayableDefaultValue = false;
+
     private bool playable_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Playable {
-      get { return playable_; }
+      get { if ((_hasBits0 & 2) != 0) { return playable_; } else { return PlayableDefaultValue; } }
       set {
+        _hasBits0 |= 2;
         playable_ = value;
       }
+    }
+    /// <summary>Gets whether the "playable" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasPlayable {
+      get { return (_hasBits0 & 2) != 0; }
+    }
+    /// <summary>Clears the value of the "playable" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearPlayable() {
+      _hasBits0 &= ~2;
     }
 
     /// <summary>Field number for the "updateComplete" field.</summary>
     public const int UpdateCompleteFieldNumber = 3;
+    private readonly static bool UpdateCompleteDefaultValue = false;
+
     private bool updateComplete_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool UpdateComplete {
-      get { return updateComplete_; }
+      get { if ((_hasBits0 & 4) != 0) { return updateComplete_; } else { return UpdateCompleteDefaultValue; } }
       set {
+        _hasBits0 |= 4;
         updateComplete_ = value;
       }
+    }
+    /// <summary>Gets whether the "updateComplete" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasUpdateComplete {
+      get { return (_hasBits0 & 4) != 0; }
+    }
+    /// <summary>Clears the value of the "updateComplete" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearUpdateComplete() {
+      _hasBits0 &= ~4;
     }
 
     /// <summary>Field number for the "backgroundDownloadAvailable" field.</summary>
     public const int BackgroundDownloadAvailableFieldNumber = 4;
+    private readonly static bool BackgroundDownloadAvailableDefaultValue = false;
+
     private bool backgroundDownloadAvailable_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool BackgroundDownloadAvailable {
-      get { return backgroundDownloadAvailable_; }
+      get { if ((_hasBits0 & 8) != 0) { return backgroundDownloadAvailable_; } else { return BackgroundDownloadAvailableDefaultValue; } }
       set {
+        _hasBits0 |= 8;
         backgroundDownloadAvailable_ = value;
       }
+    }
+    /// <summary>Gets whether the "backgroundDownloadAvailable" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasBackgroundDownloadAvailable {
+      get { return (_hasBits0 & 8) != 0; }
+    }
+    /// <summary>Clears the value of the "backgroundDownloadAvailable" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearBackgroundDownloadAvailable() {
+      _hasBits0 &= ~8;
     }
 
     /// <summary>Field number for the "backgroundDownloadComplete" field.</summary>
     public const int BackgroundDownloadCompleteFieldNumber = 5;
+    private readonly static bool BackgroundDownloadCompleteDefaultValue = false;
+
     private bool backgroundDownloadComplete_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool BackgroundDownloadComplete {
-      get { return backgroundDownloadComplete_; }
+      get { if ((_hasBits0 & 16) != 0) { return backgroundDownloadComplete_; } else { return BackgroundDownloadCompleteDefaultValue; } }
       set {
+        _hasBits0 |= 16;
         backgroundDownloadComplete_ = value;
       }
+    }
+    /// <summary>Gets whether the "backgroundDownloadComplete" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasBackgroundDownloadComplete {
+      get { return (_hasBits0 & 16) != 0; }
+    }
+    /// <summary>Clears the value of the "backgroundDownloadComplete" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearBackgroundDownloadComplete() {
+      _hasBits0 &= ~16;
     }
 
     /// <summary>Field number for the "currentVersion" field.</summary>
     public const int CurrentVersionFieldNumber = 6;
-    private string currentVersion_ = "";
+    private readonly static string CurrentVersionDefaultValue = "";
+
+    private string currentVersion_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string CurrentVersion {
-      get { return currentVersion_; }
+      get { return currentVersion_ ?? CurrentVersionDefaultValue; }
       set {
         currentVersion_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
+    /// <summary>Gets whether the "currentVersion" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasCurrentVersion {
+      get { return currentVersion_ != null; }
+    }
+    /// <summary>Clears the value of the "currentVersion" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearCurrentVersion() {
+      currentVersion_ = null;
+    }
 
     /// <summary>Field number for the "currentVersionStr" field.</summary>
     public const int CurrentVersionStrFieldNumber = 7;
-    private string currentVersionStr_ = "";
+    private readonly static string CurrentVersionStrDefaultValue = "";
+
+    private string currentVersionStr_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string CurrentVersionStr {
-      get { return currentVersionStr_; }
+      get { return currentVersionStr_ ?? CurrentVersionStrDefaultValue; }
       set {
         currentVersionStr_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
+    }
+    /// <summary>Gets whether the "currentVersionStr" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasCurrentVersionStr {
+      get { return currentVersionStr_ != null; }
+    }
+    /// <summary>Clears the value of the "currentVersionStr" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearCurrentVersionStr() {
+      currentVersionStr_ = null;
     }
 
     /// <summary>Field number for the "installedBuildConfig" field.</summary>
@@ -1261,13 +1883,25 @@ namespace TACTLib.Agent.Protobuf {
 
     /// <summary>Field number for the "decryptionKey" field.</summary>
     public const int DecryptionKeyFieldNumber = 10;
-    private string decryptionKey_ = "";
+    private readonly static string DecryptionKeyDefaultValue = "";
+
+    private string decryptionKey_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string DecryptionKey {
-      get { return decryptionKey_; }
+      get { return decryptionKey_ ?? DecryptionKeyDefaultValue; }
       set {
         decryptionKey_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
+    }
+    /// <summary>Gets whether the "decryptionKey" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasDecryptionKey {
+      get { return decryptionKey_ != null; }
+    }
+    /// <summary>Clears the value of the "decryptionKey" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearDecryptionKey() {
+      decryptionKey_ = null;
     }
 
     /// <summary>Field number for the "completedInstallActions" field.</summary>
@@ -1302,46 +1936,117 @@ namespace TACTLib.Agent.Protobuf {
 
     /// <summary>Field number for the "activeBuildKey" field.</summary>
     public const int ActiveBuildKeyFieldNumber = 14;
-    private string activeBuildKey_ = "";
+    private readonly static string ActiveBuildKeyDefaultValue = "";
+
+    private string activeBuildKey_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string ActiveBuildKey {
-      get { return activeBuildKey_; }
+      get { return activeBuildKey_ ?? ActiveBuildKeyDefaultValue; }
       set {
         activeBuildKey_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
+    /// <summary>Gets whether the "activeBuildKey" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasActiveBuildKey {
+      get { return activeBuildKey_ != null; }
+    }
+    /// <summary>Clears the value of the "activeBuildKey" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearActiveBuildKey() {
+      activeBuildKey_ = null;
+    }
 
     /// <summary>Field number for the "activeBgdlKey" field.</summary>
     public const int ActiveBgdlKeyFieldNumber = 15;
-    private string activeBgdlKey_ = "";
+    private readonly static string ActiveBgdlKeyDefaultValue = "";
+
+    private string activeBgdlKey_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string ActiveBgdlKey {
-      get { return activeBgdlKey_; }
+      get { return activeBgdlKey_ ?? ActiveBgdlKeyDefaultValue; }
       set {
         activeBgdlKey_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
+    /// <summary>Gets whether the "activeBgdlKey" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasActiveBgdlKey {
+      get { return activeBgdlKey_ != null; }
+    }
+    /// <summary>Clears the value of the "activeBgdlKey" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearActiveBgdlKey() {
+      activeBgdlKey_ = null;
+    }
 
     /// <summary>Field number for the "activeInstallKey" field.</summary>
     public const int ActiveInstallKeyFieldNumber = 16;
-    private string activeInstallKey_ = "";
+    private readonly static string ActiveInstallKeyDefaultValue = "";
+
+    private string activeInstallKey_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string ActiveInstallKey {
-      get { return activeInstallKey_; }
+      get { return activeInstallKey_ ?? ActiveInstallKeyDefaultValue; }
       set {
         activeInstallKey_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
+    /// <summary>Gets whether the "activeInstallKey" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasActiveInstallKey {
+      get { return activeInstallKey_ != null; }
+    }
+    /// <summary>Clears the value of the "activeInstallKey" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearActiveInstallKey() {
+      activeInstallKey_ = null;
+    }
 
     /// <summary>Field number for the "activeTagString" field.</summary>
     public const int ActiveTagStringFieldNumber = 17;
-    private string activeTagString_ = "";
+    private readonly static string ActiveTagStringDefaultValue = "";
+
+    private string activeTagString_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string ActiveTagString {
-      get { return activeTagString_; }
+      get { return activeTagString_ ?? ActiveTagStringDefaultValue; }
       set {
         activeTagString_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
+    }
+    /// <summary>Gets whether the "activeTagString" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasActiveTagString {
+      get { return activeTagString_ != null; }
+    }
+    /// <summary>Clears the value of the "activeTagString" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearActiveTagString() {
+      activeTagString_ = null;
+    }
+
+    /// <summary>Field number for the "incompleteBuildKey" field.</summary>
+    public const int IncompleteBuildKeyFieldNumber = 18;
+    private readonly static string IncompleteBuildKeyDefaultValue = "";
+
+    private string incompleteBuildKey_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string IncompleteBuildKey {
+      get { return incompleteBuildKey_ ?? IncompleteBuildKeyDefaultValue; }
+      set {
+        incompleteBuildKey_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+    /// <summary>Gets whether the "incompleteBuildKey" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasIncompleteBuildKey {
+      get { return incompleteBuildKey_ != null; }
+    }
+    /// <summary>Clears the value of the "incompleteBuildKey" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearIncompleteBuildKey() {
+      incompleteBuildKey_ = null;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1374,29 +2079,31 @@ namespace TACTLib.Agent.Protobuf {
       if (ActiveBgdlKey != other.ActiveBgdlKey) return false;
       if (ActiveInstallKey != other.ActiveInstallKey) return false;
       if (ActiveTagString != other.ActiveTagString) return false;
+      if (IncompleteBuildKey != other.IncompleteBuildKey) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Installed != false) hash ^= Installed.GetHashCode();
-      if (Playable != false) hash ^= Playable.GetHashCode();
-      if (UpdateComplete != false) hash ^= UpdateComplete.GetHashCode();
-      if (BackgroundDownloadAvailable != false) hash ^= BackgroundDownloadAvailable.GetHashCode();
-      if (BackgroundDownloadComplete != false) hash ^= BackgroundDownloadComplete.GetHashCode();
-      if (CurrentVersion.Length != 0) hash ^= CurrentVersion.GetHashCode();
-      if (CurrentVersionStr.Length != 0) hash ^= CurrentVersionStr.GetHashCode();
+      if (HasInstalled) hash ^= Installed.GetHashCode();
+      if (HasPlayable) hash ^= Playable.GetHashCode();
+      if (HasUpdateComplete) hash ^= UpdateComplete.GetHashCode();
+      if (HasBackgroundDownloadAvailable) hash ^= BackgroundDownloadAvailable.GetHashCode();
+      if (HasBackgroundDownloadComplete) hash ^= BackgroundDownloadComplete.GetHashCode();
+      if (HasCurrentVersion) hash ^= CurrentVersion.GetHashCode();
+      if (HasCurrentVersionStr) hash ^= CurrentVersionStr.GetHashCode();
       hash ^= installedBuildConfig_.GetHashCode();
       hash ^= backgroundDownloadBuildConfig_.GetHashCode();
-      if (DecryptionKey.Length != 0) hash ^= DecryptionKey.GetHashCode();
+      if (HasDecryptionKey) hash ^= DecryptionKey.GetHashCode();
       hash ^= completedInstallActions_.GetHashCode();
       hash ^= completedBuildKeys_.GetHashCode();
       hash ^= completedBgdlKeys_.GetHashCode();
-      if (ActiveBuildKey.Length != 0) hash ^= ActiveBuildKey.GetHashCode();
-      if (ActiveBgdlKey.Length != 0) hash ^= ActiveBgdlKey.GetHashCode();
-      if (ActiveInstallKey.Length != 0) hash ^= ActiveInstallKey.GetHashCode();
-      if (ActiveTagString.Length != 0) hash ^= ActiveTagString.GetHashCode();
+      if (HasActiveBuildKey) hash ^= ActiveBuildKey.GetHashCode();
+      if (HasActiveBgdlKey) hash ^= ActiveBgdlKey.GetHashCode();
+      if (HasActiveInstallKey) hash ^= ActiveInstallKey.GetHashCode();
+      if (HasActiveTagString) hash ^= ActiveTagString.GetHashCode();
+      if (HasIncompleteBuildKey) hash ^= IncompleteBuildKey.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1410,107 +2117,184 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Installed != false) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (HasInstalled) {
         output.WriteRawTag(8);
         output.WriteBool(Installed);
       }
-      if (Playable != false) {
+      if (HasPlayable) {
         output.WriteRawTag(16);
         output.WriteBool(Playable);
       }
-      if (UpdateComplete != false) {
+      if (HasUpdateComplete) {
         output.WriteRawTag(24);
         output.WriteBool(UpdateComplete);
       }
-      if (BackgroundDownloadAvailable != false) {
+      if (HasBackgroundDownloadAvailable) {
         output.WriteRawTag(32);
         output.WriteBool(BackgroundDownloadAvailable);
       }
-      if (BackgroundDownloadComplete != false) {
+      if (HasBackgroundDownloadComplete) {
         output.WriteRawTag(40);
         output.WriteBool(BackgroundDownloadComplete);
       }
-      if (CurrentVersion.Length != 0) {
+      if (HasCurrentVersion) {
         output.WriteRawTag(50);
         output.WriteString(CurrentVersion);
       }
-      if (CurrentVersionStr.Length != 0) {
+      if (HasCurrentVersionStr) {
         output.WriteRawTag(58);
         output.WriteString(CurrentVersionStr);
       }
       installedBuildConfig_.WriteTo(output, _repeated_installedBuildConfig_codec);
       backgroundDownloadBuildConfig_.WriteTo(output, _repeated_backgroundDownloadBuildConfig_codec);
-      if (DecryptionKey.Length != 0) {
+      if (HasDecryptionKey) {
         output.WriteRawTag(82);
         output.WriteString(DecryptionKey);
       }
       completedInstallActions_.WriteTo(output, _repeated_completedInstallActions_codec);
       completedBuildKeys_.WriteTo(output, _repeated_completedBuildKeys_codec);
       completedBgdlKeys_.WriteTo(output, _repeated_completedBgdlKeys_codec);
-      if (ActiveBuildKey.Length != 0) {
+      if (HasActiveBuildKey) {
         output.WriteRawTag(114);
         output.WriteString(ActiveBuildKey);
       }
-      if (ActiveBgdlKey.Length != 0) {
+      if (HasActiveBgdlKey) {
         output.WriteRawTag(122);
         output.WriteString(ActiveBgdlKey);
       }
-      if (ActiveInstallKey.Length != 0) {
+      if (HasActiveInstallKey) {
         output.WriteRawTag(130, 1);
         output.WriteString(ActiveInstallKey);
       }
-      if (ActiveTagString.Length != 0) {
+      if (HasActiveTagString) {
         output.WriteRawTag(138, 1);
         output.WriteString(ActiveTagString);
+      }
+      if (HasIncompleteBuildKey) {
+        output.WriteRawTag(146, 1);
+        output.WriteString(IncompleteBuildKey);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasInstalled) {
+        output.WriteRawTag(8);
+        output.WriteBool(Installed);
+      }
+      if (HasPlayable) {
+        output.WriteRawTag(16);
+        output.WriteBool(Playable);
+      }
+      if (HasUpdateComplete) {
+        output.WriteRawTag(24);
+        output.WriteBool(UpdateComplete);
+      }
+      if (HasBackgroundDownloadAvailable) {
+        output.WriteRawTag(32);
+        output.WriteBool(BackgroundDownloadAvailable);
+      }
+      if (HasBackgroundDownloadComplete) {
+        output.WriteRawTag(40);
+        output.WriteBool(BackgroundDownloadComplete);
+      }
+      if (HasCurrentVersion) {
+        output.WriteRawTag(50);
+        output.WriteString(CurrentVersion);
+      }
+      if (HasCurrentVersionStr) {
+        output.WriteRawTag(58);
+        output.WriteString(CurrentVersionStr);
+      }
+      installedBuildConfig_.WriteTo(ref output, _repeated_installedBuildConfig_codec);
+      backgroundDownloadBuildConfig_.WriteTo(ref output, _repeated_backgroundDownloadBuildConfig_codec);
+      if (HasDecryptionKey) {
+        output.WriteRawTag(82);
+        output.WriteString(DecryptionKey);
+      }
+      completedInstallActions_.WriteTo(ref output, _repeated_completedInstallActions_codec);
+      completedBuildKeys_.WriteTo(ref output, _repeated_completedBuildKeys_codec);
+      completedBgdlKeys_.WriteTo(ref output, _repeated_completedBgdlKeys_codec);
+      if (HasActiveBuildKey) {
+        output.WriteRawTag(114);
+        output.WriteString(ActiveBuildKey);
+      }
+      if (HasActiveBgdlKey) {
+        output.WriteRawTag(122);
+        output.WriteString(ActiveBgdlKey);
+      }
+      if (HasActiveInstallKey) {
+        output.WriteRawTag(130, 1);
+        output.WriteString(ActiveInstallKey);
+      }
+      if (HasActiveTagString) {
+        output.WriteRawTag(138, 1);
+        output.WriteString(ActiveTagString);
+      }
+      if (HasIncompleteBuildKey) {
+        output.WriteRawTag(146, 1);
+        output.WriteString(IncompleteBuildKey);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Installed != false) {
+      if (HasInstalled) {
         size += 1 + 1;
       }
-      if (Playable != false) {
+      if (HasPlayable) {
         size += 1 + 1;
       }
-      if (UpdateComplete != false) {
+      if (HasUpdateComplete) {
         size += 1 + 1;
       }
-      if (BackgroundDownloadAvailable != false) {
+      if (HasBackgroundDownloadAvailable) {
         size += 1 + 1;
       }
-      if (BackgroundDownloadComplete != false) {
+      if (HasBackgroundDownloadComplete) {
         size += 1 + 1;
       }
-      if (CurrentVersion.Length != 0) {
+      if (HasCurrentVersion) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(CurrentVersion);
       }
-      if (CurrentVersionStr.Length != 0) {
+      if (HasCurrentVersionStr) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(CurrentVersionStr);
       }
       size += installedBuildConfig_.CalculateSize(_repeated_installedBuildConfig_codec);
       size += backgroundDownloadBuildConfig_.CalculateSize(_repeated_backgroundDownloadBuildConfig_codec);
-      if (DecryptionKey.Length != 0) {
+      if (HasDecryptionKey) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(DecryptionKey);
       }
       size += completedInstallActions_.CalculateSize(_repeated_completedInstallActions_codec);
       size += completedBuildKeys_.CalculateSize(_repeated_completedBuildKeys_codec);
       size += completedBgdlKeys_.CalculateSize(_repeated_completedBgdlKeys_codec);
-      if (ActiveBuildKey.Length != 0) {
+      if (HasActiveBuildKey) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(ActiveBuildKey);
       }
-      if (ActiveBgdlKey.Length != 0) {
+      if (HasActiveBgdlKey) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(ActiveBgdlKey);
       }
-      if (ActiveInstallKey.Length != 0) {
+      if (HasActiveInstallKey) {
         size += 2 + pb::CodedOutputStream.ComputeStringSize(ActiveInstallKey);
       }
-      if (ActiveTagString.Length != 0) {
+      if (HasActiveTagString) {
         size += 2 + pb::CodedOutputStream.ComputeStringSize(ActiveTagString);
+      }
+      if (HasIncompleteBuildKey) {
+        size += 2 + pb::CodedOutputStream.ComputeStringSize(IncompleteBuildKey);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -1523,52 +2307,58 @@ namespace TACTLib.Agent.Protobuf {
       if (other == null) {
         return;
       }
-      if (other.Installed != false) {
+      if (other.HasInstalled) {
         Installed = other.Installed;
       }
-      if (other.Playable != false) {
+      if (other.HasPlayable) {
         Playable = other.Playable;
       }
-      if (other.UpdateComplete != false) {
+      if (other.HasUpdateComplete) {
         UpdateComplete = other.UpdateComplete;
       }
-      if (other.BackgroundDownloadAvailable != false) {
+      if (other.HasBackgroundDownloadAvailable) {
         BackgroundDownloadAvailable = other.BackgroundDownloadAvailable;
       }
-      if (other.BackgroundDownloadComplete != false) {
+      if (other.HasBackgroundDownloadComplete) {
         BackgroundDownloadComplete = other.BackgroundDownloadComplete;
       }
-      if (other.CurrentVersion.Length != 0) {
+      if (other.HasCurrentVersion) {
         CurrentVersion = other.CurrentVersion;
       }
-      if (other.CurrentVersionStr.Length != 0) {
+      if (other.HasCurrentVersionStr) {
         CurrentVersionStr = other.CurrentVersionStr;
       }
       installedBuildConfig_.Add(other.installedBuildConfig_);
       backgroundDownloadBuildConfig_.Add(other.backgroundDownloadBuildConfig_);
-      if (other.DecryptionKey.Length != 0) {
+      if (other.HasDecryptionKey) {
         DecryptionKey = other.DecryptionKey;
       }
       completedInstallActions_.Add(other.completedInstallActions_);
       completedBuildKeys_.Add(other.completedBuildKeys_);
       completedBgdlKeys_.Add(other.completedBgdlKeys_);
-      if (other.ActiveBuildKey.Length != 0) {
+      if (other.HasActiveBuildKey) {
         ActiveBuildKey = other.ActiveBuildKey;
       }
-      if (other.ActiveBgdlKey.Length != 0) {
+      if (other.HasActiveBgdlKey) {
         ActiveBgdlKey = other.ActiveBgdlKey;
       }
-      if (other.ActiveInstallKey.Length != 0) {
+      if (other.HasActiveInstallKey) {
         ActiveInstallKey = other.ActiveInstallKey;
       }
-      if (other.ActiveTagString.Length != 0) {
+      if (other.HasActiveTagString) {
         ActiveTagString = other.ActiveTagString;
+      }
+      if (other.HasIncompleteBuildKey) {
+        IncompleteBuildKey = other.IncompleteBuildKey;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -1643,15 +2433,111 @@ namespace TACTLib.Agent.Protobuf {
             ActiveTagString = input.ReadString();
             break;
           }
+          case 146: {
+            IncompleteBuildKey = input.ReadString();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            Installed = input.ReadBool();
+            break;
+          }
+          case 16: {
+            Playable = input.ReadBool();
+            break;
+          }
+          case 24: {
+            UpdateComplete = input.ReadBool();
+            break;
+          }
+          case 32: {
+            BackgroundDownloadAvailable = input.ReadBool();
+            break;
+          }
+          case 40: {
+            BackgroundDownloadComplete = input.ReadBool();
+            break;
+          }
+          case 50: {
+            CurrentVersion = input.ReadString();
+            break;
+          }
+          case 58: {
+            CurrentVersionStr = input.ReadString();
+            break;
+          }
+          case 66: {
+            installedBuildConfig_.AddEntriesFrom(ref input, _repeated_installedBuildConfig_codec);
+            break;
+          }
+          case 74: {
+            backgroundDownloadBuildConfig_.AddEntriesFrom(ref input, _repeated_backgroundDownloadBuildConfig_codec);
+            break;
+          }
+          case 82: {
+            DecryptionKey = input.ReadString();
+            break;
+          }
+          case 90: {
+            completedInstallActions_.AddEntriesFrom(ref input, _repeated_completedInstallActions_codec);
+            break;
+          }
+          case 98: {
+            completedBuildKeys_.AddEntriesFrom(ref input, _repeated_completedBuildKeys_codec);
+            break;
+          }
+          case 106: {
+            completedBgdlKeys_.AddEntriesFrom(ref input, _repeated_completedBgdlKeys_codec);
+            break;
+          }
+          case 114: {
+            ActiveBuildKey = input.ReadString();
+            break;
+          }
+          case 122: {
+            ActiveBgdlKey = input.ReadString();
+            break;
+          }
+          case 130: {
+            ActiveInstallKey = input.ReadString();
+            break;
+          }
+          case 138: {
+            ActiveTagString = input.ReadString();
+            break;
+          }
+          case 146: {
+            IncompleteBuildKey = input.ReadString();
+            break;
+          }
         }
       }
     }
+    #endif
 
   }
 
-  public sealed partial class BackfillProgress : pb::IMessage<BackfillProgress> {
+  public sealed partial class BackfillProgress : pb::IMessage<BackfillProgress>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<BackfillProgress> _parser = new pb::MessageParser<BackfillProgress>(() => new BackfillProgress());
     private pb::UnknownFieldSet _unknownFields;
+    private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<BackfillProgress> Parser { get { return _parser; } }
 
@@ -1674,6 +2560,7 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public BackfillProgress(BackfillProgress other) : this() {
+      _hasBits0 = other._hasBits0;
       progress_ = other.progress_;
       backgrounddownload_ = other.backgrounddownload_;
       paused_ = other.paused_;
@@ -1688,46 +2575,98 @@ namespace TACTLib.Agent.Protobuf {
 
     /// <summary>Field number for the "progress" field.</summary>
     public const int ProgressFieldNumber = 1;
+    private readonly static double ProgressDefaultValue = 0D;
+
     private double progress_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double Progress {
-      get { return progress_; }
+      get { if ((_hasBits0 & 1) != 0) { return progress_; } else { return ProgressDefaultValue; } }
       set {
+        _hasBits0 |= 1;
         progress_ = value;
       }
+    }
+    /// <summary>Gets whether the "progress" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasProgress {
+      get { return (_hasBits0 & 1) != 0; }
+    }
+    /// <summary>Clears the value of the "progress" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearProgress() {
+      _hasBits0 &= ~1;
     }
 
     /// <summary>Field number for the "backgrounddownload" field.</summary>
     public const int BackgrounddownloadFieldNumber = 2;
+    private readonly static bool BackgrounddownloadDefaultValue = false;
+
     private bool backgrounddownload_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Backgrounddownload {
-      get { return backgrounddownload_; }
+      get { if ((_hasBits0 & 2) != 0) { return backgrounddownload_; } else { return BackgrounddownloadDefaultValue; } }
       set {
+        _hasBits0 |= 2;
         backgrounddownload_ = value;
       }
+    }
+    /// <summary>Gets whether the "backgrounddownload" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasBackgrounddownload {
+      get { return (_hasBits0 & 2) != 0; }
+    }
+    /// <summary>Clears the value of the "backgrounddownload" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearBackgrounddownload() {
+      _hasBits0 &= ~2;
     }
 
     /// <summary>Field number for the "paused" field.</summary>
     public const int PausedFieldNumber = 3;
+    private readonly static bool PausedDefaultValue = false;
+
     private bool paused_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Paused {
-      get { return paused_; }
+      get { if ((_hasBits0 & 4) != 0) { return paused_; } else { return PausedDefaultValue; } }
       set {
+        _hasBits0 |= 4;
         paused_ = value;
       }
+    }
+    /// <summary>Gets whether the "paused" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasPaused {
+      get { return (_hasBits0 & 4) != 0; }
+    }
+    /// <summary>Clears the value of the "paused" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearPaused() {
+      _hasBits0 &= ~4;
     }
 
     /// <summary>Field number for the "downloadLimit" field.</summary>
     public const int DownloadLimitFieldNumber = 4;
+    private readonly static ulong DownloadLimitDefaultValue = 0UL;
+
     private ulong downloadLimit_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ulong DownloadLimit {
-      get { return downloadLimit_; }
+      get { if ((_hasBits0 & 8) != 0) { return downloadLimit_; } else { return DownloadLimitDefaultValue; } }
       set {
+        _hasBits0 |= 8;
         downloadLimit_ = value;
       }
+    }
+    /// <summary>Gets whether the "downloadLimit" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasDownloadLimit {
+      get { return (_hasBits0 & 8) != 0; }
+    }
+    /// <summary>Clears the value of the "downloadLimit" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearDownloadLimit() {
+      _hasBits0 &= ~8;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1753,10 +2692,10 @@ namespace TACTLib.Agent.Protobuf {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Progress != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(Progress);
-      if (Backgrounddownload != false) hash ^= Backgrounddownload.GetHashCode();
-      if (Paused != false) hash ^= Paused.GetHashCode();
-      if (DownloadLimit != 0UL) hash ^= DownloadLimit.GetHashCode();
+      if (HasProgress) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(Progress);
+      if (HasBackgrounddownload) hash ^= Backgrounddownload.GetHashCode();
+      if (HasPaused) hash ^= Paused.GetHashCode();
+      if (HasDownloadLimit) hash ^= DownloadLimit.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1770,40 +2709,69 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Progress != 0D) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (HasProgress) {
         output.WriteRawTag(9);
         output.WriteDouble(Progress);
       }
-      if (Backgrounddownload != false) {
+      if (HasBackgrounddownload) {
         output.WriteRawTag(16);
         output.WriteBool(Backgrounddownload);
       }
-      if (Paused != false) {
+      if (HasPaused) {
         output.WriteRawTag(24);
         output.WriteBool(Paused);
       }
-      if (DownloadLimit != 0UL) {
+      if (HasDownloadLimit) {
         output.WriteRawTag(32);
         output.WriteUInt64(DownloadLimit);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasProgress) {
+        output.WriteRawTag(9);
+        output.WriteDouble(Progress);
+      }
+      if (HasBackgrounddownload) {
+        output.WriteRawTag(16);
+        output.WriteBool(Backgrounddownload);
+      }
+      if (HasPaused) {
+        output.WriteRawTag(24);
+        output.WriteBool(Paused);
+      }
+      if (HasDownloadLimit) {
+        output.WriteRawTag(32);
+        output.WriteUInt64(DownloadLimit);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Progress != 0D) {
+      if (HasProgress) {
         size += 1 + 8;
       }
-      if (Backgrounddownload != false) {
+      if (HasBackgrounddownload) {
         size += 1 + 1;
       }
-      if (Paused != false) {
+      if (HasPaused) {
         size += 1 + 1;
       }
-      if (DownloadLimit != 0UL) {
+      if (HasDownloadLimit) {
         size += 1 + pb::CodedOutputStream.ComputeUInt64Size(DownloadLimit);
       }
       if (_unknownFields != null) {
@@ -1817,16 +2785,16 @@ namespace TACTLib.Agent.Protobuf {
       if (other == null) {
         return;
       }
-      if (other.Progress != 0D) {
+      if (other.HasProgress) {
         Progress = other.Progress;
       }
-      if (other.Backgrounddownload != false) {
+      if (other.HasBackgrounddownload) {
         Backgrounddownload = other.Backgrounddownload;
       }
-      if (other.Paused != false) {
+      if (other.HasPaused) {
         Paused = other.Paused;
       }
-      if (other.DownloadLimit != 0UL) {
+      if (other.HasDownloadLimit) {
         DownloadLimit = other.DownloadLimit;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
@@ -1834,6 +2802,9 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -1858,13 +2829,49 @@ namespace TACTLib.Agent.Protobuf {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 9: {
+            Progress = input.ReadDouble();
+            break;
+          }
+          case 16: {
+            Backgrounddownload = input.ReadBool();
+            break;
+          }
+          case 24: {
+            Paused = input.ReadBool();
+            break;
+          }
+          case 32: {
+            DownloadLimit = input.ReadUInt64();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class RepairProgress : pb::IMessage<RepairProgress> {
+  public sealed partial class RepairProgress : pb::IMessage<RepairProgress>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<RepairProgress> _parser = new pb::MessageParser<RepairProgress>(() => new RepairProgress());
     private pb::UnknownFieldSet _unknownFields;
+    private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<RepairProgress> Parser { get { return _parser; } }
 
@@ -1887,6 +2894,7 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public RepairProgress(RepairProgress other) : this() {
+      _hasBits0 = other._hasBits0;
       progress_ = other.progress_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -1898,13 +2906,26 @@ namespace TACTLib.Agent.Protobuf {
 
     /// <summary>Field number for the "progress" field.</summary>
     public const int ProgressFieldNumber = 1;
+    private readonly static double ProgressDefaultValue = 0D;
+
     private double progress_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double Progress {
-      get { return progress_; }
+      get { if ((_hasBits0 & 1) != 0) { return progress_; } else { return ProgressDefaultValue; } }
       set {
+        _hasBits0 |= 1;
         progress_ = value;
       }
+    }
+    /// <summary>Gets whether the "progress" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasProgress {
+      get { return (_hasBits0 & 1) != 0; }
+    }
+    /// <summary>Clears the value of the "progress" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearProgress() {
+      _hasBits0 &= ~1;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1927,7 +2948,7 @@ namespace TACTLib.Agent.Protobuf {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Progress != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(Progress);
+      if (HasProgress) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(Progress);
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1941,19 +2962,36 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Progress != 0D) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (HasProgress) {
         output.WriteRawTag(9);
         output.WriteDouble(Progress);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasProgress) {
+        output.WriteRawTag(9);
+        output.WriteDouble(Progress);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Progress != 0D) {
+      if (HasProgress) {
         size += 1 + 8;
       }
       if (_unknownFields != null) {
@@ -1967,7 +3005,7 @@ namespace TACTLib.Agent.Protobuf {
       if (other == null) {
         return;
       }
-      if (other.Progress != 0D) {
+      if (other.HasProgress) {
         Progress = other.Progress;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
@@ -1975,6 +3013,9 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -1987,13 +3028,37 @@ namespace TACTLib.Agent.Protobuf {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 9: {
+            Progress = input.ReadDouble();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class UpdateProgress : pb::IMessage<UpdateProgress> {
+  public sealed partial class UpdateProgress : pb::IMessage<UpdateProgress>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<UpdateProgress> _parser = new pb::MessageParser<UpdateProgress>(() => new UpdateProgress());
     private pb::UnknownFieldSet _unknownFields;
+    private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<UpdateProgress> Parser { get { return _parser; } }
 
@@ -2016,6 +3081,7 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public UpdateProgress(UpdateProgress other) : this() {
+      _hasBits0 = other._hasBits0;
       lastDiscSetUsed_ = other.lastDiscSetUsed_;
       progress_ = other.progress_;
       discIgnored_ = other.discIgnored_;
@@ -2031,57 +3097,121 @@ namespace TACTLib.Agent.Protobuf {
 
     /// <summary>Field number for the "lastDiscSetUsed" field.</summary>
     public const int LastDiscSetUsedFieldNumber = 1;
-    private string lastDiscSetUsed_ = "";
+    private readonly static string LastDiscSetUsedDefaultValue = "";
+
+    private string lastDiscSetUsed_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string LastDiscSetUsed {
-      get { return lastDiscSetUsed_; }
+      get { return lastDiscSetUsed_ ?? LastDiscSetUsedDefaultValue; }
       set {
         lastDiscSetUsed_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
+    /// <summary>Gets whether the "lastDiscSetUsed" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasLastDiscSetUsed {
+      get { return lastDiscSetUsed_ != null; }
+    }
+    /// <summary>Clears the value of the "lastDiscSetUsed" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearLastDiscSetUsed() {
+      lastDiscSetUsed_ = null;
+    }
 
     /// <summary>Field number for the "progress" field.</summary>
     public const int ProgressFieldNumber = 2;
+    private readonly static double ProgressDefaultValue = 0D;
+
     private double progress_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double Progress {
-      get { return progress_; }
+      get { if ((_hasBits0 & 1) != 0) { return progress_; } else { return ProgressDefaultValue; } }
       set {
+        _hasBits0 |= 1;
         progress_ = value;
       }
+    }
+    /// <summary>Gets whether the "progress" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasProgress {
+      get { return (_hasBits0 & 1) != 0; }
+    }
+    /// <summary>Clears the value of the "progress" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearProgress() {
+      _hasBits0 &= ~1;
     }
 
     /// <summary>Field number for the "discIgnored" field.</summary>
     public const int DiscIgnoredFieldNumber = 3;
+    private readonly static bool DiscIgnoredDefaultValue = false;
+
     private bool discIgnored_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool DiscIgnored {
-      get { return discIgnored_; }
+      get { if ((_hasBits0 & 2) != 0) { return discIgnored_; } else { return DiscIgnoredDefaultValue; } }
       set {
+        _hasBits0 |= 2;
         discIgnored_ = value;
       }
+    }
+    /// <summary>Gets whether the "discIgnored" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasDiscIgnored {
+      get { return (_hasBits0 & 2) != 0; }
+    }
+    /// <summary>Clears the value of the "discIgnored" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearDiscIgnored() {
+      _hasBits0 &= ~2;
     }
 
     /// <summary>Field number for the "totalToDownload" field.</summary>
     public const int TotalToDownloadFieldNumber = 4;
+    private readonly static ulong TotalToDownloadDefaultValue = 0UL;
+
     private ulong totalToDownload_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ulong TotalToDownload {
-      get { return totalToDownload_; }
+      get { if ((_hasBits0 & 4) != 0) { return totalToDownload_; } else { return TotalToDownloadDefaultValue; } }
       set {
+        _hasBits0 |= 4;
         totalToDownload_ = value;
       }
+    }
+    /// <summary>Gets whether the "totalToDownload" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasTotalToDownload {
+      get { return (_hasBits0 & 4) != 0; }
+    }
+    /// <summary>Clears the value of the "totalToDownload" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearTotalToDownload() {
+      _hasBits0 &= ~4;
     }
 
     /// <summary>Field number for the "downloadRemaining" field.</summary>
     public const int DownloadRemainingFieldNumber = 5;
+    private readonly static ulong DownloadRemainingDefaultValue = 0UL;
+
     private ulong downloadRemaining_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ulong DownloadRemaining {
-      get { return downloadRemaining_; }
+      get { if ((_hasBits0 & 8) != 0) { return downloadRemaining_; } else { return DownloadRemainingDefaultValue; } }
       set {
+        _hasBits0 |= 8;
         downloadRemaining_ = value;
       }
+    }
+    /// <summary>Gets whether the "downloadRemaining" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasDownloadRemaining {
+      get { return (_hasBits0 & 8) != 0; }
+    }
+    /// <summary>Clears the value of the "downloadRemaining" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearDownloadRemaining() {
+      _hasBits0 &= ~8;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2108,11 +3238,11 @@ namespace TACTLib.Agent.Protobuf {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (LastDiscSetUsed.Length != 0) hash ^= LastDiscSetUsed.GetHashCode();
-      if (Progress != 0D) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(Progress);
-      if (DiscIgnored != false) hash ^= DiscIgnored.GetHashCode();
-      if (TotalToDownload != 0UL) hash ^= TotalToDownload.GetHashCode();
-      if (DownloadRemaining != 0UL) hash ^= DownloadRemaining.GetHashCode();
+      if (HasLastDiscSetUsed) hash ^= LastDiscSetUsed.GetHashCode();
+      if (HasProgress) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(Progress);
+      if (HasDiscIgnored) hash ^= DiscIgnored.GetHashCode();
+      if (HasTotalToDownload) hash ^= TotalToDownload.GetHashCode();
+      if (HasDownloadRemaining) hash ^= DownloadRemaining.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -2126,47 +3256,80 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (LastDiscSetUsed.Length != 0) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (HasLastDiscSetUsed) {
         output.WriteRawTag(10);
         output.WriteString(LastDiscSetUsed);
       }
-      if (Progress != 0D) {
+      if (HasProgress) {
         output.WriteRawTag(17);
         output.WriteDouble(Progress);
       }
-      if (DiscIgnored != false) {
+      if (HasDiscIgnored) {
         output.WriteRawTag(24);
         output.WriteBool(DiscIgnored);
       }
-      if (TotalToDownload != 0UL) {
+      if (HasTotalToDownload) {
         output.WriteRawTag(32);
         output.WriteUInt64(TotalToDownload);
       }
-      if (DownloadRemaining != 0UL) {
+      if (HasDownloadRemaining) {
         output.WriteRawTag(40);
         output.WriteUInt64(DownloadRemaining);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasLastDiscSetUsed) {
+        output.WriteRawTag(10);
+        output.WriteString(LastDiscSetUsed);
+      }
+      if (HasProgress) {
+        output.WriteRawTag(17);
+        output.WriteDouble(Progress);
+      }
+      if (HasDiscIgnored) {
+        output.WriteRawTag(24);
+        output.WriteBool(DiscIgnored);
+      }
+      if (HasTotalToDownload) {
+        output.WriteRawTag(32);
+        output.WriteUInt64(TotalToDownload);
+      }
+      if (HasDownloadRemaining) {
+        output.WriteRawTag(40);
+        output.WriteUInt64(DownloadRemaining);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (LastDiscSetUsed.Length != 0) {
+      if (HasLastDiscSetUsed) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(LastDiscSetUsed);
       }
-      if (Progress != 0D) {
+      if (HasProgress) {
         size += 1 + 8;
       }
-      if (DiscIgnored != false) {
+      if (HasDiscIgnored) {
         size += 1 + 1;
       }
-      if (TotalToDownload != 0UL) {
+      if (HasTotalToDownload) {
         size += 1 + pb::CodedOutputStream.ComputeUInt64Size(TotalToDownload);
       }
-      if (DownloadRemaining != 0UL) {
+      if (HasDownloadRemaining) {
         size += 1 + pb::CodedOutputStream.ComputeUInt64Size(DownloadRemaining);
       }
       if (_unknownFields != null) {
@@ -2180,19 +3343,19 @@ namespace TACTLib.Agent.Protobuf {
       if (other == null) {
         return;
       }
-      if (other.LastDiscSetUsed.Length != 0) {
+      if (other.HasLastDiscSetUsed) {
         LastDiscSetUsed = other.LastDiscSetUsed;
       }
-      if (other.Progress != 0D) {
+      if (other.HasProgress) {
         Progress = other.Progress;
       }
-      if (other.DiscIgnored != false) {
+      if (other.HasDiscIgnored) {
         DiscIgnored = other.DiscIgnored;
       }
-      if (other.TotalToDownload != 0UL) {
+      if (other.HasTotalToDownload) {
         TotalToDownload = other.TotalToDownload;
       }
-      if (other.DownloadRemaining != 0UL) {
+      if (other.HasDownloadRemaining) {
         DownloadRemaining = other.DownloadRemaining;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
@@ -2200,6 +3363,9 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -2228,11 +3394,50 @@ namespace TACTLib.Agent.Protobuf {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            LastDiscSetUsed = input.ReadString();
+            break;
+          }
+          case 17: {
+            Progress = input.ReadDouble();
+            break;
+          }
+          case 24: {
+            DiscIgnored = input.ReadBool();
+            break;
+          }
+          case 32: {
+            TotalToDownload = input.ReadUInt64();
+            break;
+          }
+          case 40: {
+            DownloadRemaining = input.ReadUInt64();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class CachedProductState : pb::IMessage<CachedProductState> {
+  public sealed partial class CachedProductState : pb::IMessage<CachedProductState>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<CachedProductState> _parser = new pb::MessageParser<CachedProductState>(() => new CachedProductState());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2353,6 +3558,9 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (baseProductState_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(BaseProductState);
@@ -2372,7 +3580,33 @@ namespace TACTLib.Agent.Protobuf {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (baseProductState_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(BaseProductState);
+      }
+      if (backfillProgress_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(BackfillProgress);
+      }
+      if (repairProgress_ != null) {
+        output.WriteRawTag(26);
+        output.WriteMessage(RepairProgress);
+      }
+      if (updateProgress_ != null) {
+        output.WriteRawTag(34);
+        output.WriteMessage(UpdateProgress);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -2429,6 +3663,9 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -2465,13 +3702,61 @@ namespace TACTLib.Agent.Protobuf {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            if (baseProductState_ == null) {
+              BaseProductState = new global::TACTLib.Agent.Protobuf.BaseProductState();
+            }
+            input.ReadMessage(BaseProductState);
+            break;
+          }
+          case 18: {
+            if (backfillProgress_ == null) {
+              BackfillProgress = new global::TACTLib.Agent.Protobuf.BackfillProgress();
+            }
+            input.ReadMessage(BackfillProgress);
+            break;
+          }
+          case 26: {
+            if (repairProgress_ == null) {
+              RepairProgress = new global::TACTLib.Agent.Protobuf.RepairProgress();
+            }
+            input.ReadMessage(RepairProgress);
+            break;
+          }
+          case 34: {
+            if (updateProgress_ == null) {
+              UpdateProgress = new global::TACTLib.Agent.Protobuf.UpdateProgress();
+            }
+            input.ReadMessage(UpdateProgress);
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class ProductOperations : pb::IMessage<ProductOperations> {
+  public sealed partial class ProductOperations : pb::IMessage<ProductOperations>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<ProductOperations> _parser = new pb::MessageParser<ProductOperations>(() => new ProductOperations());
     private pb::UnknownFieldSet _unknownFields;
+    private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<ProductOperations> Parser { get { return _parser; } }
 
@@ -2494,6 +3779,7 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ProductOperations(ProductOperations other) : this() {
+      _hasBits0 = other._hasBits0;
       activeOperation_ = other.activeOperation_;
       priority_ = other.priority_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -2506,24 +3792,50 @@ namespace TACTLib.Agent.Protobuf {
 
     /// <summary>Field number for the "activeOperation" field.</summary>
     public const int ActiveOperationFieldNumber = 1;
-    private global::TACTLib.Agent.Protobuf.Operation activeOperation_ = 0;
+    private readonly static global::TACTLib.Agent.Protobuf.Operation ActiveOperationDefaultValue = global::TACTLib.Agent.Protobuf.Operation.OpNone;
+
+    private global::TACTLib.Agent.Protobuf.Operation activeOperation_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::TACTLib.Agent.Protobuf.Operation ActiveOperation {
-      get { return activeOperation_; }
+      get { if ((_hasBits0 & 1) != 0) { return activeOperation_; } else { return ActiveOperationDefaultValue; } }
       set {
+        _hasBits0 |= 1;
         activeOperation_ = value;
       }
+    }
+    /// <summary>Gets whether the "activeOperation" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasActiveOperation {
+      get { return (_hasBits0 & 1) != 0; }
+    }
+    /// <summary>Clears the value of the "activeOperation" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearActiveOperation() {
+      _hasBits0 &= ~1;
     }
 
     /// <summary>Field number for the "priority" field.</summary>
     public const int PriorityFieldNumber = 2;
+    private readonly static ulong PriorityDefaultValue = 0UL;
+
     private ulong priority_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ulong Priority {
-      get { return priority_; }
+      get { if ((_hasBits0 & 2) != 0) { return priority_; } else { return PriorityDefaultValue; } }
       set {
+        _hasBits0 |= 2;
         priority_ = value;
       }
+    }
+    /// <summary>Gets whether the "priority" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasPriority {
+      get { return (_hasBits0 & 2) != 0; }
+    }
+    /// <summary>Clears the value of the "priority" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearPriority() {
+      _hasBits0 &= ~2;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2547,8 +3859,8 @@ namespace TACTLib.Agent.Protobuf {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (ActiveOperation != 0) hash ^= ActiveOperation.GetHashCode();
-      if (Priority != 0UL) hash ^= Priority.GetHashCode();
+      if (HasActiveOperation) hash ^= ActiveOperation.GetHashCode();
+      if (HasPriority) hash ^= Priority.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -2562,26 +3874,47 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (ActiveOperation != 0) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (HasActiveOperation) {
         output.WriteRawTag(8);
         output.WriteEnum((int) ActiveOperation);
       }
-      if (Priority != 0UL) {
+      if (HasPriority) {
         output.WriteRawTag(16);
         output.WriteUInt64(Priority);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasActiveOperation) {
+        output.WriteRawTag(8);
+        output.WriteEnum((int) ActiveOperation);
+      }
+      if (HasPriority) {
+        output.WriteRawTag(16);
+        output.WriteUInt64(Priority);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (ActiveOperation != 0) {
+      if (HasActiveOperation) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) ActiveOperation);
       }
-      if (Priority != 0UL) {
+      if (HasPriority) {
         size += 1 + pb::CodedOutputStream.ComputeUInt64Size(Priority);
       }
       if (_unknownFields != null) {
@@ -2595,10 +3928,10 @@ namespace TACTLib.Agent.Protobuf {
       if (other == null) {
         return;
       }
-      if (other.ActiveOperation != 0) {
+      if (other.HasActiveOperation) {
         ActiveOperation = other.ActiveOperation;
       }
-      if (other.Priority != 0UL) {
+      if (other.HasPriority) {
         Priority = other.Priority;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
@@ -2606,6 +3939,9 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -2622,13 +3958,41 @@ namespace TACTLib.Agent.Protobuf {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            ActiveOperation = (global::TACTLib.Agent.Protobuf.Operation) input.ReadEnum();
+            break;
+          }
+          case 16: {
+            Priority = input.ReadUInt64();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class ProductInstall : pb::IMessage<ProductInstall> {
+  public sealed partial class ProductInstall : pb::IMessage<ProductInstall>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<ProductInstall> _parser = new pb::MessageParser<ProductInstall>(() => new ProductInstall());
     private pb::UnknownFieldSet _unknownFields;
+    private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<ProductInstall> Parser { get { return _parser; } }
 
@@ -2651,6 +4015,7 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ProductInstall(ProductInstall other) : this() {
+      _hasBits0 = other._hasBits0;
       uid_ = other.uid_;
       productCode_ = other.productCode_;
       settings_ = other.settings_ != null ? other.settings_.Clone() : null;
@@ -2658,6 +4023,7 @@ namespace TACTLib.Agent.Protobuf {
       productOperations_ = other.productOperations_ != null ? other.productOperations_.Clone() : null;
       productFamily_ = other.productFamily_;
       hidden_ = other.hidden_;
+      persistentJsonStorage_ = other.persistentJsonStorage_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -2668,24 +4034,48 @@ namespace TACTLib.Agent.Protobuf {
 
     /// <summary>Field number for the "uid" field.</summary>
     public const int UidFieldNumber = 1;
-    private string uid_ = "";
+    private readonly static string UidDefaultValue = "";
+
+    private string uid_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string Uid {
-      get { return uid_; }
+      get { return uid_ ?? UidDefaultValue; }
       set {
         uid_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
+    /// <summary>Gets whether the "uid" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasUid {
+      get { return uid_ != null; }
+    }
+    /// <summary>Clears the value of the "uid" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearUid() {
+      uid_ = null;
+    }
 
     /// <summary>Field number for the "productCode" field.</summary>
     public const int ProductCodeFieldNumber = 2;
-    private string productCode_ = "";
+    private readonly static string ProductCodeDefaultValue = "";
+
+    private string productCode_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string ProductCode {
-      get { return productCode_; }
+      get { return productCode_ ?? ProductCodeDefaultValue; }
       set {
         productCode_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
+    }
+    /// <summary>Gets whether the "productCode" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasProductCode {
+      get { return productCode_ != null; }
+    }
+    /// <summary>Clears the value of the "productCode" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearProductCode() {
+      productCode_ = null;
     }
 
     /// <summary>Field number for the "settings" field.</summary>
@@ -2723,24 +4113,72 @@ namespace TACTLib.Agent.Protobuf {
 
     /// <summary>Field number for the "productFamily" field.</summary>
     public const int ProductFamilyFieldNumber = 6;
-    private string productFamily_ = "";
+    private readonly static string ProductFamilyDefaultValue = "";
+
+    private string productFamily_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string ProductFamily {
-      get { return productFamily_; }
+      get { return productFamily_ ?? ProductFamilyDefaultValue; }
       set {
         productFamily_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
+    /// <summary>Gets whether the "productFamily" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasProductFamily {
+      get { return productFamily_ != null; }
+    }
+    /// <summary>Clears the value of the "productFamily" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearProductFamily() {
+      productFamily_ = null;
+    }
 
     /// <summary>Field number for the "hidden" field.</summary>
     public const int HiddenFieldNumber = 7;
+    private readonly static bool HiddenDefaultValue = false;
+
     private bool hidden_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Hidden {
-      get { return hidden_; }
+      get { if ((_hasBits0 & 1) != 0) { return hidden_; } else { return HiddenDefaultValue; } }
       set {
+        _hasBits0 |= 1;
         hidden_ = value;
       }
+    }
+    /// <summary>Gets whether the "hidden" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasHidden {
+      get { return (_hasBits0 & 1) != 0; }
+    }
+    /// <summary>Clears the value of the "hidden" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearHidden() {
+      _hasBits0 &= ~1;
+    }
+
+    /// <summary>Field number for the "persistentJsonStorage" field.</summary>
+    public const int PersistentJsonStorageFieldNumber = 8;
+    private readonly static string PersistentJsonStorageDefaultValue = "";
+
+    private string persistentJsonStorage_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string PersistentJsonStorage {
+      get { return persistentJsonStorage_ ?? PersistentJsonStorageDefaultValue; }
+      set {
+        persistentJsonStorage_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+    /// <summary>Gets whether the "persistentJsonStorage" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasPersistentJsonStorage {
+      get { return persistentJsonStorage_ != null; }
+    }
+    /// <summary>Clears the value of the "persistentJsonStorage" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearPersistentJsonStorage() {
+      persistentJsonStorage_ = null;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2763,19 +4201,21 @@ namespace TACTLib.Agent.Protobuf {
       if (!object.Equals(ProductOperations, other.ProductOperations)) return false;
       if (ProductFamily != other.ProductFamily) return false;
       if (Hidden != other.Hidden) return false;
+      if (PersistentJsonStorage != other.PersistentJsonStorage) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Uid.Length != 0) hash ^= Uid.GetHashCode();
-      if (ProductCode.Length != 0) hash ^= ProductCode.GetHashCode();
+      if (HasUid) hash ^= Uid.GetHashCode();
+      if (HasProductCode) hash ^= ProductCode.GetHashCode();
       if (settings_ != null) hash ^= Settings.GetHashCode();
       if (cachedProductState_ != null) hash ^= CachedProductState.GetHashCode();
       if (productOperations_ != null) hash ^= ProductOperations.GetHashCode();
-      if (ProductFamily.Length != 0) hash ^= ProductFamily.GetHashCode();
-      if (Hidden != false) hash ^= Hidden.GetHashCode();
+      if (HasProductFamily) hash ^= ProductFamily.GetHashCode();
+      if (HasHidden) hash ^= Hidden.GetHashCode();
+      if (HasPersistentJsonStorage) hash ^= PersistentJsonStorage.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -2789,11 +4229,14 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Uid.Length != 0) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (HasUid) {
         output.WriteRawTag(10);
         output.WriteString(Uid);
       }
-      if (ProductCode.Length != 0) {
+      if (HasProductCode) {
         output.WriteRawTag(18);
         output.WriteString(ProductCode);
       }
@@ -2809,26 +4252,72 @@ namespace TACTLib.Agent.Protobuf {
         output.WriteRawTag(42);
         output.WriteMessage(ProductOperations);
       }
-      if (ProductFamily.Length != 0) {
+      if (HasProductFamily) {
         output.WriteRawTag(50);
         output.WriteString(ProductFamily);
       }
-      if (Hidden != false) {
+      if (HasHidden) {
         output.WriteRawTag(56);
         output.WriteBool(Hidden);
+      }
+      if (HasPersistentJsonStorage) {
+        output.WriteRawTag(66);
+        output.WriteString(PersistentJsonStorage);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasUid) {
+        output.WriteRawTag(10);
+        output.WriteString(Uid);
+      }
+      if (HasProductCode) {
+        output.WriteRawTag(18);
+        output.WriteString(ProductCode);
+      }
+      if (settings_ != null) {
+        output.WriteRawTag(26);
+        output.WriteMessage(Settings);
+      }
+      if (cachedProductState_ != null) {
+        output.WriteRawTag(34);
+        output.WriteMessage(CachedProductState);
+      }
+      if (productOperations_ != null) {
+        output.WriteRawTag(42);
+        output.WriteMessage(ProductOperations);
+      }
+      if (HasProductFamily) {
+        output.WriteRawTag(50);
+        output.WriteString(ProductFamily);
+      }
+      if (HasHidden) {
+        output.WriteRawTag(56);
+        output.WriteBool(Hidden);
+      }
+      if (HasPersistentJsonStorage) {
+        output.WriteRawTag(66);
+        output.WriteString(PersistentJsonStorage);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Uid.Length != 0) {
+      if (HasUid) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Uid);
       }
-      if (ProductCode.Length != 0) {
+      if (HasProductCode) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(ProductCode);
       }
       if (settings_ != null) {
@@ -2840,11 +4329,14 @@ namespace TACTLib.Agent.Protobuf {
       if (productOperations_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(ProductOperations);
       }
-      if (ProductFamily.Length != 0) {
+      if (HasProductFamily) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(ProductFamily);
       }
-      if (Hidden != false) {
+      if (HasHidden) {
         size += 1 + 1;
+      }
+      if (HasPersistentJsonStorage) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(PersistentJsonStorage);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -2857,10 +4349,10 @@ namespace TACTLib.Agent.Protobuf {
       if (other == null) {
         return;
       }
-      if (other.Uid.Length != 0) {
+      if (other.HasUid) {
         Uid = other.Uid;
       }
-      if (other.ProductCode.Length != 0) {
+      if (other.HasProductCode) {
         ProductCode = other.ProductCode;
       }
       if (other.settings_ != null) {
@@ -2881,17 +4373,23 @@ namespace TACTLib.Agent.Protobuf {
         }
         ProductOperations.MergeFrom(other.ProductOperations);
       }
-      if (other.ProductFamily.Length != 0) {
+      if (other.HasProductFamily) {
         ProductFamily = other.ProductFamily;
       }
-      if (other.Hidden != false) {
+      if (other.HasHidden) {
         Hidden = other.Hidden;
+      }
+      if (other.HasPersistentJsonStorage) {
+        PersistentJsonStorage = other.PersistentJsonStorage;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -2935,13 +4433,77 @@ namespace TACTLib.Agent.Protobuf {
             Hidden = input.ReadBool();
             break;
           }
+          case 66: {
+            PersistentJsonStorage = input.ReadString();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            Uid = input.ReadString();
+            break;
+          }
+          case 18: {
+            ProductCode = input.ReadString();
+            break;
+          }
+          case 26: {
+            if (settings_ == null) {
+              Settings = new global::TACTLib.Agent.Protobuf.UserSettings();
+            }
+            input.ReadMessage(Settings);
+            break;
+          }
+          case 34: {
+            if (cachedProductState_ == null) {
+              CachedProductState = new global::TACTLib.Agent.Protobuf.CachedProductState();
+            }
+            input.ReadMessage(CachedProductState);
+            break;
+          }
+          case 42: {
+            if (productOperations_ == null) {
+              ProductOperations = new global::TACTLib.Agent.Protobuf.ProductOperations();
+            }
+            input.ReadMessage(ProductOperations);
+            break;
+          }
+          case 50: {
+            ProductFamily = input.ReadString();
+            break;
+          }
+          case 56: {
+            Hidden = input.ReadBool();
+            break;
+          }
+          case 66: {
+            PersistentJsonStorage = input.ReadString();
+            break;
+          }
         }
       }
     }
+    #endif
 
   }
 
-  public sealed partial class ProductConfig : pb::IMessage<ProductConfig> {
+  public sealed partial class ProductConfig : pb::IMessage<ProductConfig>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<ProductConfig> _parser = new pb::MessageParser<ProductConfig>(() => new ProductConfig());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2978,24 +4540,48 @@ namespace TACTLib.Agent.Protobuf {
 
     /// <summary>Field number for the "productCode" field.</summary>
     public const int ProductCodeFieldNumber = 1;
-    private string productCode_ = "";
+    private readonly static string ProductCodeDefaultValue = "";
+
+    private string productCode_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string ProductCode {
-      get { return productCode_; }
+      get { return productCode_ ?? ProductCodeDefaultValue; }
       set {
         productCode_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
+    /// <summary>Gets whether the "productCode" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasProductCode {
+      get { return productCode_ != null; }
+    }
+    /// <summary>Clears the value of the "productCode" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearProductCode() {
+      productCode_ = null;
+    }
 
     /// <summary>Field number for the "metadataHash" field.</summary>
     public const int MetadataHashFieldNumber = 2;
-    private string metadataHash_ = "";
+    private readonly static string MetadataHashDefaultValue = "";
+
+    private string metadataHash_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string MetadataHash {
-      get { return metadataHash_; }
+      get { return metadataHash_ ?? MetadataHashDefaultValue; }
       set {
         metadataHash_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
+    }
+    /// <summary>Gets whether the "metadataHash" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasMetadataHash {
+      get { return metadataHash_ != null; }
+    }
+    /// <summary>Clears the value of the "metadataHash" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearMetadataHash() {
+      metadataHash_ = null;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3019,8 +4605,8 @@ namespace TACTLib.Agent.Protobuf {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (ProductCode.Length != 0) hash ^= ProductCode.GetHashCode();
-      if (MetadataHash.Length != 0) hash ^= MetadataHash.GetHashCode();
+      if (HasProductCode) hash ^= ProductCode.GetHashCode();
+      if (HasMetadataHash) hash ^= MetadataHash.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -3034,26 +4620,47 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (ProductCode.Length != 0) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (HasProductCode) {
         output.WriteRawTag(10);
         output.WriteString(ProductCode);
       }
-      if (MetadataHash.Length != 0) {
+      if (HasMetadataHash) {
         output.WriteRawTag(18);
         output.WriteString(MetadataHash);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasProductCode) {
+        output.WriteRawTag(10);
+        output.WriteString(ProductCode);
+      }
+      if (HasMetadataHash) {
+        output.WriteRawTag(18);
+        output.WriteString(MetadataHash);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (ProductCode.Length != 0) {
+      if (HasProductCode) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(ProductCode);
       }
-      if (MetadataHash.Length != 0) {
+      if (HasMetadataHash) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(MetadataHash);
       }
       if (_unknownFields != null) {
@@ -3067,10 +4674,10 @@ namespace TACTLib.Agent.Protobuf {
       if (other == null) {
         return;
       }
-      if (other.ProductCode.Length != 0) {
+      if (other.HasProductCode) {
         ProductCode = other.ProductCode;
       }
-      if (other.MetadataHash.Length != 0) {
+      if (other.HasMetadataHash) {
         MetadataHash = other.MetadataHash;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
@@ -3078,6 +4685,9 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -3094,13 +4704,41 @@ namespace TACTLib.Agent.Protobuf {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            ProductCode = input.ReadString();
+            break;
+          }
+          case 18: {
+            MetadataHash = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class ActiveProcess : pb::IMessage<ActiveProcess> {
+  public sealed partial class ActiveProcess : pb::IMessage<ActiveProcess>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<ActiveProcess> _parser = new pb::MessageParser<ActiveProcess>(() => new ActiveProcess());
     private pb::UnknownFieldSet _unknownFields;
+    private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<ActiveProcess> Parser { get { return _parser; } }
 
@@ -3123,6 +4761,7 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ActiveProcess(ActiveProcess other) : this() {
+      _hasBits0 = other._hasBits0;
       processName_ = other.processName_;
       pid_ = other.pid_;
       uri_ = other.uri_.Clone();
@@ -3136,24 +4775,49 @@ namespace TACTLib.Agent.Protobuf {
 
     /// <summary>Field number for the "processName" field.</summary>
     public const int ProcessNameFieldNumber = 1;
-    private string processName_ = "";
+    private readonly static string ProcessNameDefaultValue = "";
+
+    private string processName_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string ProcessName {
-      get { return processName_; }
+      get { return processName_ ?? ProcessNameDefaultValue; }
       set {
         processName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
+    /// <summary>Gets whether the "processName" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasProcessName {
+      get { return processName_ != null; }
+    }
+    /// <summary>Clears the value of the "processName" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearProcessName() {
+      processName_ = null;
+    }
 
     /// <summary>Field number for the "pid" field.</summary>
     public const int PidFieldNumber = 2;
+    private readonly static int PidDefaultValue = 0;
+
     private int pid_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int Pid {
-      get { return pid_; }
+      get { if ((_hasBits0 & 1) != 0) { return pid_; } else { return PidDefaultValue; } }
       set {
+        _hasBits0 |= 1;
         pid_ = value;
       }
+    }
+    /// <summary>Gets whether the "pid" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasPid {
+      get { return (_hasBits0 & 1) != 0; }
+    }
+    /// <summary>Clears the value of the "pid" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearPid() {
+      _hasBits0 &= ~1;
     }
 
     /// <summary>Field number for the "uri" field.</summary>
@@ -3188,8 +4852,8 @@ namespace TACTLib.Agent.Protobuf {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (ProcessName.Length != 0) hash ^= ProcessName.GetHashCode();
-      if (Pid != 0) hash ^= Pid.GetHashCode();
+      if (HasProcessName) hash ^= ProcessName.GetHashCode();
+      if (HasPid) hash ^= Pid.GetHashCode();
       hash ^= uri_.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -3204,11 +4868,14 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (ProcessName.Length != 0) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (HasProcessName) {
         output.WriteRawTag(10);
         output.WriteString(ProcessName);
       }
-      if (Pid != 0) {
+      if (HasPid) {
         output.WriteRawTag(16);
         output.WriteInt32(Pid);
       }
@@ -3216,15 +4883,34 @@ namespace TACTLib.Agent.Protobuf {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasProcessName) {
+        output.WriteRawTag(10);
+        output.WriteString(ProcessName);
+      }
+      if (HasPid) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Pid);
+      }
+      uri_.WriteTo(ref output, _repeated_uri_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (ProcessName.Length != 0) {
+      if (HasProcessName) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(ProcessName);
       }
-      if (Pid != 0) {
+      if (HasPid) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(Pid);
       }
       size += uri_.CalculateSize(_repeated_uri_codec);
@@ -3239,10 +4925,10 @@ namespace TACTLib.Agent.Protobuf {
       if (other == null) {
         return;
       }
-      if (other.ProcessName.Length != 0) {
+      if (other.HasProcessName) {
         ProcessName = other.ProcessName;
       }
-      if (other.Pid != 0) {
+      if (other.HasPid) {
         Pid = other.Pid;
       }
       uri_.Add(other.uri_);
@@ -3251,6 +4937,9 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -3271,13 +4960,45 @@ namespace TACTLib.Agent.Protobuf {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            ProcessName = input.ReadString();
+            break;
+          }
+          case 16: {
+            Pid = input.ReadInt32();
+            break;
+          }
+          case 26: {
+            uri_.AddEntriesFrom(ref input, _repeated_uri_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class DownloadSettings : pb::IMessage<DownloadSettings> {
+  public sealed partial class DownloadSettings : pb::IMessage<DownloadSettings>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<DownloadSettings> _parser = new pb::MessageParser<DownloadSettings>(() => new DownloadSettings());
     private pb::UnknownFieldSet _unknownFields;
+    private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<DownloadSettings> Parser { get { return _parser; } }
 
@@ -3300,6 +5021,7 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public DownloadSettings(DownloadSettings other) : this() {
+      _hasBits0 = other._hasBits0;
       downloadLimit_ = other.downloadLimit_;
       backfillLimit_ = other.backfillLimit_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -3312,24 +5034,50 @@ namespace TACTLib.Agent.Protobuf {
 
     /// <summary>Field number for the "downloadLimit" field.</summary>
     public const int DownloadLimitFieldNumber = 1;
+    private readonly static long DownloadLimitDefaultValue = -1L;
+
     private long downloadLimit_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public long DownloadLimit {
-      get { return downloadLimit_; }
+      get { if ((_hasBits0 & 1) != 0) { return downloadLimit_; } else { return DownloadLimitDefaultValue; } }
       set {
+        _hasBits0 |= 1;
         downloadLimit_ = value;
       }
+    }
+    /// <summary>Gets whether the "downloadLimit" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasDownloadLimit {
+      get { return (_hasBits0 & 1) != 0; }
+    }
+    /// <summary>Clears the value of the "downloadLimit" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearDownloadLimit() {
+      _hasBits0 &= ~1;
     }
 
     /// <summary>Field number for the "backfillLimit" field.</summary>
     public const int BackfillLimitFieldNumber = 2;
+    private readonly static long BackfillLimitDefaultValue = -1L;
+
     private long backfillLimit_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public long BackfillLimit {
-      get { return backfillLimit_; }
+      get { if ((_hasBits0 & 2) != 0) { return backfillLimit_; } else { return BackfillLimitDefaultValue; } }
       set {
+        _hasBits0 |= 2;
         backfillLimit_ = value;
       }
+    }
+    /// <summary>Gets whether the "backfillLimit" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasBackfillLimit {
+      get { return (_hasBits0 & 2) != 0; }
+    }
+    /// <summary>Clears the value of the "backfillLimit" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearBackfillLimit() {
+      _hasBits0 &= ~2;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3353,8 +5101,8 @@ namespace TACTLib.Agent.Protobuf {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (DownloadLimit != 0L) hash ^= DownloadLimit.GetHashCode();
-      if (BackfillLimit != 0L) hash ^= BackfillLimit.GetHashCode();
+      if (HasDownloadLimit) hash ^= DownloadLimit.GetHashCode();
+      if (HasBackfillLimit) hash ^= BackfillLimit.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -3368,26 +5116,47 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (DownloadLimit != 0L) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (HasDownloadLimit) {
         output.WriteRawTag(8);
         output.WriteInt64(DownloadLimit);
       }
-      if (BackfillLimit != 0L) {
+      if (HasBackfillLimit) {
         output.WriteRawTag(16);
         output.WriteInt64(BackfillLimit);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasDownloadLimit) {
+        output.WriteRawTag(8);
+        output.WriteInt64(DownloadLimit);
+      }
+      if (HasBackfillLimit) {
+        output.WriteRawTag(16);
+        output.WriteInt64(BackfillLimit);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (DownloadLimit != 0L) {
+      if (HasDownloadLimit) {
         size += 1 + pb::CodedOutputStream.ComputeInt64Size(DownloadLimit);
       }
-      if (BackfillLimit != 0L) {
+      if (HasBackfillLimit) {
         size += 1 + pb::CodedOutputStream.ComputeInt64Size(BackfillLimit);
       }
       if (_unknownFields != null) {
@@ -3401,10 +5170,10 @@ namespace TACTLib.Agent.Protobuf {
       if (other == null) {
         return;
       }
-      if (other.DownloadLimit != 0L) {
+      if (other.HasDownloadLimit) {
         DownloadLimit = other.DownloadLimit;
       }
-      if (other.BackfillLimit != 0L) {
+      if (other.HasBackfillLimit) {
         BackfillLimit = other.BackfillLimit;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
@@ -3412,6 +5181,9 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -3428,13 +5200,41 @@ namespace TACTLib.Agent.Protobuf {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            DownloadLimit = input.ReadInt64();
+            break;
+          }
+          case 16: {
+            BackfillLimit = input.ReadInt64();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class Database : pb::IMessage<Database> {
+  public sealed partial class Database : pb::IMessage<Database>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<Database> _parser = new pb::MessageParser<Database>(() => new Database());
     private pb::UnknownFieldSet _unknownFields;
+    private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<Database> Parser { get { return _parser; } }
 
@@ -3457,6 +5257,7 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Database(Database other) : this() {
+      _hasBits0 = other._hasBits0;
       productInstall_ = other.productInstall_.Clone();
       activeInstalls_ = other.activeInstalls_.Clone();
       activeProcesses_ = other.activeProcesses_.Clone();
@@ -3525,13 +5326,26 @@ namespace TACTLib.Agent.Protobuf {
 
     /// <summary>Field number for the "versionSummarySeqn" field.</summary>
     public const int VersionSummarySeqnFieldNumber = 6;
+    private readonly static ulong VersionSummarySeqnDefaultValue = 0UL;
+
     private ulong versionSummarySeqn_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ulong VersionSummarySeqn {
-      get { return versionSummarySeqn_; }
+      get { if ((_hasBits0 & 1) != 0) { return versionSummarySeqn_; } else { return VersionSummarySeqnDefaultValue; } }
       set {
+        _hasBits0 |= 1;
         versionSummarySeqn_ = value;
       }
+    }
+    /// <summary>Gets whether the "versionSummarySeqn" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasVersionSummarySeqn {
+      get { return (_hasBits0 & 1) != 0; }
+    }
+    /// <summary>Clears the value of the "versionSummarySeqn" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearVersionSummarySeqn() {
+      _hasBits0 &= ~1;
     }
 
     /// <summary>Field number for the "priorityUidList" field.</summary>
@@ -3575,7 +5389,7 @@ namespace TACTLib.Agent.Protobuf {
       hash ^= activeProcesses_.GetHashCode();
       hash ^= productConfigs_.GetHashCode();
       if (downloadSettings_ != null) hash ^= DownloadSettings.GetHashCode();
-      if (VersionSummarySeqn != 0UL) hash ^= VersionSummarySeqn.GetHashCode();
+      if (HasVersionSummarySeqn) hash ^= VersionSummarySeqn.GetHashCode();
       hash ^= priorityUidList_.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -3590,6 +5404,9 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       productInstall_.WriteTo(output, _repeated_productInstall_codec);
       activeInstalls_.WriteTo(output, _repeated_activeInstalls_codec);
       activeProcesses_.WriteTo(output, _repeated_activeProcesses_codec);
@@ -3598,7 +5415,7 @@ namespace TACTLib.Agent.Protobuf {
         output.WriteRawTag(42);
         output.WriteMessage(DownloadSettings);
       }
-      if (VersionSummarySeqn != 0UL) {
+      if (HasVersionSummarySeqn) {
         output.WriteRawTag(48);
         output.WriteUInt64(VersionSummarySeqn);
       }
@@ -3606,7 +5423,30 @@ namespace TACTLib.Agent.Protobuf {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      productInstall_.WriteTo(ref output, _repeated_productInstall_codec);
+      activeInstalls_.WriteTo(ref output, _repeated_activeInstalls_codec);
+      activeProcesses_.WriteTo(ref output, _repeated_activeProcesses_codec);
+      productConfigs_.WriteTo(ref output, _repeated_productConfigs_codec);
+      if (downloadSettings_ != null) {
+        output.WriteRawTag(42);
+        output.WriteMessage(DownloadSettings);
+      }
+      if (HasVersionSummarySeqn) {
+        output.WriteRawTag(48);
+        output.WriteUInt64(VersionSummarySeqn);
+      }
+      priorityUidList_.WriteTo(ref output, _repeated_priorityUidList_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -3618,7 +5458,7 @@ namespace TACTLib.Agent.Protobuf {
       if (downloadSettings_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(DownloadSettings);
       }
-      if (VersionSummarySeqn != 0UL) {
+      if (HasVersionSummarySeqn) {
         size += 1 + pb::CodedOutputStream.ComputeUInt64Size(VersionSummarySeqn);
       }
       size += priorityUidList_.CalculateSize(_repeated_priorityUidList_codec);
@@ -3643,7 +5483,7 @@ namespace TACTLib.Agent.Protobuf {
         }
         DownloadSettings.MergeFrom(other.DownloadSettings);
       }
-      if (other.VersionSummarySeqn != 0UL) {
+      if (other.HasVersionSummarySeqn) {
         VersionSummarySeqn = other.VersionSummarySeqn;
       }
       priorityUidList_.Add(other.priorityUidList_);
@@ -3652,6 +5492,9 @@ namespace TACTLib.Agent.Protobuf {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -3691,7 +5534,53 @@ namespace TACTLib.Agent.Protobuf {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            productInstall_.AddEntriesFrom(ref input, _repeated_productInstall_codec);
+            break;
+          }
+          case 18: {
+            activeInstalls_.AddEntriesFrom(ref input, _repeated_activeInstalls_codec);
+            break;
+          }
+          case 26: {
+            activeProcesses_.AddEntriesFrom(ref input, _repeated_activeProcesses_codec);
+            break;
+          }
+          case 34: {
+            productConfigs_.AddEntriesFrom(ref input, _repeated_productConfigs_codec);
+            break;
+          }
+          case 42: {
+            if (downloadSettings_ == null) {
+              DownloadSettings = new global::TACTLib.Agent.Protobuf.DownloadSettings();
+            }
+            input.ReadMessage(DownloadSettings);
+            break;
+          }
+          case 48: {
+            VersionSummarySeqn = input.ReadUInt64();
+            break;
+          }
+          case 58: {
+            priorityUidList_.AddEntriesFrom(ref input, _repeated_priorityUidList_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 

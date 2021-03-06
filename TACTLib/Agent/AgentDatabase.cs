@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Google.Protobuf;
 using TACTLib.Agent.Protobuf;
 
 namespace TACTLib.Agent {
@@ -15,7 +16,14 @@ namespace TACTLib.Agent {
                 FilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Battle.net", "Agent", "product.db");
             }
 
-            Data = Database.Parser.ParseFrom(File.ReadAllBytes(FilePath)); ;
+            var bytes = File.ReadAllBytes(FilePath);
+            try {
+                Data = Database.Parser.ParseFrom(bytes);
+            } catch (InvalidProtocolBufferException) {
+                Data = new Database {
+                    ProductInstall = {ProductInstall.Parser.ParseFrom(bytes)}
+                };
+            }
         }
     }
 }
