@@ -15,6 +15,9 @@ namespace TACTLib.Helpers {
         public void Dispose() {
             _sw.Stop();
             Logger.Debug("Perf", $"[{_name}] {_sw.ElapsedMilliseconds}ms {_sw.ElapsedTicks}t\n");
+            if (Debugger.IsAttached) {
+                Debugger.Log(1, "Perf", $"[{_name}] {_sw.ElapsedMilliseconds}ms {_sw.ElapsedTicks}t\n");
+            }
         }
     }
 }
