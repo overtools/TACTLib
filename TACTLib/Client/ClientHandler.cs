@@ -54,7 +54,7 @@ namespace TACTLib.Client {
 
         public readonly ClientCreateArgs CreateArgs;
 
-        public readonly CDNIndexHandler m_cdnIdx;
+        public readonly CDNIndexHandler CDNIndex;
 
         public ClientHandler(string basePath, ClientCreateArgs createArgs) {
             basePath = basePath ?? "";
@@ -69,12 +69,10 @@ namespace TACTLib.Client {
             try {
                 if (File.Exists(dbPath)) {
                     using (var _ = new PerfCounter("AgentDatabase::ctor`string`bool"))
-                        foreach(var install in new AgentDatabase(dbPath).Data.ProductInstall)
-                        {
-                            if (string.IsNullOrEmpty(createArgs.Flavor) || install.Settings.GameSubfolder.Contains(createArgs.Flavor)) {
-                                AgentProduct = install;
-                                break;
-                            }
+                        foreach(var install in new AgentDatabase(dbPath).Data.ProductInstall) {
+                            if (!string.IsNullOrEmpty(createArgs.Flavor) && !install.Settings.GameSubfolder.Contains(createArgs.Flavor) && (createArgs.Flavor != "retail" || !string.IsNullOrEmpty(install.Settings.GameSubfolder))) continue;
+                            AgentProduct = install;
+                            break;
                         }
                     
                     if (AgentProduct == null) {
@@ -188,7 +186,7 @@ namespace TACTLib.Client {
 
             if (createArgs.Online)
             {
-                m_cdnIdx = CDNIndexHandler.Initialize(this);
+                CDNIndex = CDNIndexHandler.Initialize(this);
             }
 
             using (var _ = new PerfCounter("ProductHandlerFactory::GetHandler`TACTProduct`ClientHandler`Stream"))
@@ -242,9 +240,9 @@ namespace TACTLib.Client {
             if (!CreateArgs.Online) return null;
 
             Stream netMemStream = null;
-            if (m_cdnIdx.CDNIndexData.TryGetValue(key, out var cdnIdx))
+            if (CDNIndex.CDNIndexData.TryGetValue(key, out var cdnIdx))
             {
-                netMemStream = m_cdnIdx.OpenDataFile(cdnIdx);
+                netMemStream = CDNIndex.OpenDataFile(cdnIdx);
             }
             if (netMemStream == null)
             {

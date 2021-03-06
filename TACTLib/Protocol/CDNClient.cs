@@ -34,6 +34,7 @@ namespace TACTLib.Protocol {
                             continue; // satan was here
                         }
                         var url = $"http://{host}/{client.InstallationInfo.Values["CDNPath"]}/{type}/{key.Substring(0, 2)}/{key.Substring(2, 2)}/{key}";
+                        Logger.Info("CDN", $"Fetching file {url}");
                         if (suffix != null) url += suffix;
                         HttpWebRequest req = WebRequest.CreateHttp(url);
                         if (range != null)

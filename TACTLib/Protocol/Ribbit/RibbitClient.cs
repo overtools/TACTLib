@@ -15,6 +15,7 @@ namespace TACTLib.Protocol.Ribbit {
         }
         
         public Stream Get(string query) {
+            Logger.Info("CDN", $"Fetching Ribbit {query}");
             using (TcpClient client = new TcpClient()) {
                 if (!Uri.TryCreate(m_host, UriKind.RelativeOrAbsolute, out var uri)) {
                     return null;
