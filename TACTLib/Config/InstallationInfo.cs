@@ -21,10 +21,8 @@ namespace TACTLib.Config {
             string[] keys = null;
             List<Dictionary<string, string>> ret = new List<Dictionary<string, string>>();
             
-            for (int i = 0; i < 0xFF; i++) {
-                string line = reader.ReadLine()?.Trim();
-                if (line == null) break;
-
+            string line;
+            while ((line = reader.ReadLine()?.Trim()) != null) {
                 if (line.Length == 0) {
                     continue;
                 }
