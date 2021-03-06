@@ -54,7 +54,7 @@ namespace TACTLib.Client {
 
         public readonly ClientCreateArgs CreateArgs;
 
-        public readonly CDNIndexHandler CDNIndex;
+        public readonly CDNIndexHandler m_cdnIdx;
 
         public ClientHandler(string basePath, ClientCreateArgs createArgs) {
             basePath = basePath ?? "";
@@ -186,7 +186,7 @@ namespace TACTLib.Client {
 
             if (createArgs.Online)
             {
-                CDNIndex = CDNIndexHandler.Initialize(this);
+                m_cdnIdx = CDNIndexHandler.Initialize(this);
             }
 
             using (var _ = new PerfCounter("ProductHandlerFactory::GetHandler`TACTProduct`ClientHandler`Stream"))
@@ -240,9 +240,9 @@ namespace TACTLib.Client {
             if (!CreateArgs.Online) return null;
 
             Stream netMemStream = null;
-            if (CDNIndex.CDNIndexData.TryGetValue(key, out var cdnIdx))
+            if (m_cdnIdx.CDNIndexData.TryGetValue(key, out var cdnIdx))
             {
-                netMemStream = CDNIndex.OpenDataFile(cdnIdx);
+                netMemStream = m_cdnIdx.OpenDataFile(cdnIdx);
             }
             if (netMemStream == null)
             {
