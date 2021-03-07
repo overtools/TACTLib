@@ -17,7 +17,15 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="DragonLib" Version="1.1.4.1" />
       <PackageReference Include="JetBrains.Annotations" Version="2020.3.0" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
     </ItemGroup>
+    
+    <Target Name="BuildModules" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug'">
+        <MSBuild Projects="../TACTView.Connector.CommonV2/TACTView.Connector.CommonV2.csproj" />
+        <MSBuild Projects="../TACTView.Connector.MNDX/TACTView.Connector.MNDX.csproj" />
+        <MSBuild Projects="../TACTView.Connector.Tank/TACTView.Connector.Tank.csproj" />
+        <MSBuild Projects="../TACTView.Connector.WorldOfWarcraftV6/TACTView.Connector.WorldOfWarcraftV6.csproj" />
+    </Target>
 </Project>

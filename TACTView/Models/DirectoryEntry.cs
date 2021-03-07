@@ -7,8 +7,8 @@ using TACTLib.Container;
 using TACTView.Api.Models;
 
 namespace TACTView.Models {
-    public record DirectoryEntry(string Name) : IDirectoryEntry {
-        public DirectoryEntry(string name, IDirectoryEntry? parent) : this(name) {
+    internal record DirectoryEntry(string Name) : IDirectoryEntry {
+        internal DirectoryEntry(string name, IDirectoryEntry? parent) : this(name) {
             Parent = parent;
             Parent?.Children.Add(this);
         }

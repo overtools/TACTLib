@@ -2,7 +2,7 @@
 using TACTView.Api.Models;
 
 namespace TACTView.ViewModels {
-    public class TACTViewModel {
+    internal class TACTViewModel {
         public ObservableCollection<IDirectoryEntry> RootDirectory { get; } = new();
     }
 }

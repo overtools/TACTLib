@@ -1,0 +1,7 @@
+{
+  "Name": "MNDX Connector",
+  "Version": "1.0.0",
+  "Authors": ["overtools <github.com/overtools>"],
+  "EntryPoint": "TACTView.Connectors.MNDXPlugin",
+  "MainModule": "TACTView.Connector.MNDX.dll"
+}

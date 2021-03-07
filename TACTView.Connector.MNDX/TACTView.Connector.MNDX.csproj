@@ -20,4 +20,10 @@
         <ProjectReference Include="..\TACTView.Api\TACTView.Api.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="manifest.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>
