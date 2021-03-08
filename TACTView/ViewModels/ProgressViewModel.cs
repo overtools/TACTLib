@@ -9,7 +9,7 @@ using TACTView.Api;
 namespace TACTView.ViewModels {
     public sealed class ProgressViewModel : INotifyPropertyChanged, IProgressReporter {
         public ProgressViewModel() {
-            Timer.AutoReset = true;
+            Timer.AutoReset = false;
             Timer.Elapsed += Update;
             Timer.Interval = 100;
             Timer.Start();
@@ -50,12 +50,14 @@ namespace TACTView.ViewModels {
         }
 
         private void Update() {
+            Timer.Stop();
             OnPropertyChanged(nameof(Maximum));
             OnPropertyChanged(nameof(Minimum));
             OnPropertyChanged(nameof(Value));
             if (Percent > 1) OnPropertyChanged(nameof(Percent));
             OnPropertyChanged(nameof(InvalidValue));
             OnPropertyChanged(nameof(Status));
+            Timer.Start();
         }
 
         [NotifyPropertyChangedInvocator]

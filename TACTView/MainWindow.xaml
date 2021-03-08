@@ -31,14 +31,16 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <controls:MenuView BorderBrush="{StaticResource MaterialDesignDivider}" BorderThickness="0, 0, 0, 3" Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0"
+        <controls:MenuView BorderBrush="{StaticResource MaterialDesignDivider}" BorderThickness="0, 0, 0, 3"
+                           Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0"
                            DataContext="{Binding Menu}" TACT="{Binding ElementName=TACTWindow, Path=DataContext}" />
         <controls:TACTTreeView Grid.Column="0" Grid.Row="1"
                                ItemsSource="{Binding RootDirectory, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
                                SelectedItemChanged="UpdateSelectedItem" />
         <GridSplitter Grid.Column="1" Grid.Row="1" HorizontalAlignment="Stretch" />
         <ListView Grid.Column="2" Grid.Row="1" />
-        <controls:ProgressView BorderBrush="{StaticResource MaterialDesignDivider}" BorderThickness="0, 3, 0, 0" Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="2"
+        <controls:ProgressView BorderBrush="{StaticResource MaterialDesignDivider}" BorderThickness="0, 3, 0, 0"
+                               Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="2"
                                DataContext="{Binding Progress}" />
     </Grid>
 </Window>

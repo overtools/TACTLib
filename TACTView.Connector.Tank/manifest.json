@@ -1,0 +1,7 @@
+{
+  "Name": "Tank Connector",
+  "Version": "1.0.0",
+  "Authors": ["overtools <github.com/overtools>"],
+  "EntryPoint": "TACTView.Connectors.TankPlugin",
+  "MainModule": "TACTView.Connector.Tank.dll"
+}
