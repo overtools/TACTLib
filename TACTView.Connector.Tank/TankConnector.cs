@@ -2,7 +2,6 @@
 using System.IO;
 using JetBrains.Annotations;
 using TACTLib;
-using TACTLib.Core.Product.MNDX;
 using TACTLib.Core.Product.Tank;
 using TACTView.Api;
 using TACTView.Api.Models;
@@ -33,20 +32,17 @@ namespace TACTView.Connectors {
                 }
 
                 var cmfData = Handler.GetContentManifestForAsset(guid);
-                if(cmfData.TryGet(guid, out var hashData)) {
-                    subdirectory.CreateFile(TankGUID.AsString(guid), Locale.None, hashData.ContentKey, hashData.Size);   
-                } else {
+                if (cmfData.TryGet(guid, out var hashData))
+                    subdirectory.CreateFile(TankGUID.AsString(guid), Locale.None, hashData.ContentKey, hashData.Size);
+                else
                     Logger.Error("Tank", $"Can't find cmf data for {TankGUID.AsString(guid)}");
-                }
             }
 
             Progress.Report(0, 1, 0, "Idle");
         }
 
         public Stream? OpenFile(IFileEntry entry) {
-            if (entry.CustomData is ulong guid) {
-                return Handler.OpenFile(guid);
-            }
+            if (entry.CustomData is ulong guid) return Handler.OpenFile(guid);
 
             return null;
         }
