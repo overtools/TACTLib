@@ -21,7 +21,6 @@
         </Grid.RowDefinitions>
         <Label Grid.Row="0" Content="{Binding Status, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" />
         <ProgressBar Grid.Row="1" Value="{Binding Percent, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
-                     Maximum="{Binding Maximum, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
-                     Minimum="{Binding Minimum, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" />
+                     IsIndeterminate="{Binding InvalidValue, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" />
     </Grid>
 </UserControl>

@@ -46,23 +46,16 @@ namespace TACTView.ViewModels {
                 }
         }
 
-        public ICollection<RecentItem> Recent { get; set; } = new Collection<RecentItem>();
-        public ICollection<CASCEntry> Installed { get; set; } = new Collection<CASCEntry>();
+        public ICollection<RecentItem> Recent { get; } = new Collection<RecentItem>();
+        public ICollection<CASCEntry> Installed { get; } = new Collection<CASCEntry>();
 
         private static bool ShouldIgnore(TACTProduct product, string code) {
-            switch (product) {
-                case TACTProduct.Agent: // not containerised
-                case TACTProduct.BattleNetApp: // not containerised
-                case TACTProduct.Catalog: // all streamed
-                case TACTProduct.Destiny2: // root file is in exe, also not on bnet anymore
-                case TACTProduct.Hearthstone: // root file is in exe
-                case TACTProduct.Unknown: // ?
-                    return true;
-                case TACTProduct.Overwatch:
-                    return code.ToLower() != "pro";
-                default:
-                    return !ProductHandlerFactory.HasHandler(product);
-            }
+            if (!ProductHandlerFactory.HasHandler(product) || !RegistryViewModel.Instance.HasProductConnector(product)) return true;
+            return product switch {
+                TACTProduct.Overwatch => // we're not processing non-live manifests due to volatility
+                    code.ToLower() != "pro",
+                _ => false
+            };
         }
     }
 }

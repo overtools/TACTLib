@@ -11,7 +11,7 @@ using TACTView.Api.Registry;
 using TACTView.Models;
 
 namespace TACTView.ViewModels {
-    internal class ModuleViewModel : Singleton<ModuleViewModel> {
+    public class ModuleViewModel : Singleton<ModuleViewModel> {
         public ModuleViewModel() {
             var modulesDir = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? "./", "Modules");
             if (!Directory.Exists(modulesDir)) {
