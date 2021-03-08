@@ -15,19 +15,19 @@ namespace TACTView.ViewModels {
 
         bool IRegistry<IFileHandler>.Register<T>(TACTProduct product, string name) {
             if (FileHandlers.Any(x => x.Product == product)) return false;
-            FileHandlers.Add(new RegistryEntry<IFileHandler>(name, product) {Type = typeof(T)});
-            return true;
-        }
-
-        bool IRegistry<IProductConnector>.Register<T>(TACTProduct product, string name) {
-            if (ProductConnectors.Any(x => x.Product == product)) return false;
-            ProductConnectors.Add(new RegistryEntry<IProductConnector>(name, product) {Type = typeof(T)});
+            FileHandlers.Add(new RegistryEntry<IFileHandler>(name, product, typeof(T)));
             return true;
         }
 
         bool IRegistry<IPlugin>.Register<T>(TACTProduct product, string name) {
             if (Plugins.Any(x => x.Product == product)) return false;
-            Plugins.Add(new RegistryEntry<IPlugin>(name, product) {Type = typeof(T)});
+            Plugins.Add(new RegistryEntry<IPlugin>(name, product, typeof(T)));
+            return true;
+        }
+
+        bool IRegistry<IProductConnector>.Register<T>(TACTProduct product, string name) {
+            if (ProductConnectors.Any(x => x.Product == product)) return false;
+            ProductConnectors.Add(new RegistryEntry<IProductConnector>(name, product, typeof(T)));
             return true;
         }
     }

@@ -2,7 +2,7 @@
 using TACTLib;
 
 namespace TACTView.Api.Registry {
-    [PublicAPI] 
+    [PublicAPI]
     public interface IRegistry<in T> where T : IRegistryBase {
         bool Register<TU>(TACTProduct product, string name) where TU : T;
     }

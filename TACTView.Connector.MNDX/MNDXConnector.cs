@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
+using JetBrains.Annotations;
 using TACTLib.Core.Product.MNDX;
 using TACTView.Api.Models;
 using TACTView.Api.Registry;
 
 namespace TACTView.Connectors {
+    [PublicAPI]
     public class MNDXConnector : IProductConnector {
         public MNDXConnector(ProductHandler_MNDX handler) {
             Handler = handler;

@@ -8,22 +8,24 @@ using TACTView.Api.Models;
 
 namespace TACTView.Models {
     internal record DirectoryEntry(string Name) : IDirectoryEntry {
-        internal DirectoryEntry(string name, IDirectoryEntry? parent) : this(name) {
+        private DirectoryEntry(string name, IDirectoryEntry? parent) : this(name) {
             Parent = parent;
             Parent?.Children.Add(this);
         }
+
+        public IEnumerable<IDirectoryEntry> SubDirectories => Children.Where(x => x is not FileEntry).OrderBy(x => x.Name);
         public IDirectoryEntry? Parent { get; init; }
         public ObservableCollection<IDirectoryEntry> Children { get; init; } = new();
         public object? CustomData { get; init; }
-        public IEnumerable<IDirectoryEntry> SubDirectories => Children.Where(x => x is not FileEntry);
 
         public IDirectoryEntry CreateDirectory(string name) {
-            var parts = name.Split(new [] { '/', '\\' }, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            var parts = name.Split(new[] {'/', '\\'}, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
             DirectoryEntry lastDir = this;
             foreach (var part in parts) {
                 var existing = lastDir.FindChild(part, StringComparison.InvariantCultureIgnoreCase);
                 lastDir = existing != null ? (DirectoryEntry) existing : new DirectoryEntry(part, lastDir);
             }
+
             return lastDir;
         }
 

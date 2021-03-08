@@ -5,27 +5,42 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewModels="clr-namespace:TACTView.ViewModels"
         xmlns:models="clr-namespace:TACTView.Models"
+        xmlns:controls="clr-namespace:TACTView.Controls"
         mc:Ignorable="d"
-        Title="TACTView" Height="450" Width="800">
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        TextElement.FontWeight="Regular"
+        TextElement.FontSize="13"
+        TextOptions.TextFormattingMode="Ideal"
+        TextOptions.TextRenderingMode="Auto"
+        Background="{DynamicResource MaterialDesignPaper}"
+        FontFamily="{DynamicResource MaterialDesignFont}"
+        Title="TACTView"
+        Height="450"
+        Width="800">
     <Window.DataContext>
-        <viewModels:TACTViewModel/>
+        <viewModels:TACTViewModel />
     </Window.DataContext>
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition MinWidth="200"/>
-            <ColumnDefinition Width="5"/>
-            <ColumnDefinition MinWidth="600" Width="*"/>
+            <ColumnDefinition MinWidth="200" />
+            <ColumnDefinition Width="5" />
+            <ColumnDefinition MinWidth="600" Width="*" />
         </Grid.ColumnDefinitions>
-        <TreeView ItemsSource="{Binding RootDirectory}">
-            <TreeView.ItemTemplate>  
-                <HierarchicalDataTemplate DataType="{x:Type models:DirectoryEntry}" ItemsSource="{Binding SubDirectories}">
-                    <Label Content="{Binding Name}"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="56" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="26" />
+        </Grid.RowDefinitions>
+        <TreeView Grid.Row="1" ItemsSource="{Binding RootDirectory}">
+            <TreeView.ItemTemplate>
+                <HierarchicalDataTemplate DataType="{x:Type models:DirectoryEntry}"
+                                          ItemsSource="{Binding SubDirectories}">
+                    <Label Content="{Binding Name}" />
                 </HierarchicalDataTemplate>
-            </TreeView.ItemTemplate>  
+            </TreeView.ItemTemplate>
         </TreeView>
-        <GridSplitter Grid.Column="1" Grid.Row="0" HorizontalAlignment="Stretch"/>
-        <ListView Grid.Column="2">
-            
-        </ListView>
+        <GridSplitter Grid.Column="1" Grid.Row="1" HorizontalAlignment="Stretch" />
+        <ListView Grid.Column="2" Grid.Row="1" />
+        <controls:ProgressView Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="2" DataContext="{Binding Progress}" />
     </Grid>
 </Window>

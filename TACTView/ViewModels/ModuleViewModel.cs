@@ -12,9 +12,6 @@ using TACTView.Models;
 
 namespace TACTView.ViewModels {
     internal class ModuleViewModel : Singleton<ModuleViewModel> {
-        public static RegistryViewModel Registry => RegistryViewModel.Instance;
-        public ICollection<ModuleManifest> Modules { get; } = new Collection<ModuleManifest>();
-        
         public ModuleViewModel() {
             var modulesDir = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? "./", "Modules");
             if (!Directory.Exists(modulesDir)) {
@@ -43,6 +40,7 @@ namespace TACTView.ViewModels {
                         continue;
                     }
 
+                    Logger.Warn("TACTView::Modules", $"Loading module {manifest.MainModule}");
                     var services = CreateServiceProvider(type);
                     manifest.Instance = services.GetRequiredService(type);
                     Modules.Add(manifest);
@@ -52,7 +50,10 @@ namespace TACTView.ViewModels {
             }
         }
 
-        private ServiceProvider CreateServiceProvider(Type type) {
+        private static RegistryViewModel Registry => RegistryViewModel.Instance;
+        internal ICollection<ModuleManifest> Modules => new Collection<ModuleManifest>();
+
+        private static ServiceProvider CreateServiceProvider(Type type) {
             return new ServiceCollection()
                    .AddSingleton<IRegistry<IFileHandler>>(Registry)
                    .AddSingleton<IRegistry<IProductConnector>>(Registry)
