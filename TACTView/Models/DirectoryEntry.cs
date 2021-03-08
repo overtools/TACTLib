@@ -29,8 +29,8 @@ namespace TACTView.Models {
             return lastDir;
         }
 
-        public IFileEntry CreateFile(string name, Locale locale, CKey key, long size) {
-            var file = new FileEntry(name, size, locale, key, this);
+        public IFileEntry CreateFile(string name, Locale locale, CKey key, long size, object? customData = null) {
+            var file = new FileEntry(name, size, locale, key, this) { CustomData = customData };
             Children.Add(file);
             return file;
         }

@@ -12,6 +12,6 @@ namespace TACTView.Api.Models {
         object? CustomData { get; init; }
 
         IDirectoryEntry CreateDirectory(string name);
-        IFileEntry CreateFile(string name, Locale locale, CKey key, long size);
+        IFileEntry CreateFile(string name, Locale locale, CKey key, long size, object? customData = null);
     }
 }

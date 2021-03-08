@@ -33,7 +33,7 @@ namespace TACTView.Connectors {
 
                 var cmfData = Handler.GetContentManifestForAsset(guid);
                 if (cmfData.TryGet(guid, out var hashData))
-                    subdirectory.CreateFile(TankGUID.AsString(guid), Locale.None, hashData.ContentKey, hashData.Size);
+                    subdirectory.CreateFile(TankGUID.AsString(guid), Locale.None, hashData.ContentKey, hashData.Size, guid);
                 else
                     Logger.Error("Tank", $"Can't find cmf data for {TankGUID.AsString(guid)}");
             }
