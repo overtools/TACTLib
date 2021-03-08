@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 
 namespace TACTLib {
@@ -62,6 +63,50 @@ namespace TACTLib {
     }
 
     public static class ProductHelpers {
+        public static string HumanReadableProduct(TACTProduct product) {
+            switch(product)
+            {
+                default:
+                    return product.ToString();
+                case TACTProduct.Agent:
+                    return "Agent";
+                case TACTProduct.BattleNetApp:
+                    return "Battle.net";
+                case TACTProduct.Catalog:
+                    return "Catalog";
+                case TACTProduct.Diablo3:
+                    return "Diablo III";
+                case TACTProduct.Destiny2:
+                    return "Destiny 2";
+                case TACTProduct.HeroesOfTheStorm:
+                    return "Heroes of the Storm";
+                case TACTProduct.Hearthstone:
+                    return "Hearthstone";
+                case TACTProduct.Overwatch:
+                    return "Overwatch";
+                case TACTProduct.StarCraft1:
+                    return "StarCraft";
+                case TACTProduct.StarCraft2:
+                    return "StarCraft II";
+                case TACTProduct.BlackOps4:
+                    return "Call of Duty: Black Ops 4";
+                case TACTProduct.Warcraft3:
+                    return "Warcraft III";
+                case TACTProduct.WorldOfWarcraft:
+                    return "World of Warcraft";
+                case TACTProduct.ModernWarfare:
+                    return "Call of Duty: Warzone";
+                case TACTProduct.ModernWarfare2Campaign:
+                    return "Call of Duty: Modern Warfare 2";
+                case TACTProduct.BlackOps5:
+                    return "Call of Duty: Black Ops Cold War";
+                case TACTProduct.CrashBandicoot4:
+                    return "Crash Bandicoot 4";
+                case TACTProduct.BlizzardArcade:
+                    return "Blizzard Arcade Collection";
+            }
+        }
+        
         /// <summary>
         /// Get <see cref="TACTProduct"/> from product uid
         /// </summary>
@@ -69,6 +114,9 @@ namespace TACTLib {
         /// <returns>Product type</returns>
         /// <exception cref="NotImplementedException">Product is unknown</exception>
         public static TACTProduct ProductFromUID(string uid) {
+            if (uid.StartsWith("catalog"))
+                return TACTProduct.Catalog;
+            
             if (uid.StartsWith("hero"))
                 return TACTProduct.HeroesOfTheStorm;
 

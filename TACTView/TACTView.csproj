@@ -24,7 +24,6 @@
     </ItemGroup>
     
     <Target Name="BuildModules" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug'">
-        <MSBuild Projects="../TACTView.Connector.CommonV2/TACTView.Connector.CommonV2.csproj" />
         <MSBuild Projects="../TACTView.Connector.MNDX/TACTView.Connector.MNDX.csproj" />
         <MSBuild Projects="../TACTView.Connector.Tank/TACTView.Connector.Tank.csproj" />
         <MSBuild Projects="../TACTView.Connector.WorldOfWarcraftV6/TACTView.Connector.WorldOfWarcraftV6.csproj" />

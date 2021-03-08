@@ -1,0 +1,52 @@
+<Menu x:Class="TACTView.Controls.MenuView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:viewModels="clr-namespace:TACTView.ViewModels"
+      xmlns:models="clr-namespace:TACTView.Models"
+      mc:Ignorable="d"
+      TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+      TextElement.FontWeight="Regular"
+      TextElement.FontSize="13"
+      TextOptions.TextFormattingMode="Ideal"
+      TextOptions.TextRenderingMode="Auto"
+      Background="{DynamicResource MaterialDesignPaper}"
+      FontFamily="{DynamicResource MaterialDesignFont}"
+      d:DesignHeight="300" d:DesignWidth="300"
+      d:DataContext="{d:DesignInstance {x:Type viewModels:MenuViewModel}}">
+    <MenuItem Header="File">
+        <MenuItem Header="Open...">
+            <MenuItem Header="CASC" Click="OpenCASC" />
+            <MenuItem Header="NGDP" Click="OpenNGDP" />
+        </MenuItem>
+        <MenuItem Header="Recent..." ItemsSource="{Binding Recent}">
+            <MenuItem.ItemContainerStyle>
+                <Style TargetType="MenuItem" BasedOn="{StaticResource MaterialDesignMenuItem}">
+                    <Setter Property="Header" Value="{Binding}" />
+                    <EventSetter Event="Click" Handler="OpenRecent" />
+                </Style>
+            </MenuItem.ItemContainerStyle>
+        </MenuItem>
+        <MenuItem Header="Installed..." ItemsSource="{Binding Installed}">
+            <MenuItem.ItemContainerStyle>
+                <Style TargetType="MenuItem" BasedOn="{StaticResource MaterialDesignMenuItem}">
+                    <Setter Property="Header" Value="{Binding}" />
+                    <EventSetter Event="Click" Handler="OpenInstall" />
+                    <Setter Property="ItemsSource" Value="{Binding Flavors}" />
+                    <Setter Property="ItemContainerStyle">
+                        <Setter.Value>
+                            <Style TargetType="MenuItem" BasedOn="{StaticResource MaterialDesignMenuItem}"
+                                   d:DataContext="{d:DesignInstance {x:Type models:FlavoredCASCEntry}}">
+                                <Setter Property="Header" Value="{Binding}" />
+                                <EventSetter Event="Click" Handler="OpenFlavor" />
+                            </Style>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </MenuItem.ItemContainerStyle>
+        </MenuItem>
+        <Separator />
+        <MenuItem Header="Exit" Click="Exit" />
+    </MenuItem>
+</Menu>

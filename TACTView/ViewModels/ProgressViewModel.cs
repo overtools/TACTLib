@@ -28,7 +28,7 @@ namespace TACTView.ViewModels {
             OnPropertyChanged(nameof(Percent));
 
             if (status == Status) return;
-            
+
             Status = status ?? "Working...";
             OnPropertyChanged(nameof(Status));
         }

@@ -7,5 +7,6 @@ namespace TACTView.ViewModels {
         public ProgressViewModel Progress { get; } = new();
         public ModuleViewModel Modules { get; } = ModuleViewModel.Instance;
         public RegistryViewModel Registry { get; } = RegistryViewModel.Instance;
+        public MenuViewModel Menu { get; } = new();
     }
 }

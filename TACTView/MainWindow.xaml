@@ -4,7 +4,6 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewModels="clr-namespace:TACTView.ViewModels"
-        xmlns:models="clr-namespace:TACTView.Models"
         xmlns:controls="clr-namespace:TACTView.Controls"
         mc:Ignorable="d"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
@@ -27,18 +26,12 @@
             <ColumnDefinition MinWidth="600" Width="*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="56" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="26" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <TreeView Grid.Row="1" ItemsSource="{Binding RootDirectory}">
-            <TreeView.ItemTemplate>
-                <HierarchicalDataTemplate DataType="{x:Type models:DirectoryEntry}"
-                                          ItemsSource="{Binding SubDirectories}">
-                    <Label Content="{Binding Name}" />
-                </HierarchicalDataTemplate>
-            </TreeView.ItemTemplate>
-        </TreeView>
+        <controls:MenuView Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" DataContext="{Binding Menu}" />
+        <controls:TACTTreeView Grid.Column="0" Grid.Row="1" ItemsSource="{Binding RootDirectory}" />
         <GridSplitter Grid.Column="1" Grid.Row="1" HorizontalAlignment="Stretch" />
         <ListView Grid.Column="2" Grid.Row="1" />
         <controls:ProgressView Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="2" DataContext="{Binding Progress}" />
