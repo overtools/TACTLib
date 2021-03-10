@@ -6,8 +6,8 @@ using TACTView.Api.Models;
 namespace TACTView.Api.Registry {
     [PublicAPI]
     public interface IFileHandler : IRegistryBase {
-        bool IsValidFor(IFileEntry entry);
-        Control? GetControl(IFileEntry entry);
+        bool IsValidFor(IDirectoryEntry entry);
+        Control? GetControl(IDirectoryEntry entry);
         Span<byte> GetData();
     }
 }

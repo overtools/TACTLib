@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewModels="clr-namespace:TACTView.ViewModels"
         xmlns:controls="clr-namespace:TACTView.Controls"
+        xmlns:dragablz="http://dragablz.net/winfx/xaml/dragablz"
         mc:Ignorable="d"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         TextElement.FontWeight="Regular"
@@ -15,11 +16,17 @@
         FontFamily="{DynamicResource MaterialDesignFont}"
         x:Name="TACTWindow"
         Title="TACTView"
+        DataContext="{x:Static Member=viewModels:TACTViewModel.Instance}"
         Height="800"
         Width="1600">
-    <Window.DataContext>
-        <viewModels:TACTViewModel />
-    </Window.DataContext>
+    <Window.Resources>
+        <Style x:Key="MaterialTabControl" TargetType="{x:Type dragablz:TabablzControl}"
+               BasedOn="{StaticResource MaterialDesignTabablzControlStyle}">
+            <Setter Property="TextElement.Foreground" Value="{DynamicResource MaterialDesignBody}" />
+            <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}" />
+            <Setter Property="BorderThickness" Value="0,0,0,0" />
+        </Style>
+    </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition MinWidth="400" Width="400" />
@@ -38,7 +45,12 @@
                                ItemsSource="{Binding RootDirectory, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
                                SelectedItemChanged="UpdateSelectedItem" />
         <GridSplitter Grid.Column="1" Grid.Row="1" HorizontalAlignment="Stretch" />
-        <ListView Grid.Column="2" Grid.Row="1" />
+        <dragablz:TabablzControl Grid.Column="2" Grid.Row="1" Style="{StaticResource MaterialTabControl}"
+                                 ItemsSource="{Binding Tabs, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}">
+            <dragablz:TabablzControl.InterTabController>
+                <dragablz:InterTabController />
+            </dragablz:TabablzControl.InterTabController>
+        </dragablz:TabablzControl>
         <controls:ProgressView BorderBrush="{StaticResource MaterialDesignDivider}" BorderThickness="0, 3, 0, 0"
                                Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="2"
                                DataContext="{Binding Progress}" />

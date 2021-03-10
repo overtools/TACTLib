@@ -6,6 +6,6 @@ namespace TACTView.Api.Registry {
     [PublicAPI]
     public interface IProductConnector : IRegistryBase {
         void GetEntries(IDirectoryEntry root);
-        Stream? OpenFile(IFileEntry entry);
+        Stream? OpenFile(IDirectoryEntry entry);
     }
 }

@@ -36,7 +36,7 @@ namespace TACTView.Connectors {
             Progress.Report(0, 1, 0, "Idle");
         }
 
-        public Stream? OpenFile(IFileEntry entry) {
+        public Stream? OpenFile(IDirectoryEntry entry) {
             return Handler.OpenFile(entry.Key);
         }
     }

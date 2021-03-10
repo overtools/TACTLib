@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using TACTLib;
 using TACTLib.Client;
+using TACTLib.Container;
 using TACTView.Models;
 using TACTView.ViewModels;
 
@@ -85,7 +86,7 @@ namespace TACTView.Controls {
             if (!TACT.Registry.HasProductConnector(TACT.ClientHandler.Product)) return;
             var services = TACT.BuildServiceCollection();
             var tact = TACT;
-            var root = new DirectoryEntry(ProductHelpers.HumanReadableProduct(TACT.ClientHandler.Product));
+            var root = new DirectoryEntry(ProductHelpers.HumanReadableProduct(TACT.ClientHandler.Product), 0, Locale.None, new CKey(), true);
             new Thread(() => {
                 tact.Registry.GetProductConnector(tact.ClientHandler.Product, services)?.GetEntries(root);
                 Dispatcher.Invoke(() => {

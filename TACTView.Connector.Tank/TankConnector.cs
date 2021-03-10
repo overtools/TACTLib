@@ -41,7 +41,7 @@ namespace TACTView.Connectors {
             Progress.Report(0, 1, 0, "Idle");
         }
 
-        public Stream? OpenFile(IFileEntry entry) {
+        public Stream? OpenFile(IDirectoryEntry entry) {
             if (entry.CustomData is ulong guid) return Handler.OpenFile(guid);
 
             return null;

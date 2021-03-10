@@ -17,6 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="Dragablz" Version="0.0.3.223" />
       <PackageReference Include="DragonLib" Version="1.1.4.1" />
       <PackageReference Include="JetBrains.Annotations" Version="2020.3.0" />
       <PackageReference Include="MaterialDesignThemes" Version="4.0.0" />
