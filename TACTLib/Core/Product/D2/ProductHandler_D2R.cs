@@ -27,8 +27,6 @@ namespace TACTLib.Core.Product.D2
         {
             m_client = client;
 
-            var clientArgs = client.CreateArgs.HandlerArgs as ClientCreateArgs_Tank ?? new ClientCreateArgs_Tank();
-
             using (BinaryReader reader = new BinaryReader(stream))
             {
                 string str = Encoding.ASCII.GetString(reader.ReadBytes((int)stream.Length));
