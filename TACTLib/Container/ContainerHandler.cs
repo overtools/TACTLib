@@ -51,6 +51,7 @@ namespace TACTLib.Container {
         private void LoadIndexFiles() {
             for (int i = 0; i < CASC_INDEX_COUNT; i++) {
                 List<string> files = Directory.EnumerateFiles(Path.Combine(ContainerDirectory, DataDirectory), $"{i:X2}*.idx" + _client.CreateArgs.ExtraFileEnding).ToList();
+                if (files.Count == 0) continue;
 
                 string selectedFile = null;
                 int selectedVersion = 0;
@@ -200,8 +201,8 @@ namespace TACTLib.Container {
             if (product == TACTProduct.Hearthstone)
                 return "Hearthstone_Data";
 
-            if (product == TACTProduct.Warcraft3 || product == TACTProduct.WorldOfWarcraft || product == TACTProduct.Diablo3 ||
-                product == TACTProduct.BlackOps4 || product == TACTProduct.ModernWarfare)
+            if (product == TACTProduct.Warcraft3 || product == TACTProduct.WorldOfWarcraft || product == TACTProduct.Diablo2 ||
+                product == TACTProduct.Diablo3 || product == TACTProduct.BlackOps4 || product == TACTProduct.ModernWarfare)
                 return "Data";
 
             if (product == TACTProduct.Overwatch)
