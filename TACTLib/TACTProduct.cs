@@ -15,6 +15,9 @@ namespace TACTLib {
         /// <summary>catalogs</summary>
         Catalog,
 
+        /// <summary>osib</summary>
+        Diablo2,
+
         /// <summary>d3, d3b, d3cn, d3t</summary>
         Diablo3,
 
@@ -75,6 +78,9 @@ namespace TACTLib {
             if (uid.StartsWith("wow"))
                 return TACTProduct.WorldOfWarcraft;
 
+            if (uid.StartsWith("d2"))
+                return TACTProduct.Diablo2;
+
             if (uid.StartsWith("d3"))
                 return TACTProduct.Diablo3;
 
@@ -121,6 +127,8 @@ namespace TACTLib {
                     return "s2";
                 case TACTProduct.WorldOfWarcraft:
                     return "wow";
+                case TACTProduct.Diablo2:
+                    return "d2";
                 case TACTProduct.Diablo3:
                     return "d3";
                 case TACTProduct.Agent:
@@ -162,6 +170,8 @@ namespace TACTLib {
             if (Directory.Exists(Path.Combine(path, "Data")) || Directory.Exists(Path.Combine(path, "data"))) {
                 if (File.Exists(Path.Combine(path, "Diablo III.exe")))
                     return TACTProduct.Diablo3;
+                if (File.Exists(Path.Combine(path, "Game.exe")))
+                    return TACTProduct.Diablo2;
 
                 if (File.Exists(Path.Combine(path, "Wow.exe")) || File.Exists(Path.Combine(path, "WowT.exe")) || File.Exists(Path.Combine(path, "WowB.exe")))
                     return TACTProduct.WorldOfWarcraft;

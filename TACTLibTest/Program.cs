@@ -12,7 +12,7 @@ namespace TACTLibTest {
 
             var ribbit = new RibbitClient(ClientCreateArgs.US_RIBBIT);
             var summary = ribbit.GetSummary();
-            var ver = ribbit.GetVersions("pro");
+            var ver = ribbit.GetVersions("osib");
             
             //System.Diagnostics.Debugger.Break();
             ClientHandler clientHandler = new ClientHandler(args[0], new ClientCreateArgs
@@ -22,7 +22,6 @@ namespace TACTLibTest {
 
             Logger.Info("LOAD", clientHandler.Product.ToString("G"));
 
-            return;
             /*
             ClientHandler onlineClientHandler = new ClientHandler(args[0], new ClientCreateArgs {
                 Mode = ClientCreateArgs.InstallMode.Ribbit,
@@ -30,6 +29,16 @@ namespace TACTLibTest {
             });
             Logger.Info("LOAD", onlineClientHandler.Product.ToString("G"));
             */
+            /*
+            var d2Handler = clientHandler.ProductHandler as TACTLib.Core.Product.ProductHandler_D2R;
+            foreach (var f in d2Handler.m_rootFiles)
+            {
+                using (var memoryStream = new System.IO.MemoryStream())
+                {
+                    clientHandler.OpenCKey(f.MD5).CopyTo(memoryStream);
+                    var file = memoryStream.ToArray();
+                }
+            }*/
         }
     }
 }
