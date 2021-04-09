@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 
 namespace TACTLib {
     public enum TACTProduct {
@@ -149,6 +150,24 @@ namespace TACTLib {
                     throw new ArgumentOutOfRangeException(nameof(product), product, null);
             }
         }
+        
+        private static bool ScanExecutable(string path, string test) {
+            if(!Directory.Exists(path)) return false;
+
+            var possibilities = new [] { test + ".exe", test + ".app", test };
+            var flavors = (new [] { path }).Concat(Directory.EnumerateDirectories(path, "*", SearchOption.TopDirectoryOnly));
+
+            foreach(var flavor in flavors) {
+                foreach(var possibility in possibilities) {
+                    var combined = Path.Combine(flavor, possibility);
+                    if(File.Exists(combined) || Directory.Exists(combined)) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
 
         /// <summary>Get <see cref="TACTProduct"/> from install directory</summary>
         /// <param name="path">Container base path</param>
@@ -164,36 +183,36 @@ namespace TACTLib {
             if (Directory.Exists(Path.Combine(path, "Hearthstone_Data")))
                 return TACTProduct.Hearthstone;
 
-            if (File.Exists(Path.Combine(path, "Warcraft III.exe")))
+            if (ScanExecutable(path, "Warcraft III"))
                 return TACTProduct.Warcraft3;
 
             if (Directory.Exists(Path.Combine(path, "Data")) || Directory.Exists(Path.Combine(path, "data"))) {
-                if (File.Exists(Path.Combine(path, "Diablo III.exe")))
+                if (ScanExecutable(path, "Diablo III" )|| ScanExecutable(path, "Diablo III Launcher"))
                     return TACTProduct.Diablo3;
-                if (File.Exists(Path.Combine(path, "Game.exe")))
+
+                if (ScanExecutable(path, "Diablo II Resurrected Launcher"))
                     return TACTProduct.Diablo2;
 
-                if (File.Exists(Path.Combine(path, "Wow.exe")) || File.Exists(Path.Combine(path, "WowT.exe")) || File.Exists(Path.Combine(path, "WowB.exe")))
+                if (ScanExecutable(path, "Wow") || ScanExecutable(path, "World of Warcraft Launcher"))
                     return TACTProduct.WorldOfWarcraft;
 
-                if (File.Exists(Path.Combine(path, "Agent.exe")))
+                if (ScanExecutable(path, "Agent"))
                     return TACTProduct.Agent;
 
-                if (File.Exists(Path.Combine(path, "Battle.net.exe")))
+                if (ScanExecutable(path, "Battle.net"))
                     return TACTProduct.BattleNetApp;
 
-                if (File.Exists(Path.Combine(path, "Overwatch.exe")) || File.Exists(Path.Combine(path, "_retail_", "Overwatch.exe")))
+                if (ScanExecutable(path, "Overwatch") || ScanExecutable(path, "Overwatch Launcher"))
                     return TACTProduct.Overwatch;
 
-                if (File.Exists(Path.Combine(path, "StarCraft.exe")))
+                if (ScanExecutable(path, "StarCraft"))
                     return TACTProduct.StarCraft1;
 
-                if (File.Exists(Path.Combine(path, "BlackOps4.exe")))
+                if (ScanExecutable(path, "BlackOps4"))
                     return TACTProduct.BlackOps4;
 
-                if(File.Exists(Path.Combine(path, "ModernWarfare.exe"))) {
+                if(ScanExecutable(path, "ModernWarfare"))
 	                return TACTProduct.ModernWarfare;
-                }
             }
 
             throw new NotImplementedException("unable to detect product. ensure that the archive directory is correct");  // hmm

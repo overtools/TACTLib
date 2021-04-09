@@ -21,6 +21,7 @@ namespace TACTLib.Core.Product.CommonV2 {
             FileName = data[5];
             InstallPath = data[6];
         }
+        
         public RootFile(string fileName, string md5)  {
             FileName = fileName;
             MD5 = CKey.FromString(md5);

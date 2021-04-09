@@ -13,16 +13,16 @@ using TACTLib.Core.Product.CommonV2;
 using TACTLib.Exceptions;
 using TACTLib.Helpers;
 
-namespace TACTLib.Core.Product
+namespace TACTLib.Core.Product.D2
 {
     // ReSharper disable ClassNeverInstantiated.Global
     // ReSharper disable once InconsistentNaming
     [ProductHandler(TACTProduct.Diablo2)]
     public class ProductHandler_D2R : IProductHandler
     {
-        private readonly ClientHandler m_client;
+        private ClientHandler m_client { get; }
 
-        public readonly RootFile[] m_rootFiles;
+        public RootFile[] m_rootFiles { get; }
         public ProductHandler_D2R(ClientHandler client, Stream stream)
         {
             m_client = client;
@@ -42,6 +42,7 @@ namespace TACTLib.Core.Product
             }
         }
 
+        /// <inheritdoc />
         public Stream OpenFile(object key)
         {
             throw new NotImplementedException();
