@@ -80,3 +80,5 @@ foreach(string dir in wowHandler.GetDirectories("world")) {
     // will be empty if listfile is invalid
 }
 ```
+
+## We can't wait to see the amazing things you will do with it
