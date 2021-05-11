@@ -50,7 +50,7 @@ namespace TACTLib.Container {
 
         private void LoadIndexFiles() {
             for (int i = 0; i < CASC_INDEX_COUNT; i++) {
-                List<string> files = Directory.EnumerateFiles(Path.Combine(ContainerDirectory, DataDirectory), $"{i:X2}*.idx" + _client.CreateArgs.ExtraFileEnding).ToList();
+                List<string> files = Directory.EnumerateFiles(Path.Combine(ContainerDirectory, DataDirectory), $"{i:X2}*.idx" + _client.CreateArgs.ExtraFileEnding, new EnumerationOptions { MatchCasing = MatchCasing.CaseInsensitive }).ToList();
                 if (files.Count == 0) continue;
 
                 string selectedFile = null;
