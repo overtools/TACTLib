@@ -7,7 +7,6 @@ namespace TACTLib.Core {
     public class ConfigHandler {
         /// <summary>Build config</summary>
         public readonly BuildConfig BuildConfig;
-        //public readonly PatchConfig PatchConfig;
 
         /// <summary>CDN config</summary>
         public readonly CDNConfig CDNConfig;
@@ -19,6 +18,10 @@ namespace TACTLib.Core {
             LoadFromInstallationInfo(client, "BuildKey", out BuildConfig);
             LoadFromInstallationInfo(client, "CDNKey", out CDNConfig);
             LoadFromInstallationInfo(client, "Keyring", out Keyring);
+
+            if (Keyring == null) {
+                Keyring = new Keyring(client, null);
+            }
         }
 
         private void LoadFromInstallationInfo<T>(ClientHandler client, string name, out T @out) where T : Config.Config {

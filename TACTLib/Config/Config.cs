@@ -9,16 +9,17 @@ namespace TACTLib.Config {
         public Dictionary<string, List<string>> Values;
 
         protected Config(ClientHandler client, Stream stream) {
-            using (StreamReader reader = new StreamReader(stream)) {
+            Values = new Dictionary<string, List<string>>();
+            if (stream == null) return;
+            
+            using (var reader = new StreamReader(stream)) {
                 Read(reader);
             }
         }
 
         private void Read(TextReader reader) {
-            Values = new Dictionary<string, List<string>>();
-            for (int i = 0; i < 0xFF; i++) {
-                string line = reader.ReadLine();
-                if (line == null) break;
+            string line;
+            while ((line = reader.ReadLine()) != null) {
                 
                 if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#")) continue;
                 string[] tokens = line.Split(new[] {'='}, StringSplitOptions.RemoveEmptyEntries);

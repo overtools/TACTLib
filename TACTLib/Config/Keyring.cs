@@ -4,11 +4,10 @@ using System.Globalization;
 using System.IO;
 using System.Reflection;
 using TACTLib.Client;
-using TACTLib.Core.Product.Tank;
 using static TACTLib.Utils;
 
-namespace TACTLib.Core {
-    public class Keyring : Config.Config {
+namespace TACTLib.Config {
+    public class Keyring : Config {
         /// <summary>
         /// Keyring keys
         /// </summary>
