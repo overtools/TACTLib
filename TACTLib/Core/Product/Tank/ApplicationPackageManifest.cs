@@ -54,13 +54,14 @@ namespace TACTLib.Core.Product.Tank {
             public uint m_bundleCount;  // 72
         }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 4, Size = 12)]  // size = 12
+        [StructLayout(LayoutKind.Explicit, Pack = 1, Size = 12)]  // size = 12
         public struct PackageRecord {
-            public ulong m_GUID;
+            [FieldOffset(0)] public ulong m_GUID;
+            [FieldOffset(8)] public uint m_flagsReal;
             
-            public short m_unknown1; // this lot is 1 uint
-            public byte m_unknown2;
-            public RecordFlags m_flags;
+            [FieldOffset(8)] public short m_unknown1;
+            [FieldOffset(10)] public byte m_unknown2;
+            [FieldOffset(11)] public RecordFlags m_flags;
         }
 
         [Flags]
