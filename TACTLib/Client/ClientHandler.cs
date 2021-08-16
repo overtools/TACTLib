@@ -32,7 +32,7 @@ namespace TACTLib.Client {
         public readonly ContainerHandler? ContainerHandler;
         
         /// <summary>Encoding table handler</summary>
-        public readonly EncodingHandler EncodingHandler;
+        public readonly EncodingHandler? EncodingHandler;
         
         /// <summary>Configuration handler</summary>
         public readonly ConfigHandler ConfigHandler;
@@ -201,7 +201,8 @@ namespace TACTLib.Client {
         /// <param name="key">Content Key of the file</param>
         /// <returns>Loaded file</returns>
         public Stream? OpenCKey(CKey key) {
-            if (EncodingHandler.TryGetEncodingEntry(key, out var entry)) {
+            // todo: EncodingHandler can't be null after constructor has finished, but can be during init
+            if (EncodingHandler != null && EncodingHandler.TryGetEncodingEntry(key, out var entry)) {
                 return OpenEKey(entry.EKey);
             }
             if (CreateArgs.Online)
