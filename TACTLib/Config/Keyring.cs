@@ -15,14 +15,14 @@ namespace TACTLib.Config {
 
         public Keyring(ClientHandler client, Stream? stream) : base(client, stream) {
             Keys = new Dictionary<ulong, byte[]>();
-            foreach (KeyValuePair<string,List<string>> pair in Values) {
+            foreach (var pair in Values) {
                 string reverseKey = pair.Key.Substring(pair.Key.Length - 16);
                 string keyIDString = "";
-                for (int i = 0; i < 8; ++i) {
+                for (var i = 0; i < 8; ++i) {
                     keyIDString = reverseKey.Substring(i * 2, 2) + keyIDString;
                 }
                 
-                ulong keyID = ulong.Parse(keyIDString, NumberStyles.HexNumber);
+                var keyID = ulong.Parse(keyIDString, NumberStyles.HexNumber);
                 Keys[keyID] = StringToByteArray(pair.Value[0]);
                 
                 //Console.Out.WriteLine(pair.Value[0]);
@@ -54,7 +54,7 @@ namespace TACTLib.Config {
                     if (c.Length < 2) {
                         continue;
                     }
-                    bool enabled = true;
+                    var enabled = true;
                     if (c.Length >= 3) {
                         enabled = c[2] == "1";
                     }

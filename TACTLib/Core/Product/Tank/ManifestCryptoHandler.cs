@@ -63,7 +63,7 @@ namespace TACTLib.Core.Product.Tank {
 
                 Logger.Warn("Manifest", $"No {manifestType} procedure for build {buildVersion}, trying closest version");
                 try {
-                    KeyValuePair<uint, object> pair = providerVersions.Where(it => it.Key < buildVersion).OrderByDescending(it => it.Key).First();
+                    var pair = providerVersions.Where(it => it.Key < buildVersion).OrderByDescending(it => it.Key).First();
                     Logger.Info("Manifest", $"Using {manifestType} procedure {pair.Key}");
                     providerRaw = pair.Value;
                 } catch {
@@ -122,7 +122,7 @@ namespace TACTLib.Core.Product.Tank {
             foreach (Type tt in types) {
                 if (tt.IsInterface) continue;
 
-                ManifestCryptoAttribute? metadata = tt.GetCustomAttribute<ManifestCryptoAttribute>();
+                var metadata = tt.GetCustomAttribute<ManifestCryptoAttribute>();
                 if (metadata == null) continue;
 
                 if (!providers.TryGetValue(metadata.Product, out var providerCryptoTypeMap)) {
@@ -140,7 +140,7 @@ namespace TACTLib.Core.Product.Tank {
                 }
 
                 if (metadata.BuildVersions != null) {
-                    foreach (uint buildVersion in metadata.BuildVersions) {
+                    foreach (var buildVersion in metadata.BuildVersions) {
                         typeVersionMap[buildVersion] = provider;
                     }
                 }

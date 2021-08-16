@@ -16,9 +16,9 @@ namespace TACTLib.Core.Product.MNDX
         {
             get
             {
-                int dwItemIndex = (index * BitsPerEntry) >> 0x05;
-                int dwStartBit = (index * BitsPerEntry) & 0x1F;
-                int dwEndBit = dwStartBit + BitsPerEntry;
+                var dwItemIndex = (index * BitsPerEntry) >> 0x05;
+                var dwStartBit = (index * BitsPerEntry) & 0x1F;
+                var dwEndBit = dwStartBit + BitsPerEntry;
                 int dwResult;
 
                 // If the end bit index is greater than 32,

@@ -181,13 +181,13 @@ namespace TACTLib.Core.Product.MNDX
 
             field_214 = reader.ReadInt32();
 
-            int dwBitMask = reader.ReadInt32();
+            var dwBitMask = reader.ReadInt32();
         }
 
         private int sub_1959CB0(int dwItemIndex)
         {
             TRIPLET pTriplet;
-            int dwKeyShifted = (dwItemIndex >> 9);
+            var dwKeyShifted = (dwItemIndex >> 9);
             int eax, ebx, ecx, edx, esi, edi;
 
             // If lower 9 is zero
@@ -202,7 +202,7 @@ namespace TACTLib.Core.Product.MNDX
             if ((eax + 0x0A) >= esi)
             {
                 // HOTS: 1959CF7
-                int i = eax + 1;
+                var i = eax + 1;
                 pTriplet = Struct68_00.GetBaseValue(i);
                 i++;
                 edi = (eax << 0x09);
@@ -400,15 +400,15 @@ namespace TACTLib.Core.Product.MNDX
             if ((arg_0 & 0x1FF) == 0)
                 return Struct68_00.GetArrayValue_50(eax);
 
-            int item0 = Struct68_00.GetArrayValue_50(eax);
-            int item1 = Struct68_00.GetArrayValue_50(eax + 1);
+            var item0 = Struct68_00.GetArrayValue_50(eax);
+            var item1 = Struct68_00.GetArrayValue_50(eax + 1);
             eax = (item0 >> 0x09);
             edi = (item1 + 0x1FF) >> 0x09;
 
             if ((eax + 0x0A) > edi)
             {
                 // HOTS: 01959F94
-                int i = eax + 1;
+                var i = eax + 1;
                 pTriplet = Struct68_00.GetBaseValue(i);
                 i++;
                 while (edx >= pTriplet.BaseValue)
@@ -1024,7 +1024,7 @@ namespace TACTLib.Core.Product.MNDX
                             pPathStop.Field_C++;
 
                         // HOTS: 1959630
-                        int FragOffs = GetNameFragmentOffsetEx(pPathStop.ItemIndex, pPathStop.Field_C);
+                        var FragOffs = GetNameFragmentOffsetEx(pPathStop.ItemIndex, pPathStop.Field_C);
                         if (NextDB != null)
                         {
                             // HOTS: 1959649
@@ -1079,7 +1079,7 @@ namespace TACTLib.Core.Product.MNDX
                     pPathStop.ItemIndex++;
 
                     pPathStop = pStruct40.GetPathStop(pStruct40.ItemCount - 2);
-                    int edi = pPathStop.Field_8;
+                    var edi = pPathStop.Field_8;
 
                     // HOTS: 1959749
                     pStruct40.RemoveRange(edi);

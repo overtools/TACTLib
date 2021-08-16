@@ -168,15 +168,15 @@ namespace TACTLib.Core {
                     throw new ObjectDisposedException(GetType().Name);
 
                 byte[] output = new byte[64];
-                int bytesTransformed = 0;
+                var bytesTransformed = 0;
 
                 while (inputCount > 0) {
                     Hash(output, _state);
                     _state[8] = AddOne(_state[8]);
                     if (_state[8] == 0) _state[9] = AddOne(_state[9]);
 
-                    int blockSize = Math.Min(64, inputCount);
-                    for (int i = 0; i < blockSize; i++)
+                    var blockSize = Math.Min(64, inputCount);
+                    for (var i = 0; i < blockSize; i++)
                         outputBuffer[outputOffset + i] = (byte) (inputBuffer[inputOffset + i] ^ output[i]);
                     bytesTransformed += blockSize;
 
@@ -218,7 +218,7 @@ namespace TACTLib.Core {
             private void Hash(byte[] output, uint[] input) {
                 uint[] state = (uint[]) input.Clone();
 
-                for (int round = _rounds; round > 0; round -= 2) {
+                for (var round = _rounds; round > 0; round -= 2) {
                     state[4] ^= Rotate(Add(state[0], state[12]), 7);
                     state[8] ^= Rotate(Add(state[4], state[0]), 9);
                     state[12] ^= Rotate(Add(state[8], state[4]), 13);
@@ -253,7 +253,7 @@ namespace TACTLib.Core {
                     state[15] ^= Rotate(Add(state[14], state[13]), 18);
                 }
 
-                for (int index = 0; index < 16; index++)
+                for (var index = 0; index < 16; index++)
                     ToBytes(Add(state[index], input[index]), output, 4 * index);
             }
 
@@ -265,7 +265,7 @@ namespace TACTLib.Core {
                 _state[4] = ToUInt32(key, 12);
 
                 byte[] constants = key.Length == 32 ? Sigma : Tau;
-                int keyIndex = key.Length - 16;
+                var keyIndex = key.Length - 16;
 
                 _state[11] = ToUInt32(key, keyIndex + 0);
                 _state[12] = ToUInt32(key, keyIndex + 4);

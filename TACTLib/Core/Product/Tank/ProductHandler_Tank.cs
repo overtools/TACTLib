@@ -256,7 +256,7 @@ namespace TACTLib.Core.Product.Tank {
         /// <returns></returns>
         /// <exception cref="FileNotFoundException"></exception>
         public Stream OpenFile(ulong guid) {
-            if (!m_assets.TryGetValue(guid, out Asset asset)) throw new FileNotFoundException($"{guid:X8}");
+            if (!m_assets.TryGetValue(guid, out var asset)) throw new FileNotFoundException($"{guid:X8}");
 
             if (m_usingResourceGraph) {
                 if (m_hackedBundleLookup!.TryGetValue(guid, out var bundleGUID)) {
@@ -333,7 +333,7 @@ namespace TACTLib.Core.Product.Tank {
             var cmf = GetContentManifestForAsset(bundleGuid);
             var cache = GetBundleCache(bundleGuid);
 
-            if (!cache.m_offsets.TryGetValue(guid, out uint offset)) return null;
+            if (!cache.m_offsets.TryGetValue(guid, out var offset)) return null;
             if (!cmf.TryGet(guid, out var data)) {
                 throw new FileNotFoundException();
             }

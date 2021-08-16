@@ -17,7 +17,7 @@ namespace TACTLib.Container {
         }
 
         private static unsafe bool Equals(byte* valA, byte* valB, int count) {
-            for (int i = 0; i < count; ++i)
+            for (var i = 0; i < count; ++i)
                 if (valA[i] != valB[i])
                     return false;
 
@@ -25,17 +25,17 @@ namespace TACTLib.Container {
         }
         
         public unsafe int GetHashCode(EKey obj) {
-            uint hash = FnvOffset32;
-            uint* ptr = (uint*) &obj;
+            var hash = FnvOffset32;
+            var ptr = (uint*) &obj;
 
-            for (int i = 0; i < 2; i++) {
+            for (var i = 0; i < 2; i++) {
                 hash ^= ptr[i];
                 hash *= FnvPrime32;
             }
 
-            byte* hashPtr = (byte*) &hash;
-            byte b = *((byte*)ptr + 8);
-            for (int i = 0; i < 4; ++i) {
+            var hashPtr = (byte*) &hash;
+            var b = *((byte*)ptr + 8);
+            for (var i = 0; i < 4; ++i) {
                 hashPtr[i] ^= b;
             }
 
@@ -43,11 +43,11 @@ namespace TACTLib.Container {
         }
 
         public unsafe int GetHashCode(CKey obj) {
-            uint hash = FnvOffset32;
+            var hash = FnvOffset32;
             
-            uint* ptr = (uint*) &obj;
+            var ptr = (uint*) &obj;
 
-            for (int i = 0; i < 4; i++) {
+            for (var i = 0; i < 4; i++) {
                 hash ^= ptr[i];
                 hash *= FnvPrime32;
             }

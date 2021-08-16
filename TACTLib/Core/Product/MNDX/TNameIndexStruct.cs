@@ -29,7 +29,7 @@ namespace TACTLib.Core.Product.MNDX
             {
                 string szSearchMask = pStruct1C.SearchMask;
 
-                int startPos = dwFragOffs - pStruct40.CharIndex;
+                var startPos = dwFragOffs - pStruct40.CharIndex;
 
                 // Keep copying as long as we don't reach the end of the search mask
                 while (pStruct40.CharIndex < pStruct1C.SearchMask.Length)
@@ -96,7 +96,7 @@ namespace TACTLib.Core.Product.MNDX
                 // subtract the CharIndex from the fragment offset
                 string szSearchMask = pStruct1C.SearchMask;
 
-                int startPos = dwFragOffs - pStruct40.CharIndex;
+                var startPos = dwFragOffs - pStruct40.CharIndex;
 
                 // Keep searching as long as the name matches with the fragment
                 while (NameFragments[startPos + pStruct40.CharIndex] == szSearchMask[pStruct40.CharIndex])

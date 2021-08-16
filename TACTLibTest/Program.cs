@@ -15,7 +15,7 @@ namespace TACTLibTest {
             var ver = ribbit.GetVersions("pro");
             
             //System.Diagnostics.Debugger.Break();
-            ClientHandler clientHandler = new ClientHandler(args[0], new ClientCreateArgs
+            var clientHandler = new ClientHandler(args[0], new ClientCreateArgs
             {
                 Flavor = "retail"
             });

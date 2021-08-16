@@ -56,22 +56,22 @@ namespace TACTLib.Core.Product.MNDX
                     var build2 = reader.ReadInt32(); // build number
                 }
 
-                int MarInfoOffset = reader.ReadInt32();                            // Offset of the first MAR entry info
-                int MarInfoCount = reader.ReadInt32();                             // Number of the MAR info entries
-                int MarInfoSize = reader.ReadInt32();                              // Size of the MAR info entry
-                int MndxEntriesOffset = reader.ReadInt32();
-                int MndxEntriesTotal = reader.ReadInt32();                         // Total number of MNDX root entries
-                int MndxEntriesValid = reader.ReadInt32();                         // Number of valid MNDX root entries
-                int MndxEntrySize = reader.ReadInt32();                            // Size of one MNDX root entry
+                var MarInfoOffset = reader.ReadInt32();                            // Offset of the first MAR entry info
+                var MarInfoCount = reader.ReadInt32();                             // Number of the MAR info entries
+                var MarInfoSize = reader.ReadInt32();                              // Size of the MAR info entry
+                var MndxEntriesOffset = reader.ReadInt32();
+                var MndxEntriesTotal = reader.ReadInt32();                         // Total number of MNDX root entries
+                var MndxEntriesValid = reader.ReadInt32();                         // Number of valid MNDX root entries
+                var MndxEntrySize = reader.ReadInt32();                            // Size of one MNDX root entry
 
                 if (MarInfoCount > CASC_MAX_MAR_FILES || MarInfoSize != Marshal.SizeOf<MARInfo>())
                     throw new Exception("invalid root file (1)");
 
-                for (int i = 0; i < MarInfoCount; i++)
+                for (var i = 0; i < MarInfoCount; i++)
                 {
                     stream.Position = MarInfoOffset + (MarInfoSize * i);
 
-                    MARInfo marInfo = reader.Read<MARInfo>();
+                    var marInfo = reader.Read<MARInfo>();
 
                     stream.Position = marInfo.MarDataOffset;
 
@@ -85,7 +85,7 @@ namespace TACTLib.Core.Product.MNDX
 
                 CASC_ROOT_ENTRY_MNDX? prevEntry = null;
 
-                for (int i = 0; i < MndxEntriesTotal; i++)
+                for (var i = 0; i < MndxEntriesTotal; i++)
                 {
                     CASC_ROOT_ENTRY_MNDX entry = new CASC_ROOT_ENTRY_MNDX();
 
@@ -101,12 +101,12 @@ namespace TACTLib.Core.Product.MNDX
 
                 mndxRootEntriesValid = new Dictionary<int, CASC_ROOT_ENTRY_MNDX>();
 
-                int ValidEntryCount = 1; // edx
-                int index = 0;
+                var ValidEntryCount = 1; // edx
+                var index = 0;
 
                 mndxRootEntriesValid[index++] = mndxRootEntries[0];
 
-                for (int i = 0; i < MndxEntriesTotal; i++)
+                for (var i = 0; i < MndxEntriesTotal; i++)
                 {
                     if (ValidEntryCount >= MndxEntriesValid)
                         break;

@@ -66,7 +66,7 @@ namespace TACTLib.Core {
         
         public byte[] Dump() {
             byte[] data = new byte[_stream.Length];
-            long tmp = _stream.Position;
+            var tmp = _stream.Position;
             _stream.Position = 0;
             _stream.Read(data, 0, data.Length);
             _stream.Position = tmp;
@@ -74,18 +74,18 @@ namespace TACTLib.Core {
         }
 
         private void Init() {
-            int size = (int) _reader.BaseStream.Length;
+            var size = (int) _reader.BaseStream.Length;
 
             if (size < 8)
                 throw new BLTEDecoderException(Dump(), "not enough data: {0}", 8);
 
-            int magic = _reader.ReadInt32();
+            var magic = _reader.ReadInt32();
 
             if (magic != Magic) {
                 throw new BLTEDecoderException(Dump(), "frame header mismatch (bad BLTE file)");
             }
 
-            int headerSize = _reader.ReadInt32BE();
+            var headerSize = _reader.ReadInt32BE();
 
             /*if (CASCConfig.ValidateData)
             {
@@ -101,7 +101,7 @@ namespace TACTLib.Core {
                 _reader.BaseStream.Position = oldPos;
             }*/
 
-            int numBlocks = 1;
+            var numBlocks = 1;
 
             if (headerSize > 0) {
                 if (size < 12)
@@ -114,7 +114,7 @@ namespace TACTLib.Core {
                 if (fcbytes[0] != 0x0F || numBlocks == 0)
                     throw new BLTEDecoderException(Dump(), "bad table format 0x{0:x2}, numBlocks {1}", fcbytes[0], numBlocks);
 
-                int frameHeaderSize = 24 * numBlocks + 12;
+                var frameHeaderSize = 24 * numBlocks + 12;
 
                 if (headerSize != frameHeaderSize)
                     throw new BLTEDecoderException(Dump(), "header size mismatch");
@@ -125,7 +125,7 @@ namespace TACTLib.Core {
 
             _dataBlocks = new DataBlock[numBlocks];
 
-            for (int i = 0; i < numBlocks; i++) {
+            for (var i = 0; i < numBlocks; i++) {
                 DataBlock block = new DataBlock();
 
                 if (headerSize != 0) {
@@ -178,7 +178,7 @@ namespace TACTLib.Core {
         }
 
         private byte[] Decrypt(byte[] data, int index) {
-            byte keyNameSize = data[1];
+            var keyNameSize = data[1];
 
             if (keyNameSize == 0 || keyNameSize != 8)
                 throw new BLTEDecoderException(Dump(), "keyNameSize == 0 || keyNameSize != 8");
@@ -186,9 +186,9 @@ namespace TACTLib.Core {
             byte[] keyNameBytes = new byte[keyNameSize];
             Array.Copy(data, 2, keyNameBytes, 0, keyNameSize);
 
-            ulong keyName = BitConverter.ToUInt64(keyNameBytes, 0);
+            var keyName = BitConverter.ToUInt64(keyNameBytes, 0);
 
-            byte ivSize = data[keyNameSize + 2];
+            var ivSize = data[keyNameSize + 2];
 
             if (ivSize != 4 || ivSize > 0x10)
                 throw new BLTEDecoderException(Dump(), "IVSize != 4 || IVSize > 0x10");
@@ -199,9 +199,9 @@ namespace TACTLib.Core {
             if (data.Length < ivSize + keyNameSize + 4)
                 throw new BLTEDecoderException(Dump(), "data.Length < IVSize + keyNameSize + 4");
 
-            int dataOffset = keyNameSize + ivSize + 3;
+            var dataOffset = keyNameSize + ivSize + 3;
 
-            byte encType = data[dataOffset];
+            var encType = data[dataOffset];
 
             if (encType != EncryptionSalsa20 && encType != EncryptionArc4) // 'S' or 'A'
                 throw new BLTEDecoderException(Dump(), "encType != ENCRYPTION_SALSA20 && encType != ENCRYPTION_ARC4");
@@ -216,7 +216,7 @@ namespace TACTLib.Core {
             for (int shift = 0, i = 0; i < sizeof(int); shift += 8, i++) iv[i] ^= (byte) ((index >> shift) & 0xFF);
 
             // todo: could be null, but this shouldn't be called in that case
-            byte[]? key = _client.ConfigHandler.Keyring.GetKey(keyName);
+            var key = _client.ConfigHandler.Keyring.GetKey(keyName);
 
             if (key == null)
                 throw new BLTEKeyException(keyName);
@@ -272,7 +272,7 @@ namespace TACTLib.Core {
             if (_blocksIndex == _dataBlocks.Length)
                 return false;
 
-            long oldPos = _memStream.Position;
+            var oldPos = _memStream.Position;
             _memStream.Position = _memStream.Length;
 
             DataBlock block = _dataBlocks[_blocksIndex];

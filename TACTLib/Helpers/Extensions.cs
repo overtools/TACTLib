@@ -26,7 +26,7 @@ namespace TACTLib.Helpers {
         /// <returns>Array of read structs</returns>
         public static T[] ReadArray<T>(this BinaryReader reader) where T : struct
         {
-            int numBytes = (int)reader.ReadInt64();
+            var numBytes = (int)reader.ReadInt64();
             if (numBytes == 0)
             {
                 return new T[0];
@@ -52,7 +52,7 @@ namespace TACTLib.Helpers {
                 return new T[0];
             }
 
-            int numBytes = FastStruct<T>.Size * count;
+            var numBytes = FastStruct<T>.Size * count;
 
             byte[] result = reader.ReadBytes(numBytes);
 
@@ -84,14 +84,14 @@ namespace TACTLib.Helpers {
         /// <summary>Read a big endian 32-bit int</summary>
         // ReSharper disable once InconsistentNaming
         public static unsafe int ReadInt32BE(this BinaryReader reader) {
-            int val = reader.ReadInt32();
+            var val = reader.ReadInt32();
             
             return Int32FromPtrBE((byte*)&val);
         }
         /// <summary>Read a big endian 16-bit int</summary>
         // ReSharper disable once InconsistentNaming
         public static unsafe short ReadInt16BE(this BinaryReader reader) {
-            short val = reader.ReadInt16();
+            var val = reader.ReadInt16();
             
             return Int16FromPtrBE((byte*)&val);
         }
@@ -141,7 +141,7 @@ namespace TACTLib.Helpers {
             byte[] sharedBuffer = ArrayPool<byte>.Shared.Rent(buffer.Length);
             try
             {
-                int numRead = input.Read(sharedBuffer, 0, buffer.Length);
+                var numRead = input.Read(sharedBuffer, 0, buffer.Length);
                 if ((uint)numRead > buffer.Length)
                 {
                     throw new IOException("Stream was too long");

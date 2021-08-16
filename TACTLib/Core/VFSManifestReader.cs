@@ -197,27 +197,27 @@ namespace TACTLib.Core {
         }
         
         private static PathEntry ReadPathEntry(BinaryReader reader, long pathTableEnd) {
-            PathEntry pathEntry = new PathEntry();
+            var pathEntry = new PathEntry();
             
-            byte bBefore = (byte)reader.PeekChar();
+            var bBefore = (byte)reader.PeekChar();
             if (reader.BaseStream.Position < pathTableEnd && bBefore == 0) {
                 pathEntry.NodeFlags |= PathEntryFlags.PATH_SEPARATOR_PRE;
                 reader.BaseStream.Position++;
             }
 
             if (reader.BaseStream.Position < pathTableEnd && bBefore != 0xFF) {
-                byte length = reader.ReadByte();
+                var length = reader.ReadByte();
                 pathEntry.Name = Encoding.UTF8.GetString(reader.ReadBytes(length));
             }
 
-            byte bAfter = (byte) reader.PeekChar();
+            var bAfter = (byte) reader.PeekChar();
             if (reader.BaseStream.Position < pathTableEnd && bAfter == 0) {
                 pathEntry.NodeFlags |= PathEntryFlags.PATH_SEPARATOR_POST;
                 reader.BaseStream.Position++;
             }
 
             if (reader.BaseStream.Position < pathTableEnd) {
-                byte check = (byte)reader.PeekChar();
+                var check = (byte)reader.PeekChar();
                 if (check == 0xFF) { // Check for node value
                     reader.BaseStream.Position += 1;
                     
@@ -233,7 +233,7 @@ namespace TACTLib.Core {
         }
 
         public static Manifest Read(BinaryReader reader) {
-            ManifestHeader header = reader.Read<ManifestHeader>();
+            var header = reader.Read<ManifestHeader>();
             Manifest manifest = new Manifest(header);
 
             ParseDirectoryData(manifest, reader);
@@ -243,7 +243,7 @@ namespace TACTLib.Core {
         
         private static void ParseDirectoryData(Manifest manifest, BinaryReader reader) {
             long rootDirPtr = manifest.PathTableOffset;
-            long rootDirEnd = rootDirPtr + manifest.PathTableSize;
+            var rootDirEnd = rootDirPtr + manifest.PathTableSize;
             if (manifest.PathTableOffset + 1 + sizeof(int) < rootDirEnd) {
                 // The structure of the root directory
                 // -----------------------------------
@@ -251,9 +251,9 @@ namespace TACTLib.Core {
                 // 4bytes  NodeValue (BigEndian). The most significant bit is set
                 //          - Lower 31 bits contain length of the directory data, including NodeValue
 
-                byte b = reader.ReadByte();
+                var b = reader.ReadByte();
                 if (b == 0xFF) {
-                    int nodeValue = reader.ReadInt32BE();
+                    var nodeValue = reader.ReadInt32BE();
                     
                     rootDirEnd = rootDirPtr + 1 + (nodeValue & TVFS_FOLDER_SIZE_MASK);
                     rootDirPtr = rootDirPtr + 1 + sizeof(int);
@@ -283,7 +283,7 @@ namespace TACTLib.Core {
                     // with its data immediately following the path node. Lower 31 bits of NodeValue
                     // contain the length of the directory (including the NodeValue!)
                     if ((entry.NodeValue & TVFS_FOLDER_NODE) != 0) {
-                        long directoryEnd = reader.BaseStream.Position + (entry.NodeValue & TVFS_FOLDER_SIZE_MASK) - sizeof(int);
+                        var directoryEnd = reader.BaseStream.Position + (entry.NodeValue & TVFS_FOLDER_SIZE_MASK) - sizeof(int);
                         
                         // Check the available data
                         Debug.Assert((entry.NodeValue & TVFS_FOLDER_SIZE_MASK) >= sizeof(int));
@@ -295,8 +295,8 @@ namespace TACTLib.Core {
                         reader.BaseStream.Position = directoryEnd;
                     } else {
                         // Capture the VFS and Container Table Entry in order to get the file EKey
-                        long before = reader.BaseStream.Position;
-                        var file = ReadVfsSpanEntries(manifest, reader, out int spanSize, entry.NodeValue);
+                        var before = reader.BaseStream.Position;
+                        var file = ReadVfsSpanEntries(manifest, reader, out var spanSize, entry.NodeValue);
                         reader.BaseStream.Position = before;
 
                         file.Name = pathBuffer;
@@ -314,7 +314,7 @@ namespace TACTLib.Core {
             //if(!(pbVfsFileTable <= pbVfsFileEntry && pbVfsFileEntry <= pbVfsFileEnd))
             //    return ERROR_INVALID_PARAMETER;
             long vfsFileTable = manifest.VfsTableOffset;
-            long vfsFileEntry = vfsFileTable + vfsOffset;
+            var vfsFileEntry = vfsFileTable + vfsOffset;
             //long vfsFileEnd = vfsFileTable + manifest.VfsTableSize;
 
             reader.BaseStream.Position = vfsFileEntry;
@@ -336,10 +336,10 @@ namespace TACTLib.Core {
             // (4bytes): Size of the span (big endian)
             // (?bytes): Offset into Container File Table. Length depends on container file table size
 
-            int fileOffset = reader.ReadInt32BE();
+            var fileOffset = reader.ReadInt32BE();
             spanSize = reader.ReadInt32BE();
             
-            int cftOffset = 0;
+            var cftOffset = 0;
             if (manifest.CftOffsSize == 1) {
                 cftOffset = reader.ReadByte();
             } else if (manifest.CftOffsSize == 2) {
@@ -350,8 +350,8 @@ namespace TACTLib.Core {
                 cftOffset = reader.ReadInt32BE();
             }
             
-            int cftFileTable = manifest.CftTableOffset;
-            int cftFileEntry = cftFileTable + cftOffset;
+            var cftFileTable = manifest.CftTableOffset;
+            var cftFileEntry = cftFileTable + cftOffset;
             //int cftFileEnd = cftFileTable + manifest.CftTableSize;
 
             reader.BaseStream.Position = cftFileEntry;

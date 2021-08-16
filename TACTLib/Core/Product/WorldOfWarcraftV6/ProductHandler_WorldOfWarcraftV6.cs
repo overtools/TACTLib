@@ -34,9 +34,9 @@ namespace TACTLib.Core.Product.WorldOfWarcraftV6 {
                     CASWarcraftV6 block = new CASWarcraftV6(reader);
                     blocks.Add(block);
 
-                    int blockIdx = blocks.Count - 1;
+                    var blockIdx = blocks.Count - 1;
 
-                    for (int i = 0; i < block.Records.Length; ++i) {
+                    for (var i = 0; i < block.Records.Length; ++i) {
                         if (Assets.ContainsKey(block.Records[i].LookupHash)) continue;
                         Assets[block.Records[i].LookupHash] = new Asset(blockIdx, i);
                     }

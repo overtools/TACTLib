@@ -92,19 +92,19 @@ namespace TACTLib.Container {
                 }
 
                 var eKey1Block = reader.Read<BlockSizeAndHash>();
-                int entryCount = eKey1Block.BlockSize / sizeof(EKeyEntry);
+                var entryCount = eKey1Block.BlockSize / sizeof(EKeyEntry);
 
                 EKeyEntry[] entries = reader.ReadArray<EKeyEntry>(entryCount);
                 Dictionary<int, long> dataFileSizes = new Dictionary<int, long>();
-                for (int i = 0; i < entryCount; i++) {
-                    EKeyEntry entry = entries[i];
+                for (var i = 0; i < entryCount; i++) {
+                    var entry = entries[i];
                     if (IndexEntries.ContainsKey(entry.EKey)) {
                         continue;
                     }
 
-                    IndexEntry indexEntry = new IndexEntry(entry); 
+                    var indexEntry = new IndexEntry(entry); 
 
-                    if (!dataFileSizes.TryGetValue(indexEntry.Index, out long dataFileSize)) {
+                    if (!dataFileSizes.TryGetValue(indexEntry.Index, out var dataFileSize)) {
                         var path = GetDataFilePath(indexEntry.Index);
                         if (!File.Exists(path)) {
                             continue;
@@ -128,7 +128,7 @@ namespace TACTLib.Container {
         /// <param name="key">The Encoding Key</param>
         /// <returns>Loaded file</returns>
         internal Stream? OpenEKey(EKey key) {
-            if (!IndexEntries.TryGetValue(key, out IndexEntry indexEntry)) {
+            if (!IndexEntries.TryGetValue(key, out var indexEntry)) {
                 Debugger.Log(0, "ContainerHandler", $"Missing local index {key.ToHexString()}\n");
                 return null;
             }
@@ -149,7 +149,7 @@ namespace TACTLib.Container {
                         //CKey cKey = reader.Read<CKey>();
                         dataStream.Position += 16;
 
-                        int size = reader.ReadInt32();
+                        var size = reader.ReadInt32();
 
                         // 2+8 byte block of something?
                         dataStream.Position += 10;
