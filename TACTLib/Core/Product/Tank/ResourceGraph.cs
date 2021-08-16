@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -138,6 +137,8 @@ namespace TACTLib.Core.Product.Tank {
         public TRGHeader m_header;
         public Dictionary<ulong, Package> m_packages;
         public Dictionary<ulong, Skin> m_skins;
+        public byte[] m_graphBlock;
+        public byte[]? m_typeBundleIndexBlock;
         
         public static bool IsPre152(TRGHeader header)
         {
@@ -169,17 +170,18 @@ namespace TACTLib.Core.Product.Tank {
 
             if (m_packages == null) throw new NullReferenceException(nameof(m_packages));
             if (m_skins == null) throw new NullReferenceException(nameof(m_skins));
+            if (m_graphBlock == null) throw new NullReferenceException(nameof(m_graphBlock));
         }
 
         private void ParseBlocks(BinaryReader reader, string name) {
             var version = m_header.GetVersion();
             
-            byte[] packageBlockTest = reader.ReadBytes(m_header.m_packageBlockSize);
-            byte[] skinBlockTest = reader.ReadBytes(m_header.m_skinBlockSize);
-            byte[] graphBlockTest = reader.ReadBytes(m_header.m_graphBlockSize);
+            byte[] packageBlock = reader.ReadBytes(m_header.m_packageBlockSize);
+            byte[] skinBlock = reader.ReadBytes(m_header.m_skinBlockSize);
+            m_graphBlock = reader.ReadBytes(m_header.m_graphBlockSize);
             if (version == 7) {
-                byte[] typeBundleIndexBlock = reader.ReadBytes(m_header.m_typeBundleIndexBlockSize);
-                //File.WriteAllBytes(name + "_typeBundleIndex", typeBundleIndexBlock);
+                m_typeBundleIndexBlock = reader.ReadBytes(m_header.m_typeBundleIndexBlockSize);
+                //File.WriteAllBytes(name + "_typeBundleIndex", m_typeBundleIndexBlock);
             }
             
             // todo: don't waste time and memory by loading into byte arrays
@@ -188,7 +190,7 @@ namespace TACTLib.Core.Product.Tank {
             //File.WriteAllBytes(name + "_graph", graphBlockTest);
 
             Package[] packages;
-            using (var packageStream = new MemoryStream(packageBlockTest))
+            using (var packageStream = new MemoryStream(packageBlock))
             using (var packageReader = new BinaryReader(packageStream)) {
                 packages = packageReader.ReadArray<Package>(m_header.m_packageCount);
             }
@@ -200,7 +202,7 @@ namespace TACTLib.Core.Product.Tank {
 
             SkinHeader[] skins = new SkinHeader[m_header.m_skinCount];
             m_skins = new Dictionary<ulong, Skin>();
-            using (var skinStream = new MemoryStream(skinBlockTest))
+            using (var skinStream = new MemoryStream(skinBlock))
             using (var skinReader = new BinaryReader(skinStream)) {
                 for (var i = 0; i < m_header.m_skinCount; i++) {
                     var skinStart = skinStream.Position;
@@ -219,66 +221,8 @@ namespace TACTLib.Core.Product.Tank {
                     }
                     
                     m_skins[skinHeader.m_skinGUID] = new Skin(skinHeader, assets);
-
-                    //Logger.Info("TRG", $"{skin.m_skinGUID:X16}");
-                    //foreach (SkinAsset asset in assets) {
-                    //    Logger.Info("TRG", $"    {asset.m_assetGUID:X16}");
-                    //}
                 }
             }
-
-            /*//var rootPackage = packages.First(x => x.m_assetGUID == 0);
-            var firstSkin = skins.First();
-
-            using (var graphStream = new MemoryStream(graphBlockTest))
-            using (var graphReader = new BinaryReader(graphStream)) {
-                var st = GetZach(rootPackage.m_16, graphReader);
-                //var st = GetZach(firstSkin.m_24, graphReader);
-
-                bool doMore = ((st.m_8 >> 3) & 1) != 0;
-                if (doMore) {
-                    long morePtr = graphStream.Position;
-                    if ((st.m_guid & 0xFFFF800000000000ul) == 0x4F10000000000000) { // (GuidToAssetRepo(0x8Fu) >> 4) & 0xFFF000000000000ul | 0x4000000000000000ul
-                        morePtr += 8; // todo: what data is here
-                    } else if ((st.m_9 & 1) != 0) {
-                        var moreRead = graphReader.ReadUInt32(); // todo: guid array
-                        morePtr += 8 * moreRead + 4;
-                    }
-
-                    while (true) {
-                        graphStream.Position = morePtr;
-                        var more = graphReader.ReadUInt32();
-                        var moreZach = GetZach(more, graphReader);
-
-                        if (((more >> 29) & 1) != 0) {
-                            Console.WriteLine("end");
-                            break;
-                        }
-
-                        morePtr += 4;
-                    }
-                }
-            }*/
-        }
-
-        public static Zach GetZach(uint num, BinaryReader graphReader) {
-            if ((num & 0x1FFFFFF) >= 0x1FFFFFF) {
-                Debug.Assert(false, "trg: number too big?");
-            }
-            
-            Zach zach;
-            while (true) {
-                if (((num >> 30) & 1) != 0) {
-                    throw new NotImplementedException();
-                } else {
-                    graphReader.BaseStream.Position = num & 0x1FFFFFF;
-                    zach = graphReader.Read<Zach>();
-                }
-
-                if (((zach.m_8 >> 4) & 1) == 0) break;
-                num = zach.m_ref; // todo: is this right at all
-            }
-            return zach;
         }
     }
 }
