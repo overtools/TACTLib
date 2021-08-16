@@ -38,12 +38,16 @@ namespace TACTLib.Protocol.NGDP {
                         {"BuildComplete", "1"}
                     };
 
-                    foreach (var pair in RenameMapVersions) {
-                        bi[pair.Value] = versions?[pair.Key];
+                    if (versions != null) {
+                        foreach (var pair in RenameMapVersions) {
+                            bi[pair.Value] = versions[pair.Key];
+                        }
                     }
 
-                    foreach (var pair in RenameMapCDNs) {
-                        bi[pair.Value] = cdns?[pair.Key];
+                    if (cdns != null) {
+                        foreach (var pair in RenameMapCDNs) {
+                            bi[pair.Value] = cdns[pair.Key];
+                        }
                     }
 
                     return bi;

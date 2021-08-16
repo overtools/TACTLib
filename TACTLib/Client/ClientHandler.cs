@@ -29,7 +29,7 @@ namespace TACTLib.Client {
         public readonly InstallationInfo InstallationInfo;
         
         /// <summary>Container handler</summary>
-        public readonly ContainerHandler ContainerHandler;
+        public readonly ContainerHandler? ContainerHandler;
         
         /// <summary>Encoding table handler</summary>
         public readonly EncodingHandler EncodingHandler;
@@ -38,29 +38,29 @@ namespace TACTLib.Client {
         public readonly ConfigHandler ConfigHandler;
 
         /// <summary>Virtual File System</summary>
-        public readonly VFSFileTree VFS;
+        public readonly VFSFileTree? VFS;
 
         /// <summary>Product specific Root File handler</summary>
-        public readonly IProductHandler ProductHandler;
+        public readonly IProductHandler? ProductHandler;
 
         /// <summary>BNA Agent DB</summary>
         /// <seealso cref="ClientCreateArgs.ProductDatabaseFilename"/>
         public readonly ProductInstall AgentProduct;
 
-        public readonly INetworkHandler NetHandle;
+        public readonly INetworkHandler? NetHandle;
 
         /// <summary>The base path of the container. E.g where the game executables are.</summary>
         public readonly string BasePath;
 
         public readonly ClientCreateArgs CreateArgs;
 
-        public readonly CDNIndexHandler m_cdnIdx;
+        public readonly CDNIndexHandler? m_cdnIdx;
 
-        public ClientHandler(string basePath, ClientCreateArgs createArgs) {
+        public ClientHandler(string? basePath, ClientCreateArgs createArgs) {
             basePath = basePath ?? "";
             BasePath = basePath;
             CreateArgs = createArgs;
-            string flavorInfoProductCode = null;
+            string? flavorInfoProductCode = null;
             
             if (createArgs.UseContainer && !Directory.Exists(basePath)) throw new FileNotFoundException("invalid archive directory");
 
@@ -162,7 +162,7 @@ namespace TACTLib.Client {
                 InstallationInfo = new InstallationInfo(installationInfoPath, AgentProduct.ProductCode);
             } else {
                 using var _ = new PerfCounter("InstallationInfo::ctor`INetworkHandler");
-                InstallationInfo = new InstallationInfo(NetHandle, createArgs.OnlineRegion);
+                InstallationInfo = new InstallationInfo(NetHandle!, createArgs.OnlineRegion);
             }
 
             Logger.Info("CASC", $"{Product} build {InstallationInfo.Values["Version"]}");
@@ -190,7 +190,7 @@ namespace TACTLib.Client {
             }
 
             using (var _ = new PerfCounter("ProductHandlerFactory::GetHandler`TACTProduct`ClientHandler`Stream"))
-                ProductHandler = ProductHandlerFactory.GetHandler(Product, this, OpenCKey(ConfigHandler.BuildConfig.Root.ContentKey));
+                ProductHandler = ProductHandlerFactory.GetHandler(Product, this, OpenCKey(ConfigHandler.BuildConfig.Root.ContentKey)!);
             
             Logger.Info("CASC", "Ready");
         }
@@ -200,13 +200,13 @@ namespace TACTLib.Client {
         /// </summary>
         /// <param name="key">Content Key of the file</param>
         /// <returns>Loaded file</returns>
-        public Stream OpenCKey(CKey key) {
-            if (EncodingHandler != null && EncodingHandler.TryGetEncodingEntry(key, out EncodingHandler.CKeyEntry entry)) {
+        public Stream? OpenCKey(CKey key) {
+            if (EncodingHandler.TryGetEncodingEntry(key, out var entry)) {
                 return OpenEKey(entry.EKey);
             }
             if (CreateArgs.Online)
             {
-                return new BLTEStream(this, NetHandle.OpenData(key));
+                return new BLTEStream(this, NetHandle!.OpenData(key));
             }
             Debugger.Log(0, "ContainerHandler", $"Missing encoding entry for CKey {key.ToHexString()}\n");
             return null;
@@ -217,7 +217,7 @@ namespace TACTLib.Client {
         /// </summary>
         /// <param name="key">The Encoding Key</param>
         /// <returns>Loaded file</returns>
-        public Stream OpenEKey(EKey key) {  // ekey = value of ckey in encoding table
+        public Stream? OpenEKey(EKey key) {  // ekey = value of ckey in encoding table
             var stream = ContainerHandler?.OpenEKey(key);
             return stream == null ? null : new BLTEStream(this, stream);
         }
@@ -227,7 +227,7 @@ namespace TACTLib.Client {
         /// </summary>
         /// <param name="key">The Long Encoding Key</param>
         /// <returns>Loaded file</returns>
-        public Stream OpenEKey(CKey key) {  // ekey = value of ckey in encoding table
+        public Stream? OpenEKey(CKey key) {  // ekey = value of ckey in encoding table
             if (ContainerHandler != null) {
                 try {
                     var cascBlte = OpenEKey(key.AsEKey());
@@ -239,21 +239,21 @@ namespace TACTLib.Client {
             }
             if (!CreateArgs.Online) return null;
 
-            Stream netMemStream = null;
-            if (m_cdnIdx.CDNIndexData.TryGetValue(key, out var cdnIdx))
+            Stream? netMemStream = null;
+            if (m_cdnIdx!.CDNIndexData.TryGetValue(key, out var cdnIdx))
             {
                 netMemStream = m_cdnIdx.OpenDataFile(cdnIdx);
             }
             if (netMemStream == null)
             {
-                netMemStream = NetHandle.OpenData(key);
+                netMemStream = NetHandle!.OpenData(key);
             }
 
             if (netMemStream == null) return null;
             return new BLTEStream(this, netMemStream);
         }
 
-        public Stream OpenConfigKey(string key) {
+        public Stream? OpenConfigKey(string key) {
             if (ContainerHandler != null) {
                 var path = Path.Combine(ContainerHandler.ContainerDirectory, ContainerHandler.ConfigDirectory, key.Substring(0, 2), key.Substring(2, 2), key);
                 if (File.Exists(path + CreateArgs.ExtraFileEnding)) {
@@ -265,7 +265,7 @@ namespace TACTLib.Client {
                 }
             }
 
-            return CreateArgs.Online ? NetHandle.OpenConfig(key) : null;
+            return CreateArgs.Online ? NetHandle!.OpenConfig(key) : null;
         }
 
         public string GetProduct() => CreateArgs.Product ?? ProductHelpers.UIDFromProduct(Product);

@@ -3,7 +3,6 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Security.Cryptography;
 using TACTLib.Client;
 using TACTLib.Container;
@@ -27,8 +26,8 @@ namespace TACTLib.Core {
         public const int Magic = 0x45544C42;
 
         private BinaryReader _reader;
-        private MemoryStream _memStream;
-        private DataBlock[] _dataBlocks;
+        private MemoryStream _memStream = null!;
+        private DataBlock[] _dataBlocks = null!;
         private Stream _stream;
         private int _blocksIndex;
         private long _length;
@@ -55,7 +54,9 @@ namespace TACTLib.Core {
             }
         }
 
-        public BLTEStream(ClientHandler client, Stream src) {
+        public BLTEStream(ClientHandler client, Stream? src) {
+            if (src == null) throw new ArgumentNullException(nameof(src));
+            
             _client = client;
             _stream = src;
             _reader = new BinaryReader(src);
@@ -215,7 +216,7 @@ namespace TACTLib.Core {
             for (int shift = 0, i = 0; i < sizeof(int); shift += 8, i++) iv[i] ^= (byte) ((index >> shift) & 0xFF);
 
             // todo: could be null, but this shouldn't be called in that case
-            byte[] key = _client.ConfigHandler.Keyring.GetKey(keyName);
+            byte[]? key = _client.ConfigHandler.Keyring.GetKey(keyName);
 
             if (key == null)
                 throw new BLTEKeyException(keyName);
@@ -323,15 +324,14 @@ namespace TACTLib.Core {
                 _stream?.Dispose();
                 _reader?.Dispose();
                 _memStream?.Dispose();
-                _dataBlocks = null;
+                _dataBlocks = null!;
             } finally {
-                _stream = null;
-                _reader = null;
-                _memStream = null;
+                _stream = null!;
+                _reader = null!;
+                _memStream = null!;
 
                 base.Dispose(disposing);
             }
-            GC.SuppressFinalize(this);
         }
     }
 }

@@ -4,13 +4,13 @@ using TACTLib.Container;
 // ReSharper disable file NotAccessedField.Global
 namespace TACTLib.Core.Product.CommonV2 {
     public class RootFile {
-        public string FileID;
+        public string? FileID;
         public CKey MD5;
         public byte ChunkID;
         public byte Priority;
         public byte MPriority;
-        public string FileName;
-        public string InstallPath;
+        public string? FileName;
+        public string? InstallPath;
         
         public RootFile(IReadOnlyList<string> data) {
             FileID = data[0];

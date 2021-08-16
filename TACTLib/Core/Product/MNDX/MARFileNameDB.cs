@@ -19,7 +19,7 @@ namespace TACTLib.Core.Product.MNDX
         private byte[] FrgmDist_LoBits;
         private TBitEntryArray FrgmDist_HiBits;
         private TNameIndexStruct IndexStruct_174;
-        private MARFileNameDB NextDB;
+        private MARFileNameDB? NextDB;
         private NAME_FRAG[] NameFragTable;
         private int NameFragIndexMask;
         private int field_214;

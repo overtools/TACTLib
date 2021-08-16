@@ -5,7 +5,7 @@ using TACTLib.Protocol;
 
 namespace TACTLib.Config {
     public class InstallationInfo {
-        public Dictionary<string, string> Values { get; private set; }
+        public Dictionary<string, string> Values { get; private set; } = null!;
         
         public InstallationInfo(string path, string product) {
             using (StreamReader reader = new StreamReader(path)) {
@@ -18,10 +18,10 @@ namespace TACTLib.Config {
         }
 
         public static List<Dictionary<string, string>> ParseToDict(TextReader reader) {
-            string[] keys = null;
+            string[]? keys = null;
             List<Dictionary<string, string>> ret = new List<Dictionary<string, string>>();
             
-            string line;
+            string? line;
             while ((line = reader.ReadLine()?.Trim()) != null) {
                 if (line.Length == 0) {
                     continue;
@@ -32,14 +32,12 @@ namespace TACTLib.Config {
                 if (keys == null) {
                     keys = new string[tokens.Length];
 
-                    for (int j = 0; j < tokens.Length; j++) {
+                    for (var j = 0; j < tokens.Length; j++) {
                         keys[j] = tokens[j].Split('!')[0].Replace(" ", "");
                     }
                 } else {
-                    if (keys == null) break; // todo: this can't happen...
-                    
                     Dictionary<string, string> vals = new Dictionary<string, string>();
-                    for (int j = 0; j < tokens.Length; ++j) {
+                    for (var j = 0; j < tokens.Length; ++j) {
                         vals[keys[j]] = tokens[j];
                     }
                     
@@ -52,7 +50,7 @@ namespace TACTLib.Config {
 
         private void Parse(TextReader reader, string product) {
             var vals = ParseToDict(reader);
-            Values = (Dictionary<string, string>) vals.FirstOrDefault(x => {
+            Values = vals.First(x => {
                 if (x.TryGetValue("Product", out var entryProduct) && !entryProduct.Equals(product)) {
                     return false;
                 }

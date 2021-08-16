@@ -30,7 +30,7 @@ namespace TACTLib.Protocol
         {
             var handler = new CDNIndexHandler(clientHandler);
 
-            for (int i = 0; i < clientHandler.ConfigHandler.CDNConfig.Archives.Count; i++)
+            for (var i = 0; i < clientHandler.ConfigHandler.CDNConfig.Archives.Count; i++)
             {
                 string archive = clientHandler.ConfigHandler.CDNConfig.Archives[i];
 
@@ -50,7 +50,7 @@ namespace TACTLib.Protocol
             using (var br = new BinaryReader(stream))
             {
                 stream.Seek(-12, SeekOrigin.End);
-                int count = br.ReadInt32();
+                var count = br.ReadInt32();
                 stream.Seek(0, SeekOrigin.Begin);
 
                 var cbIndexFile = stream.Length - 0x14;
@@ -63,14 +63,14 @@ namespace TACTLib.Protocol
                 long pageStart = 0;
                 while (stream.Position < length)
                 {
-                    CKey key = br.Read<CKey>();
+                    var key = br.Read<CKey>();
                     if (CASCKeyComparer.Instance.GetHashCode(key) == zeroHash)
                     {
                         stream.Position = pageStart + pageLength;
                         pageStart = stream.Position;
                         continue;
                     }
-                    IndexEntry entry = new IndexEntry()
+                    var entry = new IndexEntry()
                     {
                         Index = i,
                         Size = br.ReadInt32BE(),
@@ -85,8 +85,8 @@ namespace TACTLib.Protocol
         {
             try
             {
-                var cdn = (CDNClient) m_client.NetHandle;
-                using var stream = cdn.FetchCDN("data", archive, null, ".index");
+                var cdn = (CDNClient) m_client.NetHandle!;
+                using var stream = cdn.FetchCDN("data", archive, null, ".index")!;
                 ParseIndex(stream, i);
             }
             catch (Exception exc)
@@ -99,7 +99,7 @@ namespace TACTLib.Protocol
         {
             try
             {
-                var dir = m_client.ContainerHandler.ContainerDirectory;
+                var dir = m_client.ContainerHandler!.ContainerDirectory;
                 var path = Path.Combine(dir, ContainerHandler.CDNIndicesDirectory, archive + ".index");
                 if (File.Exists(path))
                 {
@@ -118,11 +118,11 @@ namespace TACTLib.Protocol
             }
         }
 
-        public Stream OpenDataFile(IndexEntry entry)
+        public Stream? OpenDataFile(IndexEntry entry)
         {
             var archive = m_client.ConfigHandler.CDNConfig.Archives[entry.Index];
 
-            var cdn = (CDNClient) m_client.NetHandle;
+            var cdn = (CDNClient) m_client.NetHandle!;
             var stream = cdn.FetchCDN("data", archive, (entry.Offset, entry.Offset + entry.Size - 1));
             return stream;
         }

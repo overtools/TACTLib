@@ -13,7 +13,7 @@ namespace TACTLib.Config {
         /// </summary>
         public readonly Dictionary<ulong, byte[]> Keys;
 
-        public Keyring(ClientHandler client, Stream stream) : base(client, stream) {
+        public Keyring(ClientHandler client, Stream? stream) : base(client, stream) {
             Keys = new Dictionary<ulong, byte[]>();
             foreach (KeyValuePair<string,List<string>> pair in Values) {
                 string reverseKey = pair.Key.Substring(pair.Key.Length - 16);
@@ -44,7 +44,7 @@ namespace TACTLib.Config {
         public void LoadSupportFile(string path) {
             var debugFileKeyCache = new Dictionary<ulong, byte[]>();
             using (TextReader r = new StreamReader(path)) {
-                string line;
+                string? line;
                 while ((line = r.ReadLine()) != null) {
                     line = line.Trim().Split(new[] {'#'}, StringSplitOptions.None)[0].Trim();
                     if (string.IsNullOrWhiteSpace(line)) {
@@ -91,8 +91,8 @@ namespace TACTLib.Config {
         /// </summary>
         /// <param name="keyID">Target key id</param>
         /// <returns>Key value</returns>
-        public byte[] GetKey(ulong keyID) {
-            Keys.TryGetValue(keyID, out byte[] key);
+        public byte[]? GetKey(ulong keyID) {
+            Keys.TryGetValue(keyID, out var key);
             return key;
         }
 

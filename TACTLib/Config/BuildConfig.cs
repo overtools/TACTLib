@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using TACTLib.Client;
 using TACTLib.Container;
@@ -6,22 +7,28 @@ using TACTLib.Container;
 namespace TACTLib.Config {
     public class BuildConfig : Config {
         public FileRecord Root;
-        public FileRecord Install;
-        public FileRecord Patch;
-        public FileRecord Download;
+        public FileRecord? Install;
+        public FileRecord? Patch;
+        public FileRecord? Download;
         public FileRecord Encoding;
-        public FileRecord VFSRoot;
+        public FileRecord? VFSRoot;
         
-        public BuildConfig(ClientHandler client, Stream stream) : base(client, stream) {
-            GetFileRecord("root", out Root);
+        public BuildConfig(ClientHandler client, Stream? stream) : base(client, stream) {
+            GetFileRecord("root", out var root);
             GetFileRecord("install", out Install);
             GetFileRecord("patch", out Patch);
             GetFileRecord("download", out Download);
-            GetFileRecord("encoding", out Encoding);
+            GetFileRecord("encoding", out var encoding);
             GetFileRecord("vfs-root", out VFSRoot);
+
+            if (root == null) throw new NullReferenceException(nameof(root));
+            Root = root;
+            
+            if (encoding == null) throw new NullReferenceException(nameof(encoding));
+            Encoding = encoding;
         }
 
-        private void GetFileRecord(string key, out FileRecord @out) {
+        private void GetFileRecord(string key, out FileRecord? @out) {
             if (Values.ContainsKey(key)) {
                 @out = GetFileRecord(Values[key]);
                 

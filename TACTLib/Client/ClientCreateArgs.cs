@@ -32,7 +32,7 @@ namespace TACTLib.Client {
         /// </summary>
         /// <seealso cref="TACTLib.Client.HandlerArgs.ClientCreateArgs_Tank"/>
         /// <seealso cref="TACTLib.Client.HandlerArgs.ClientCreateArgs_WorldOfWarcraftV6"/> 
-        public IHandlerArgs HandlerArgs { get; set; } = null;
+        public IHandlerArgs? HandlerArgs { get; set; } = null;
         
         public InstallMode VersionSource { get; set; } = InstallMode.Local;
 
@@ -78,12 +78,12 @@ namespace TACTLib.Client {
         /// <summary>
         /// Text Language to load in case product db doesn't
         /// </summary>
-        public string TextLanguage { get; set; } = null;
+        public string? TextLanguage { get; set; } = null;
         
         /// <summary>
         /// Speech language to load in case product db doesn't
         /// </summary>
-        public string SpeechLanguage { get; set; } = null;
+        public string? SpeechLanguage { get; set; } = null;
 
         /// <summary>
         /// The online product branch to load
@@ -103,7 +103,7 @@ namespace TACTLib.Client {
         /// <summary>
         /// The depot product flavor to load
         /// </summary>
-        public string Product { get; set; } = "pro";
+        public string? Product { get; set; } = "pro";
 
         /// <summary>
         /// When true, it will load a support keyring for salsa keys not in the keyring.
@@ -113,6 +113,6 @@ namespace TACTLib.Client {
         /// <summary>
         /// Support keyring to load, if null it will attempt to load "{TACTProduct}.keyring"
         /// </summary>
-        public string SupportKeyring { get; set; } = null;
+        public string? SupportKeyring { get; set; } = null;
     }
 }

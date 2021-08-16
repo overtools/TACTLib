@@ -25,8 +25,8 @@ namespace TACTLib.Protocol.Ribbit {
         };
 
         public override Dictionary<string, string> CreateInstallationInfo(string region) {
-            var cdns = m_client.GetKV($"v1/products/{client.GetProduct()}/cdns").FirstOrDefault(x => x["Name"] == region);
-            var versions = m_client.GetKV($"v1/products/{client.GetProduct()}/versions").FirstOrDefault(x => x["Region"] == region);
+            var cdns = m_client.GetKV($"v1/products/{client.GetProduct()}/cdns")?.FirstOrDefault(x => x["Name"] == region);
+            var versions = m_client.GetKV($"v1/products/{client.GetProduct()}/versions")?.FirstOrDefault(x => x["Region"] == region);
             
             var bi = new Dictionary<string, string> {
                 {"Active", "1"},
@@ -38,12 +38,16 @@ namespace TACTLib.Protocol.Ribbit {
                 {"BuildComplete", "1"}
             };
 
-            foreach (var pair in RenameMapVersions) {
-                bi[pair.Value] = versions?[pair.Key];
+            if (versions != null) {
+                foreach (var pair in RenameMapVersions) {
+                    bi[pair.Value] = versions[pair.Key];
+                }
             }
 
-            foreach (var pair in RenameMapCDNs) {
-                bi[pair.Value] = cdns?[pair.Key];
+            if (cdns != null) {
+                foreach (var pair in RenameMapCDNs) {
+                    bi[pair.Value] = cdns[pair.Key];
+                }
             }
 
             return bi;

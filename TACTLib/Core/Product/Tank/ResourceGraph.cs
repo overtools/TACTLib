@@ -105,14 +105,7 @@ namespace TACTLib.Core.Product.Tank {
             public ushort m_38;
         }
 
-        public class Skin {
-            public SkinHeader m_header;
-            public SkinAsset6[] m_assets;
-
-            public Skin(SkinHeader skinHeader) {
-                m_header = skinHeader;
-            }
-        }
+        public record Skin(SkinHeader m_header, SkinAsset6[] m_assets);
 
         [StructLayout(LayoutKind.Explicit, Pack = 1)]
         public struct Zach {
@@ -173,6 +166,9 @@ namespace TACTLib.Core.Product.Tank {
                         ParseBlocks(decryptedReader, name);
                 }
             }
+
+            if (m_packages == null) throw new NullReferenceException(nameof(m_packages));
+            if (m_skins == null) throw new NullReferenceException(nameof(m_skins));
         }
 
         private void ParseBlocks(BinaryReader reader, string name) {
@@ -198,7 +194,7 @@ namespace TACTLib.Core.Product.Tank {
             }
 
             m_packages = new Dictionary<ulong, Package>();
-            foreach (Package package in packages) {
+            foreach (var package in packages) {
                 m_packages[package.m_assetGUID] = package;
             }
 
@@ -206,23 +202,23 @@ namespace TACTLib.Core.Product.Tank {
             m_skins = new Dictionary<ulong, Skin>();
             using (var skinStream = new MemoryStream(skinBlockTest))
             using (var skinReader = new BinaryReader(skinStream)) {
-                for (int i = 0; i < m_header.m_skinCount; i++) {
-                    long skinStart = skinStream.Position;
+                for (var i = 0; i < m_header.m_skinCount; i++) {
+                    var skinStart = skinStream.Position;
 
                     var skinHeader = skinReader.Read<SkinHeader>();
                     skins[i] = skinHeader;
 
-                    var skin = new Skin(skinHeader);
-                    m_skins[skinHeader.m_skinGUID] = skin;
-
                     if (skinHeader.m_assetPtr == 0) continue;
                     skinStream.Position = skinStart + skinHeader.m_assetPtr;
 
+                    SkinAsset6[] assets;
                     if (version == 5) {
-                        skin.m_assets = skinReader.ReadArray<SkinAsset5>(skinHeader.m_assetCount).Select(x => x.Upgrade()).ToArray();
+                        assets = skinReader.ReadArray<SkinAsset5>(skinHeader.m_assetCount).Select(x => x.Upgrade()).ToArray();
                     } else {
-                        skin.m_assets = skinReader.ReadArray<SkinAsset6>(skinHeader.m_assetCount);
+                        assets = skinReader.ReadArray<SkinAsset6>(skinHeader.m_assetCount);
                     }
+                    
+                    m_skins[skinHeader.m_skinGUID] = new Skin(skinHeader, assets);
 
                     //Logger.Info("TRG", $"{skin.m_skinGUID:X16}");
                     //foreach (SkinAsset asset in assets) {

@@ -37,7 +37,7 @@ namespace TACTLib.Core {
         /// <param name="rgbKey">The secret key to use for the symmetric algorithm.</param>
         /// <param name="rgbIV">The initialization vector to use for the symmetric algorithm.</param>
         /// <returns>A symmetric decryptor object.</returns>
-        public override ICryptoTransform CreateDecryptor(byte[] rgbKey, byte[] rgbIV) {
+        public override ICryptoTransform CreateDecryptor(byte[] rgbKey, byte[]? rgbIV) {
             // decryption and encryption are symmetrical
             return CreateEncryptor(rgbKey, rgbIV);
         }
@@ -49,14 +49,14 @@ namespace TACTLib.Core {
         /// <param name="rgbKey">The secret key to use for the symmetric algorithm.</param>
         /// <param name="rgbIV">The initialization vector to use for the symmetric algorithm.</param>
         /// <returns>A symmetric encryptor object.</returns>
-        public override ICryptoTransform CreateEncryptor(byte[] rgbKey, byte[] rgbIV) {
+        public override ICryptoTransform CreateEncryptor(byte[] rgbKey, byte[]? rgbIV) {
             if (rgbKey == null)
                 throw new ArgumentNullException(nameof(rgbKey));
             if (!ValidKeySize(rgbKey.Length * 8))
                 throw new CryptographicException("Invalid key size; it must be 128 or 256 bits.");
             CheckValidIV(rgbIV, "rgbIV");
 
-            return new Salsa20CryptoTransform(rgbKey, rgbIV, _rounds);
+            return new Salsa20CryptoTransform(rgbKey, rgbIV!, _rounds);
         }
 
         private new bool ValidKeySize(int size) {
@@ -108,7 +108,7 @@ namespace TACTLib.Core {
 
         // Verifies that iv is a legal value for a Salsa20 IV.
         // ReSharper disable once ParameterOnlyUsedForPreconditionCheck.Local
-        private static void CheckValidIV(byte[] iv, string paramName) {
+        private static void CheckValidIV(byte[]? iv, string paramName) {
             if (iv == null)
                 throw new ArgumentNullException(paramName);
             if (iv.Length != 8)
@@ -299,7 +299,7 @@ namespace TACTLib.Core {
             private static readonly byte[] Sigma = Encoding.ASCII.GetBytes("expand 32-byte k");
             private static readonly byte[] Tau = Encoding.ASCII.GetBytes("expand 16-byte k");
 
-            private uint[] _state;
+            private uint[]? _state;
             private readonly int _rounds;
         }
     }

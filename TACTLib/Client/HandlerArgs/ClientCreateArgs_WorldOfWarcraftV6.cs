@@ -7,6 +7,6 @@ namespace TACTLib.Client.HandlerArgs {
         /// <summary>
         /// Lookup list file to load
         /// </summary>
-        public string ListFile { get; set; } = null;
+        public string? ListFile { get; set; } = null;
     }
 }

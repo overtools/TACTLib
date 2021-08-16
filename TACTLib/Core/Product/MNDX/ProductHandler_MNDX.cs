@@ -34,7 +34,7 @@ namespace TACTLib.Core.Product.MNDX
         private Dictionary<int, CASC_ROOT_ENTRY_MNDX> mndxRootEntriesValid;
 
         private Dictionary<int, string> Packages = new Dictionary<int, string>();
-        private Dictionary<string, int> PackagesValue = new Dictionary<string, int>();
+        private Dictionary<string, int> PackagesValue;
 
         public List<MNDXEntry> Entries = new List<MNDXEntry>();
 
@@ -83,7 +83,7 @@ namespace TACTLib.Core.Product.MNDX
 
                 stream.Position = MndxEntriesOffset;
 
-                CASC_ROOT_ENTRY_MNDX prevEntry = null;
+                CASC_ROOT_ENTRY_MNDX? prevEntry = null;
 
                 for (int i = 0; i < MndxEntriesTotal; i++)
                 {
@@ -234,7 +234,7 @@ namespace TACTLib.Core.Product.MNDX
             throw new Exception("File not found!");
         }
 
-        public Stream OpenFile(object key)
+        public Stream? OpenFile(object key)
         {
             switch (key)
             {

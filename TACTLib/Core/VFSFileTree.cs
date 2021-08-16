@@ -17,7 +17,7 @@ namespace TACTLib.Core {
 
         public VFSFileTree(ClientHandler client) {
             _client = client;
-            using (Stream stream = client.OpenCKey(client.ConfigHandler.BuildConfig.VFSRoot.ContentKey))
+            using (Stream stream = client.OpenCKey(client.ConfigHandler.BuildConfig.VFSRoot!.ContentKey)!)
             using (BinaryReader reader = new BinaryReader(stream, Encoding.Default)) {
 
                 //using (Stream file = File.OpenWrite("vfs.hex")) {
@@ -42,8 +42,8 @@ namespace TACTLib.Core {
         /// <param name="file"></param>
         /// <returns></returns>
         /// <exception cref="FileNotFoundException"></exception>
-        public Stream Open(string file) {
-            if (_files.TryGetValue(file, out VFSFile vfsFile)) {
+        public Stream? Open(string file) {
+            if (_files.TryGetValue(file, out var vfsFile)) {
                 if (vfsFile is VFSCFile cFile) {
                     return _client.OpenCKey(cFile.CKey);
                 }

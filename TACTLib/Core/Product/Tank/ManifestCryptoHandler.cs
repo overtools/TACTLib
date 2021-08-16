@@ -54,7 +54,7 @@ namespace TACTLib.Core.Product.Tank {
 
             byte[] digest = CreateDigest(name);
 
-            if (providerVersions.TryGetValue(buildVersion, out object providerRaw)) {
+            if (providerVersions.TryGetValue(buildVersion, out var providerRaw)) {
                 Logger.Info("Manifest", $"Using {manifestType} procedure {buildVersion} for {name}");
             } else {
                 if (!AttemptFallbackManifests) {
@@ -122,7 +122,7 @@ namespace TACTLib.Core.Product.Tank {
             foreach (Type tt in types) {
                 if (tt.IsInterface) continue;
 
-                ManifestCryptoAttribute metadata = tt.GetCustomAttribute<ManifestCryptoAttribute>();
+                ManifestCryptoAttribute? metadata = tt.GetCustomAttribute<ManifestCryptoAttribute>();
                 if (metadata == null) continue;
 
                 if (!providers.TryGetValue(metadata.Product, out var providerCryptoTypeMap)) {
@@ -134,7 +134,7 @@ namespace TACTLib.Core.Product.Tank {
                     providerCryptoTypeMap[typeof(T)] = typeVersionMap;
                 }
 
-                T provider = (T)Activator.CreateInstance(tt);
+                var provider = (T)Activator.CreateInstance(tt)!;
                 if (metadata.AutoDetectVersion) {
                     typeVersionMap[uint.Parse(tt.Name.Split('_')[1])] = provider;
                 }
@@ -151,7 +151,7 @@ namespace TACTLib.Core.Product.Tank {
         public class ManifestCryptoAttribute : Attribute {
             public bool AutoDetectVersion = true;
             public TACTProduct Product = TACTProduct.Overwatch;
-            public uint[] BuildVersions = new uint[0];
+            public uint[]? BuildVersions = new uint[0];
         }
     }
 }

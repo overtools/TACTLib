@@ -89,10 +89,10 @@ namespace TACTLib.Core.Product.Tank {
 
         public CMFHeader m_header;
         
-        public ApplicationPackageManifest.Entry[] m_entries;
-        public HashData[] m_hashList;
-        public Dictionary<ulong, int> m_indexMap;
-        private Dictionary<ulong, HashData> m_hashDataMap;
+        public ApplicationPackageManifest.Entry[] m_entries = null!;
+        public HashData[] m_hashList = null!;
+        public Dictionary<ulong, int> m_indexMap = null!;
+        private Dictionary<ulong, HashData> m_hashDataMap = null!;
 
         // ReSharper disable once InconsistentNaming
         public const int ENCRYPTED_MAGIC = 0x636D66; // todo: use the thingy again?
@@ -132,7 +132,7 @@ namespace TACTLib.Core.Product.Tank {
 
             m_indexMap = new Dictionary<ulong, int>(m_header.m_dataCount);
             m_hashDataMap = new Dictionary<ulong, HashData>(m_header.m_dataCount); 
-            for (int i = 0; i < m_header.m_dataCount; i++) {
+            for (var i = 0; i < m_header.m_dataCount; i++) {
                 var hashData = m_hashList[i];
                 m_indexMap[hashData.GUID] = i;
 
@@ -155,7 +155,7 @@ namespace TACTLib.Core.Product.Tank {
             throw new FileNotFoundException($"{guid:X16}");
         }
 
-        public Stream OpenFile(ClientHandler client, ulong guid) {
+        public Stream? OpenFile(ClientHandler client, ulong guid) {
             var data = GetHashData(guid);
             return client.OpenCKey(data.ContentKey);
         }

@@ -5,12 +5,12 @@ using TACTLib.Agent.Protobuf;
 
 namespace TACTLib.Agent {
     public class AgentDatabase {
-        public string FilePath { get; }
+        public string? FilePath { get; }
         public Database Data { get; }
 
         public AgentDatabase() : this(null) { }
 
-        public AgentDatabase(string path) {
+        public AgentDatabase(string? path) {
             FilePath = path;
             if (string.IsNullOrWhiteSpace(FilePath)) {
                 FilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Battle.net", "Agent", "product.db");

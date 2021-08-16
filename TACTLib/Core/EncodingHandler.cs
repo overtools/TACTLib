@@ -17,7 +17,7 @@ namespace TACTLib.Core {
 
             var key = client.ConfigHandler.BuildConfig.Encoding.EncodingKey;
 
-            using (var stream = client.CreateArgs.VersionSource > ClientCreateArgs.InstallMode.Local ? client.OpenCKey(key) : client.OpenEKey(key.AsEKey()))
+            using (var stream = client.CreateArgs.VersionSource > ClientCreateArgs.InstallMode.Local ? client.OpenCKey(key)! : client.OpenEKey(key.AsEKey())!)
             using (var reader = new BinaryReader(stream)) {
                 Header header = reader.Read<Header>();
 

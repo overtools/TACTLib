@@ -49,17 +49,16 @@ namespace TACTLib.Container {
         }
 
         private void LoadIndexFiles() {
-            for (int i = 0; i < CASC_INDEX_COUNT; i++) {
+            for (var i = 0; i < CASC_INDEX_COUNT; i++) {
                 List<string> files = Directory.EnumerateFiles(Path.Combine(ContainerDirectory, DataDirectory), $"{i:X2}*.idx" + _client.CreateArgs.ExtraFileEnding, new EnumerationOptions { MatchCasing = MatchCasing.CaseInsensitive }).ToList();
                 if (files.Count == 0) continue;
 
-                string selectedFile = null;
-                int selectedVersion = 0;
+                string? selectedFile = null;
+                var selectedVersion = 0;
                 foreach (string file in files) {
-                    string fileName = Path.GetFileNameWithoutExtension(file);
-                    if (fileName == null) continue;
-                    string sub = fileName.Substring(2);
-                    int version = int.Parse(sub, NumberStyles.HexNumber);
+                    var fileName = Path.GetFileNameWithoutExtension(file);
+                    var sub = fileName.Substring(2);
+                    var version = int.Parse(sub, NumberStyles.HexNumber);
 
                     if (version > selectedVersion) {
                         selectedFile = file;
@@ -67,6 +66,7 @@ namespace TACTLib.Container {
                     }
                 }
 
+                if (selectedFile == null) throw new InvalidDataException($"unable to find index {i:X2}, impossible");
                 LoadIndexFile(selectedFile, i);
             }
         }
@@ -127,7 +127,7 @@ namespace TACTLib.Container {
         /// </summary>
         /// <param name="key">The Encoding Key</param>
         /// <returns>Loaded file</returns>
-        internal Stream OpenEKey(EKey key) {
+        internal Stream? OpenEKey(EKey key) {
             if (!IndexEntries.TryGetValue(key, out IndexEntry indexEntry)) {
                 Debugger.Log(0, "ContainerHandler", $"Missing local index {key.ToHexString()}\n");
                 return null;
@@ -258,8 +258,8 @@ namespace TACTLib.Container {
             public int Offset;
 
             public unsafe IndexEntry(EKeyEntry entry) {
-                int indexHigh = entry.FileOffsetBE[0];
-                int indexLow = Int32FromPtrBE(entry.FileOffsetBE + 1);
+                var indexHigh = entry.FileOffsetBE[0];
+                var indexLow = Int32FromPtrBE(entry.FileOffsetBE + 1);
                 Index = indexHigh << 2 | (byte) ((indexLow & 0xC0000000) >> 30);
                 Offset = indexLow & 0x3FFFFFFF;
             }

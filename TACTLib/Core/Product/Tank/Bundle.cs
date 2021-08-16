@@ -45,8 +45,11 @@ namespace TACTLib.Core.Product.Tank {
             public uint Offset;  // 4
         }
 
-        public Bundle(Stream stream, bool is148) {
-            if (stream == null) return;
+        public Bundle(Stream? stream, bool is148) {
+            if (stream == null) {
+                Entries = Array.Empty<Entry4>();
+                return;
+            }
             using (BinaryReader reader = new BinaryReader(stream)) {
                 if (is148) {
                     Header = reader.Read<HeaderData148>();

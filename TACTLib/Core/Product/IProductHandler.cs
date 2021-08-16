@@ -9,6 +9,6 @@ namespace TACTLib.Core.Product {
         /// <returns></returns>
         /// <exception cref="InvalidDataException"></exception>
         /// <exception cref="FileNotFoundException"></exception>
-        Stream OpenFile(object key);
+        Stream? OpenFile(object key);
     }
 }

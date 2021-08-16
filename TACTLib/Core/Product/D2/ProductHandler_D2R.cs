@@ -1,17 +1,8 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 using TACTLib.Client;
-using TACTLib.Client.HandlerArgs;
 using TACTLib.Core.Product.CommonV2;
-using TACTLib.Exceptions;
-using TACTLib.Helpers;
 
 namespace TACTLib.Core.Product.D2
 {
@@ -33,7 +24,7 @@ namespace TACTLib.Core.Product.D2
 
                 string[] array = str.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
                 m_rootFiles = new RootFile[array.Length - 1];
-                for (int i = 1; i < array.Length; i++)
+                for (var i = 1; i < array.Length; i++)
                 {
                     m_rootFiles[i - 1] = new RootFile(array[i].Split('|')[0], array[i].Split('|')[1]);
                 }

@@ -8,7 +8,7 @@ namespace TACTLib.Config {
     public class Config {
         public Dictionary<string, List<string>> Values;
 
-        protected Config(ClientHandler client, Stream stream) {
+        protected Config(ClientHandler client, Stream? stream) {
             Values = new Dictionary<string, List<string>>();
             if (stream == null) return;
             
@@ -18,9 +18,8 @@ namespace TACTLib.Config {
         }
 
         private void Read(TextReader reader) {
-            string line;
+            string? line;
             while ((line = reader.ReadLine()) != null) {
-                
                 if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#")) continue;
                 string[] tokens = line.Split(new[] {'='}, StringSplitOptions.RemoveEmptyEntries);
 

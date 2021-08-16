@@ -1,5 +1,4 @@
 using System;
-using TACTLib.Container;
 
 namespace TACTLib.Exceptions {
     /// <summary>Thrown when Container Handler catastrophically fails</summary>

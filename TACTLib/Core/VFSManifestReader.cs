@@ -191,7 +191,7 @@ namespace TACTLib.Core {
         }
 
         public struct PathEntry {
-            public string Name;
+            public string? Name;
             public PathEntryFlags NodeFlags;
             public int NodeValue; // Node value
         }

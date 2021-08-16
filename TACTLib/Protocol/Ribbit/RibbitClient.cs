@@ -14,7 +14,7 @@ namespace TACTLib.Protocol.Ribbit {
             m_host = host;
         }
         
-        public Stream Get(string query) {
+        public Stream? Get(string query) {
             Logger.Info("CDN", $"Fetching Ribbit {query}");
             using (TcpClient client = new TcpClient()) {
                 if (!Uri.TryCreate(m_host, UriKind.RelativeOrAbsolute, out var uri)) {
@@ -47,7 +47,7 @@ namespace TACTLib.Protocol.Ribbit {
             }
         }
 
-        public List<Dictionary<string, string>> GetKV(string query) {
+        public List<Dictionary<string, string>>? GetKV(string query) {
             using (var stream = Get(query)) {
                 if (stream == null) return null;
                 using (var streamReader = new StreamReader(stream))
@@ -55,31 +55,31 @@ namespace TACTLib.Protocol.Ribbit {
             }
         }
 
-        public List<Dictionary<string, string>> GetVersions(string product) {
+        public List<Dictionary<string, string>>? GetVersions(string product) {
             return GetKV($"v1/products/{product}/versions");
         }
         
-        public Dictionary<string, string> GetVersion(string product, string region) {
-            return GetKV($"v1/products/{product}/versions").FirstOrDefault(x => x["Region"] == region);
+        public Dictionary<string, string>? GetVersion(string product, string region) {
+            return GetKV($"v1/products/{product}/versions")?.FirstOrDefault(x => x["Region"] == region);
         }
         
-        public List<Dictionary<string, string>> GetBGDL(string product) {
+        public List<Dictionary<string, string>>? GetBGDL(string product) {
             return GetKV($"v1/products/{product}/bgdl");
         }
         
-        public Dictionary<string, string> GetBGDL(string product, string region) {
-            return GetKV($"v1/products/{product}/bgdl").FirstOrDefault(x => x["Region"] == region);
+        public Dictionary<string, string>? GetBGDL(string product, string region) {
+            return GetKV($"v1/products/{product}/bgdl")?.FirstOrDefault(x => x["Region"] == region);
         }
         
-        public List<Dictionary<string, string>> GetCDNs(string product) {
+        public List<Dictionary<string, string>>? GetCDNs(string product) {
             return GetKV($"v1/products/{product}/cdns");
         }
         
-        public Dictionary<string, string> GetCDNs(string product, string region) {
-            return GetKV($"v1/products/{product}/cdns").FirstOrDefault(x => x["Region"] == region);
+        public Dictionary<string, string>? GetCDNs(string product, string region) {
+            return GetKV($"v1/products/{product}/cdns")?.FirstOrDefault(x => x["Region"] == region);
         }
         
-        public List<Dictionary<string, string>> GetSummary() {
+        public List<Dictionary<string, string>>? GetSummary() {
             return GetKV("v1/summary");
         }
     }

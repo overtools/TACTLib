@@ -4,10 +4,10 @@ namespace TACTLib {
     public static class Logger {
         public delegate void LogEvent(string category, string message);
 
-        public static event LogEvent OnInfo;
-        public static event LogEvent OnDebug;
-        public static event LogEvent OnWarn;
-        public static event LogEvent OnError;
+        public static event LogEvent? OnInfo;
+        public static event LogEvent? OnDebug;
+        public static event LogEvent? OnWarn;
+        public static event LogEvent? OnError;
         
         public static void Info(string category, string message) {
             OnInfo?.Invoke(category, message);
