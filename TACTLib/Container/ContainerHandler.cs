@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.IO.MemoryMappedFiles;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using TACTLib.Client;
-using TACTLib.Exceptions;
 using TACTLib.Helpers;
 using static TACTLib.Utils;
 
@@ -39,6 +39,8 @@ namespace TACTLib.Container {
 
         private readonly ClientHandler _client;
 
+        private readonly Dictionary<int, MemoryMappedFile> m_mappedFiles = new Dictionary<int, MemoryMappedFile>();
+
         public ContainerHandler(ClientHandler client) {
             _client = client;
             if (client.BasePath == null) throw new Exception("no 'BasePath' specified");
@@ -68,6 +70,14 @@ namespace TACTLib.Container {
 
                 if (selectedFile == null) throw new InvalidDataException($"unable to find index {i:X2}, impossible");
                 LoadIndexFile(selectedFile, i);
+            }
+
+            for (var i = 0; i < 50; i++)
+            {
+                var path = GetDataFilePath(i);
+                if (!File.Exists(path)) continue;
+                
+                m_mappedFiles.Add(i, MemoryMappedFile.CreateFromFile(path, FileMode.Open, $"casc_data{i}", 0, MemoryMappedFileAccess.Read));
             }
         }
 
@@ -140,49 +150,25 @@ namespace TACTLib.Container {
         /// </summary>
         /// <param name="indexEntry">Source index entry</param>
         /// <returns>Encoded stream</returns>
-        private Stream OpenIndexEntry(IndexEntry indexEntry) {
-            using (FileStream dataStream = OpenDataFile(indexEntry.Index)) {
-                try {
-                    using (BinaryReader reader = new BinaryReader(dataStream, Encoding.ASCII, false)) { // ASCII = important. one byte per char
-                        dataStream.Position = indexEntry.Offset;
+        private Stream OpenIndexEntry(IndexEntry indexEntry)
+        {
+            var a = m_mappedFiles[indexEntry.Index];
+            using var b = a.CreateViewStream(indexEntry.Offset + 16, 4, MemoryMappedFileAccess.Read);
 
-                        //CKey cKey = reader.Read<CKey>();
-                        dataStream.Position += 16;
-
-                        var size = reader.ReadInt32();
-
-                        // 2+8 byte block of something?
-                        dataStream.Position += 10;
-
-                        var sizeToRead = size - 30;
-                        if (sizeToRead <= 0) {
-                            throw new InvalidDataException($"size to read from data is {sizeToRead} bytes which is invalid");
-                        }
-
-                        // todo: maybe this?
-                        // var memoryStream = new MemoryStream(size - 30);
-                        //dataStream.CopyBytes(memoryStream, size-30);
-                        //memoryStream.Position = 0;
-                        //return memoryStream;
-
-                        byte[] data = reader.ReadBytes(sizeToRead);
-                        return new MemoryStream(data);
-                    }
-                } catch (Exception e) {
-                    throw new CASCException(indexEntry, $"Failed to process index with file data.{indexEntry.Index:D3} at offset {indexEntry.Offset:X16}", e);
-                }
+            int size;
+            using (var bReader = new BinaryReader(b, Encoding.ASCII))
+                size = bReader.ReadInt32();
+            
+            var sizeToRead = size - 30;
+            if (sizeToRead <= 0) {
+                throw new InvalidDataException($"size to read from data is {sizeToRead} bytes which is invalid");
             }
+
+            return a.CreateViewStream(indexEntry.Offset + 30, sizeToRead, MemoryMappedFileAccess.Read);
         }
 
         private string GetDataFilePath(int index) {
             return Path.Combine(ContainerDirectory, DataDirectory, $"data.{index:D3}") + _client.CreateArgs.ExtraFileEnding;
-        }
-
-        /// <summary>Open a data file</summary>
-        /// <param name="index">Data file index ("data.{index}")</param>
-        /// <returns>Data stream</returns>
-        private FileStream OpenDataFile(int index) {
-            return File.OpenRead(GetDataFilePath(index));
         }
         
         /// <summary>
