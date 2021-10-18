@@ -80,13 +80,13 @@ namespace TACTLib.Client {
                         Logger.Info("Core", $".flavor.info detected. Found product \"{flavorInfoProductCode}\"");
                     }
                 } catch (Exception ex) {
-                    Logger.Warn("Core", $"Failed reading .flavor.info file? {ex.Message}");
+                    Logger.Warn("Core", $"Failed reading .flavor.info file! {ex.Message}");
                 }
 
                 // ensure to see the .build.info file exists. if it doesn't then we can't continue
                 installationInfoPath = Path.Combine(basePath, createArgs.InstallInfoFileName) + createArgs.ExtraFileEnding;
                 if (!File.Exists(installationInfoPath)) {
-                    throw new FileNotFoundException($"Invalid Overwatch archive? {installationInfoPath} was not found. You must provide the path to a valid Overwatch install.");
+                    throw new FileNotFoundException($"Invalid archive directory! {installationInfoPath} was not found. You must provide the path to a valid install.");
                 }
             }
 
