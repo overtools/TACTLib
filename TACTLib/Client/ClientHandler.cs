@@ -20,20 +20,20 @@ namespace TACTLib.Client {
         /// <summary>
         /// The <see cref="Product"/> that this container belongs to.
         /// </summary>
-        public readonly TACTProduct Product;
+        public readonly TACTProduct Product = TACTProduct.Unknown;
 
         /// <summary>
         /// The installation info of the container
         /// </summary>
         /// <seealso cref="ClientCreateArgs.InstallInfoFileName"/>
         public readonly InstallationInfo InstallationInfo;
-        
+
         /// <summary>Container handler</summary>
         public readonly ContainerHandler? ContainerHandler;
-        
+
         /// <summary>Encoding table handler</summary>
         public readonly EncodingHandler? EncodingHandler;
-        
+
         /// <summary>Configuration handler</summary>
         public readonly ConfigHandler ConfigHandler;
 
@@ -57,16 +57,43 @@ namespace TACTLib.Client {
         public readonly CDNIndexHandler? m_cdnIdx;
 
         public ClientHandler(string? basePath, ClientCreateArgs createArgs) {
-            basePath = basePath ?? "";
+            basePath ??= "";
             BasePath = basePath;
             CreateArgs = createArgs;
+            string? installationInfoPath = null;
             string? flavorInfoProductCode = null;
-            
-            if (createArgs.UseContainer && !Directory.Exists(basePath)) throw new FileNotFoundException("invalid archive directory");
+
+            if (createArgs.UseContainer) {
+                if (!Directory.Exists(basePath)) {
+                    throw new FileNotFoundException($"Invalid archive directory. Directory {basePath} does not exist. Please specify a valid directory.");
+                }
+
+                try {
+                    // if someone specified a flavor, try and see what flavor and fix the base path
+                    var flavorInfoPath = Path.Combine(basePath, ".flavor.info");
+                    if (File.Exists(flavorInfoPath)) {
+                        // mixed installation, store the product code to be used below
+                        flavorInfoProductCode = File.ReadLines(flavorInfoPath).Skip(1).First();
+                        Product = ProductHelpers.ProductFromUID(flavorInfoProductCode);
+                        BasePath = basePath = Path.GetFullPath(Path.Combine(basePath, "../")); // base path is a directory up from the flavor
+
+                        Logger.Info("Core", $".flavor.info detected. Found product \"{flavorInfoProductCode}\"");
+                    }
+                } catch (Exception ex) {
+                    Logger.Warn("Core", $"Failed reading .flavor.info file? {ex.Message}");
+                }
+
+                // ensure to see the .build.info file exists. if it doesn't then we can't continue
+                installationInfoPath = Path.Combine(basePath, createArgs.InstallInfoFileName) + createArgs.ExtraFileEnding;
+                if (!File.Exists(installationInfoPath)) {
+                    throw new FileNotFoundException($"Invalid Overwatch archive? {installationInfoPath} was not found. You must provide the path to a valid Overwatch install.");
+                }
+            }
 
             var dbPath = Path.Combine(basePath, createArgs.ProductDatabaseFilename);
 
             try {
+                // try and load product and agent data from the product database
                 if (File.Exists(dbPath)) {
                     using (var _ = new PerfCounter("AgentDatabase::ctor`string`bool"))
                         foreach(var install in new AgentDatabase(dbPath).Data.ProductInstall) {
@@ -74,7 +101,7 @@ namespace TACTLib.Client {
                             AgentProduct = install;
                             break;
                         }
-                    
+
                     if (AgentProduct == null) {
                         throw new InvalidDataException();
                     }
@@ -84,26 +111,15 @@ namespace TACTLib.Client {
                     throw new InvalidDataException();
                 }
             } catch {
-                try {
-                    if (File.Exists(Path.Combine(basePath, ".flavor.info"))) {
-                        
-                        // mixed installation, store the product code to be used below
-                        flavorInfoProductCode = File.ReadLines(Path.Combine(basePath, ".flavor.info")).Skip(1).First();
-                        Product = ProductHelpers.ProductFromUID(flavorInfoProductCode);
-                        BasePath = basePath = Path.Combine(basePath, "../"); // lmao
-                        
-                        Logger.Info("Core", $".flavor.info detected. Found product \"{flavorInfoProductCode}\"");
-                    } else {
-                        throw new InvalidDataException();
-                    }
-                } catch {
+                // if product db reading failed and we don't already have a product (from the .flavor.info at the top), try to lookup from the current directory
+                if (Product == TACTProduct.Unknown) {
                     try {
                         Product = ProductHelpers.ProductFromLocalInstall(basePath);
                     } catch {
                         if (createArgs.VersionSource == ClientCreateArgs.InstallMode.Local) {  // if we need an archive then we should be able to detect the product
                             throw;
                         }
-                        
+
                         Product = createArgs.OnlineProduct;
                     }
                 }
@@ -127,7 +143,7 @@ namespace TACTLib.Client {
                         Language = AgentProduct.Settings.SelectedTextLanguage,
                         Option = LanguageOption.LangoptionText
                     });
-                    
+
                     AgentProduct.Settings.Languages.Add(new LanguageSetting {
                         Language = AgentProduct.Settings.SelectedSpeechLanguage,
                         Option = LanguageOption.LangoptionSpeech
@@ -142,7 +158,7 @@ namespace TACTLib.Client {
             if (string.IsNullOrWhiteSpace(createArgs.SpeechLanguage)) {
                 createArgs.SpeechLanguage = AgentProduct.Settings.SelectedSpeechLanguage;
             }
-            
+
             if (createArgs.Online) {
                 using var _ = new PerfCounter("INetworkHandler::ctor`ClientHandler");
                 if (createArgs.OnlineRootHost.StartsWith("ribbit:")) {
@@ -151,15 +167,14 @@ namespace TACTLib.Client {
                     NetHandle = new NGDPClient(this);
                 }
             }
-            
-            if(createArgs.VersionSource == ClientCreateArgs.InstallMode.Local) {
-                var installationInfoPath = Path.Combine(basePath, createArgs.InstallInfoFileName) + createArgs.ExtraFileEnding;
+
+            if (createArgs.VersionSource == ClientCreateArgs.InstallMode.Local) {
                 if (!File.Exists(installationInfoPath)) {
                     throw new FileNotFoundException(installationInfoPath);
                 }
 
                 using var _ = new PerfCounter("InstallationInfo::ctor`string");
-                InstallationInfo = new InstallationInfo(installationInfoPath, AgentProduct.ProductCode);
+                InstallationInfo = new InstallationInfo(installationInfoPath!, AgentProduct.ProductCode);
             } else {
                 using var _ = new PerfCounter("InstallationInfo::ctor`INetworkHandler");
                 InstallationInfo = new InstallationInfo(NetHandle!, createArgs.OnlineRegion);
@@ -175,7 +190,7 @@ namespace TACTLib.Client {
 
             using (var _ = new PerfCounter("ConfigHandler::ctor`ClientHandler"))
                 ConfigHandler = new ConfigHandler(this);
-    
+
             using (var _ = new PerfCounter("EncodingHandler::ctor`ClientHandler"))
                 EncodingHandler = new EncodingHandler(this);
 
@@ -191,7 +206,7 @@ namespace TACTLib.Client {
 
             using (var _ = new PerfCounter("ProductHandlerFactory::GetHandler`TACTProduct`ClientHandler`Stream"))
                 ProductHandler = ProductHandlerFactory.GetHandler(Product, this, OpenCKey(ConfigHandler.BuildConfig.Root.ContentKey)!);
-            
+
             Logger.Info("CASC", "Ready");
         }
 
