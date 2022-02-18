@@ -39,7 +39,7 @@ namespace TACTLib.Core.Product.Tank.TRG
       {
         buffer[i] = Keytable[SignedMod(kidx, 512)];
         kidx += okidx % 13;
-        buffer[i] ^= digest[SignedMod(kidx + header.GetMagicNonEnc(), SHA1_DIGESTSIZE)];
+        buffer[i] ^= digest[SignedMod(kidx + header.GetNonEncryptedMagic(), SHA1_DIGESTSIZE)];
       }
       return buffer;
     }
