@@ -268,7 +268,7 @@ namespace TACTLib.Core {
             return _memStream.Read(buffer, offset, count);
         }
 
-        private bool ProcessNextBlock() {
+        public bool ProcessNextBlock() {
             if (_blocksIndex == _dataBlocks.Length)
                 return false;
 
