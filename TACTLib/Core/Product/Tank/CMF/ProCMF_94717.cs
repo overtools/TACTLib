@@ -23,7 +23,7 @@ namespace TACTLib.Core.Product.Tank.CMF
         {
             byte[] buffer = new byte[length];
             uint kidx, okidx;
-            kidx = okidx = length * header.m_buildVersion;
+            kidx = okidx = (uint)(length * header.m_buildVersion);
             for (int i = 0; i != length; ++i)
             {
                 buffer[i] = Keytable[SignedMod(kidx, 512)];
