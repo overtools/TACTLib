@@ -76,7 +76,7 @@ namespace TACTLib.Protocol.Ribbit {
         }
         
         public Dictionary<string, string>? GetCDNs(string product, string region) {
-            return GetKV($"v1/products/{product}/cdns")?.FirstOrDefault(x => x["Region"] == region);
+            return GetKV($"v1/products/{product}/cdns")?.FirstOrDefault(x => x["Name"] == region);
         }
         
         public List<Dictionary<string, string>>? GetSummary() {
