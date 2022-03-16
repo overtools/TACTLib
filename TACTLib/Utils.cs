@@ -1,19 +1,26 @@
 ﻿using System;
+using System.Buffers.Binary;
 
 namespace TACTLib {
     public static class Utils {
-        public static unsafe Span<byte> PtrToSpan(byte* ptr, int len) {
-            return new Span<byte>(ptr, len);
+        public static unsafe ReadOnlySpan<byte> PtrToSpan(byte* ptr, int len)
+        {
+            // todo: please delete
+            return new ReadOnlySpan<byte>(ptr, len);
         }
 
         // ReSharper disable once InconsistentNaming
-        public static unsafe int Int32FromPtrBE(byte* ptr) {
-            return ptr[3] | (ptr[2] << 8) | (ptr[1] << 16) | (ptr[0] << 24);
+        public static unsafe int Int32FromPtrBE(byte* ptr)
+        {
+            // todo: please delete
+            return BinaryPrimitives.ReadInt32BigEndian(new ReadOnlySpan<byte>(ptr, 4));
         }
         
         // ReSharper disable once InconsistentNaming
-        public static unsafe short Int16FromPtrBE(byte* ptr) {
-            return (short)(ptr[1] | (ptr[0] << 8));
+        public static unsafe short Int16FromPtrBE(byte* ptr)
+        {
+            // todo: please delete
+            return BinaryPrimitives.ReadInt16BigEndian(new ReadOnlySpan<byte>(ptr, 2));
         }
         
         public static byte[] StringToByteArray(string str) {

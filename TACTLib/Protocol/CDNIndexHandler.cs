@@ -86,8 +86,9 @@ namespace TACTLib.Protocol
             try
             {
                 var cdn = (CDNClient) m_client.NetHandle!;
-                using var stream = cdn.FetchCDN("data", archive, null, ".index")!;
-                ParseIndex(stream, i);
+                var indexData = cdn.FetchCDN("data", archive, null, ".index");
+                var indexDataStream = new MemoryStream(indexData);
+                ParseIndex(indexDataStream, i);
             }
             catch (Exception exc)
             {
@@ -118,7 +119,7 @@ namespace TACTLib.Protocol
             }
         }
 
-        public Stream? OpenDataFile(IndexEntry entry)
+        public byte[]? OpenDataFile(IndexEntry entry)
         {
             var archive = m_client.ConfigHandler.CDNConfig.Archives[entry.Index];
 
