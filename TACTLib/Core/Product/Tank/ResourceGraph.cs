@@ -156,8 +156,8 @@ namespace TACTLib.Core.Product.Tank {
                 }
                 
                 var version = m_header.GetVersion();
-                if (version != 5 && version != 6 && version != 7) {
-                    throw new InvalidDataException($"unable to parse TRG. invalid version {version}, expected 5, 6 or 7");
+                if (version != 5 && version != 6 && version != 7 && version != 8) {
+                    throw new InvalidDataException($"unable to parse TRG. invalid version {version}, expected 5, 6, 7 or 8");
                 }
 
                 var isEnc = m_header.IsEncrypted();
