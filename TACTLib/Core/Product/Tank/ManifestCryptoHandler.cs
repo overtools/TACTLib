@@ -11,13 +11,13 @@ namespace TACTLib.Core.Product.Tank {
     public static class ManifestCryptoHandler {
         #region Helpers
         // ReSharper disable once InconsistentNaming
-        internal const uint SHA1_DIGESTSIZE = 20;
+        public const uint SHA1_DIGESTSIZE = 20;
 
-        internal static uint Constrain(long value) {
+        public static uint Constrain(long value) {
             return (uint)(value % uint.MaxValue);
         }
 
-        internal static int SignedMod(long p1, long p2)
+        public static int SignedMod(long p1, long p2)
         {
             var a = (int)p1;
             var b = (int)p2;
@@ -31,9 +31,10 @@ namespace TACTLib.Core.Product.Tank {
         private static bool _baseProvidersFound;
 
         private static void FindProviders() {
-            Assembly asm = typeof(ICMFEncryptionProc).Assembly;
-            AddProviders<ICMFEncryptionProc>(asm, Providers);
-            AddProviders<ITRGEncryptionProc>(asm, Providers);
+            foreach (var asm in AppDomain.CurrentDomain.GetAssemblies()) {
+                AddProviders<ICMFEncryptionProc>(asm, Providers);
+                AddProviders<ITRGEncryptionProc>(asm, Providers);
+            }
         }
 
         public static void GenerateKeyIV<T>(string name, string manifestType, T header, uint buildVersion, TACTProduct product, out byte[] key, out byte[] iv) {
