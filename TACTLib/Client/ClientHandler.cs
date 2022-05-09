@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -22,11 +23,17 @@ namespace TACTLib.Client {
         /// </summary>
         public readonly TACTProduct Product = TACTProduct.Unknown;
 
+        public readonly string? ProductCode = null;
+
         /// <summary>
         /// The installation info of the container
         /// </summary>
-        /// <seealso cref="ClientCreateArgs.InstallInfoFileName"/>
         public readonly InstallationInfo InstallationInfo;
+
+        /// <summary>
+        /// The installation info of the container
+        /// </summary>
+        public readonly InstallationInfoFile? InstallationInfoFile;
 
         /// <summary>Container handler</summary>
         public readonly ContainerHandler? ContainerHandler;
@@ -45,118 +52,95 @@ namespace TACTLib.Client {
 
         /// <summary>BNA Agent DB</summary>
         /// <seealso cref="ClientCreateArgs.ProductDatabaseFilename"/>
-        public readonly ProductInstall AgentProduct;
+        public readonly ProductInstall? AgentProduct;
 
         public readonly INetworkHandler? NetHandle;
 
         /// <summary>The base path of the container. E.g where the game executables are.</summary>
         public readonly string BasePath;
 
+        public readonly string? InstallationInfoPath;
+
         public readonly ClientCreateArgs CreateArgs;
 
         public readonly CDNIndexHandler? m_cdnIdx;
 
         public ClientHandler(string? basePath, ClientCreateArgs createArgs) {
-            basePath ??= "";
-            BasePath = basePath;
+            BasePath = basePath ?? ""; // should it be empty string? lol
             CreateArgs = createArgs;
-            string? installationInfoPath = null;
-            string? flavorInfoProductCode = null;
+            ProductCode = createArgs.Product;
 
+            // If we are using a container OR if InstallMode == Local
             if (createArgs.UseContainer) {
-                if (!Directory.Exists(basePath)) {
-                    throw new FileNotFoundException($"Invalid archive directory. Directory {basePath} does not exist. Please specify a valid directory.");
+                if (!Directory.Exists(BasePath)) {
+                    throw new FileNotFoundException($"Invalid archive directory. Directory {BasePath} does not exist. Please specify a valid directory.");
                 }
 
                 try {
                     // if someone specified a flavor, try and see what flavor and fix the base path
-                    var flavorInfoPath = Path.Combine(basePath, ".flavor.info");
+                    var flavorInfoPath = Path.Combine(BasePath, ".flavor.info");
                     if (File.Exists(flavorInfoPath)) {
                         // mixed installation, store the product code to be used below
-                        flavorInfoProductCode = File.ReadLines(flavorInfoPath).Skip(1).First();
-                        Product = ProductHelpers.ProductFromUID(flavorInfoProductCode);
-                        BasePath = basePath = Path.GetFullPath(Path.Combine(basePath, "../")); // base path is a directory up from the flavor
+                        ProductCode = File.ReadLines(flavorInfoPath).Skip(1).First();
+                        Product = ProductHelpers.ProductFromUID(ProductCode);
+                        BasePath = Path.GetFullPath(Path.Combine(BasePath, "../")); // base path is a directory up from the flavor
 
-                        Logger.Info("Core", $".flavor.info detected. Found product \"{flavorInfoProductCode}\"");
+                        Logger.Info("Core", $".flavor.info detected. Found product \"{ProductCode}\"");
                     }
                 } catch (Exception ex) {
                     Logger.Warn("Core", $"Failed reading .flavor.info file! {ex.Message}");
                 }
 
                 // ensure to see the .build.info file exists. if it doesn't then we can't continue
-                installationInfoPath = Path.Combine(basePath, createArgs.InstallInfoFileName) + createArgs.ExtraFileEnding;
-                if (!File.Exists(installationInfoPath)) {
-                    throw new FileNotFoundException($"Invalid archive directory! {installationInfoPath} was not found. You must provide the path to a valid install.");
+                InstallationInfoPath = Path.Combine(BasePath, createArgs.InstallInfoFileName) + createArgs.ExtraFileEnding;
+                if (!File.Exists(InstallationInfoPath)) {
+                    throw new FileNotFoundException($"Invalid archive directory! {InstallationInfoPath} was not found. You must provide the path to a valid install.");
                 }
-            }
 
-            var dbPath = Path.Combine(basePath, createArgs.ProductDatabaseFilename);
+                // If there was no flavor specified, try to find the flavor in the .build.info file
+                ProductCode ??= createArgs.Product ?? ProductHelpers.TryGetUIDFromProduct(ProductHelpers.TryGetProductFromLocalInstall(BasePath));
+                InstallationInfoFile = new InstallationInfoFile(InstallationInfoPath);
 
-            try {
-                // try and load product and agent data from the product database
-                if (File.Exists(dbPath)) {
-                    using (var _ = new PerfCounter("AgentDatabase::ctor`string`bool"))
-                        foreach(var install in new AgentDatabase(dbPath).Data.ProductInstall) {
-                            if (!string.IsNullOrEmpty(createArgs.Flavor) && !install.Settings.GameSubfolder.Contains(createArgs.Flavor) && (createArgs.Flavor != "retail" || !string.IsNullOrEmpty(install.Settings.GameSubfolder))) continue;
-                            AgentProduct = install;
-                            break;
-                        }
-
-                    if (AgentProduct == null) {
-                        throw new InvalidDataException();
-                    }
-
-                    Product = ProductHelpers.ProductFromUID(AgentProduct.ProductCode);
-                } else {
-                    throw new InvalidDataException();
-                }
-            } catch {
-                // if product db reading failed and we don't already have a product (from the .flavor.info at the top), try to lookup from the current directory
+                // If product is unknown it means we loaded on the base path and not a flavor e.g. C:/Games/Overwatch
+                // so we need to load the .build.info file and get the product from there
                 if (Product == TACTProduct.Unknown) {
-                    try {
-                        Product = ProductHelpers.ProductFromLocalInstall(basePath);
-                    } catch {
-                        if (createArgs.VersionSource == ClientCreateArgs.InstallMode.Local) {  // if we need an archive then we should be able to detect the product
-                            throw;
-                        }
+                    var installationInfo = InstallationInfoFile.GetInstallationInfoForProduct(ProductCode);
 
-                        Product = createArgs.OnlineProduct;
+                    if (installationInfo == null) {
+                        Logger.Warn("Core", $"Failed to find product \"{ProductCode}\" in {createArgs.InstallInfoFileName} file! Using first available.");
+                        installationInfo = InstallationInfoFile.GetFirstOrDefault();
                     }
-                }
 
-                AgentProduct = new ProductInstall {
-                    ProductCode = flavorInfoProductCode ?? createArgs.Product ?? ProductHelpers.UIDFromProduct(Product),
-                    Settings = new UserSettings {
-                        SelectedTextLanguage = createArgs.TextLanguage ?? "enUS",
-                        SelectedSpeechLanguage = createArgs.SpeechLanguage ?? "enUS",
-                        PlayRegion = "us"
+                    // if there's no data in the .build.info file? Shouldn't really be possible
+                    if (installationInfo == null) {
+                        throw new Exception($"Failed to find a valid product in {createArgs.InstallInfoFileName} file!");
                     }
-                };
 
-                if (AgentProduct.Settings.SelectedSpeechLanguage == AgentProduct.Settings.SelectedTextLanguage) {
-                    AgentProduct.Settings.Languages.Add(new LanguageSetting {
-                        Language = AgentProduct.Settings.SelectedTextLanguage,
-                        Option = LanguageOption.LangoptionTextAndSpeech
-                    });
-                } else {
-                    AgentProduct.Settings.Languages.Add(new LanguageSetting {
-                        Language = AgentProduct.Settings.SelectedTextLanguage,
-                        Option = LanguageOption.LangoptionText
-                    });
-
-                    AgentProduct.Settings.Languages.Add(new LanguageSetting {
-                        Language = AgentProduct.Settings.SelectedSpeechLanguage,
-                        Option = LanguageOption.LangoptionSpeech
-                    });
+                    // If product code is null this ProductFromUID will throw an exception
+                    ProductCode = installationInfo.Values.GetValueOrDefault("Product");
+                    Product = ProductHelpers.ProductFromUID(ProductCode);
+                    Logger.Info("Core", $"Found product \"{ProductCode}\" via {createArgs.InstallInfoFileName}");
                 }
             }
 
-            if (string.IsNullOrWhiteSpace(createArgs.TextLanguage)) {
-                createArgs.TextLanguage = AgentProduct.Settings.SelectedTextLanguage;
-            }
+            // If there is no product specified it's because we aren't using a container or we're using online mode.
+            // Find the product from the productCode provided by createArgs or if there is none, find it from the local install path
+            // tho i'm not sure what the chances are of there being an install path provided if you're loading from remote as it would be kind of redundant but whatever
+            if (Product == TACTProduct.Unknown) {
+                Product = ProductHelpers.TryGetProductFromUID(ProductCode);
 
-            if (string.IsNullOrWhiteSpace(createArgs.SpeechLanguage)) {
-                createArgs.SpeechLanguage = AgentProduct.Settings.SelectedSpeechLanguage;
+                // if no product was specified via ClientCreateArgs, try and find it from the local install path
+                if (Product == TACTProduct.Unknown) {
+                    Product = ProductHelpers.TryGetProductFromLocalInstall(BasePath);
+                }
+
+                if (Product == TACTProduct.Unknown) {
+                    if (createArgs.VersionSource == ClientCreateArgs.InstallMode.Remote) {
+                        throw new Exception("Failed to determine TACT Product. This is required if you're loading from remote.");
+                    }
+
+                    Logger.Warn("Core", "Failed to determine TACT Product! This could potentially cause issues!");
+                }
             }
 
             if (createArgs.Online) {
@@ -169,15 +153,32 @@ namespace TACTLib.Client {
             }
 
             if (createArgs.VersionSource == ClientCreateArgs.InstallMode.Local) {
-                if (!File.Exists(installationInfoPath)) {
-                    throw new FileNotFoundException(installationInfoPath);
+                // should always exist as it's fetched above but we can't continue without being able to load the installation info
+                if (!File.Exists(InstallationInfoPath)) {
+                    throw new FileNotFoundException(InstallationInfoPath);
                 }
 
                 using var _ = new PerfCounter("InstallationInfo::ctor`string");
-                InstallationInfo = new InstallationInfo(installationInfoPath!, AgentProduct.ProductCode);
+                InstallationInfo = new InstallationInfo(InstallationInfoPath!, ProductCode!);
             } else {
                 using var _ = new PerfCounter("InstallationInfo::ctor`INetworkHandler");
                 InstallationInfo = new InstallationInfo(NetHandle!, createArgs.OnlineRegion);
+            }
+
+            // try to load the agent database and use the selected language if we don't already have one specified
+            if (createArgs.UseContainer) {
+                AgentProduct = TryGetAgentDatabase();
+                if (AgentProduct != null) {
+                    if (string.IsNullOrWhiteSpace(createArgs.TextLanguage)) {
+                        createArgs.TextLanguage = AgentProduct.Settings.SelectedTextLanguage;
+                        CreateArgs.TextLanguage = AgentProduct.Settings.SelectedTextLanguage;
+                    }
+
+                    if (string.IsNullOrWhiteSpace(createArgs.SpeechLanguage)) {
+                        createArgs.SpeechLanguage = AgentProduct.Settings.SelectedSpeechLanguage;
+                        CreateArgs.SpeechLanguage = AgentProduct.Settings.SelectedSpeechLanguage;
+                    }
+                }
             }
 
             Logger.Info("CASC", $"{Product} build {InstallationInfo.Values["Version"]}");
@@ -199,8 +200,7 @@ namespace TACTLib.Client {
                 VFS = new VFSFileTree(this);
             }
 
-            if (createArgs.Online)
-            {
+            if (createArgs.Online) {
                 m_cdnIdx = CDNIndexHandler.Initialize(this);
             }
 
@@ -220,10 +220,11 @@ namespace TACTLib.Client {
             if (EncodingHandler != null && EncodingHandler.TryGetEncodingEntry(key, out var entry)) {
                 return OpenEKey(entry.EKey);
             }
-            if (CreateArgs.Online)
-            {
+
+            if (CreateArgs.Online) {
                 return new BLTEStream(this, NetHandle!.OpenData(key));
             }
+
             Debugger.Log(0, "ContainerHandler", $"Missing encoding entry for CKey {key.ToHexString()}\n");
             return null;
         }
@@ -253,15 +254,15 @@ namespace TACTLib.Client {
                     Logger.Warn("CASC", $"Unable to open {key.ToHexString()} from CASC. Will try to download. Exception: {e}");
                 }
             }
+
             if (!CreateArgs.Online) return null;
 
             Stream? netMemStream = null;
-            if (m_cdnIdx!.CDNIndexData.TryGetValue(key, out var cdnIdx))
-            {
+            if (m_cdnIdx!.CDNIndexData.TryGetValue(key, out var cdnIdx)) {
                 netMemStream = m_cdnIdx.OpenDataFile(cdnIdx);
             }
-            if (netMemStream == null)
-            {
+
+            if (netMemStream == null) {
                 netMemStream = NetHandle!.OpenData(key);
             }
 
@@ -284,6 +285,24 @@ namespace TACTLib.Client {
             return CreateArgs.Online ? NetHandle!.OpenConfig(key) : null;
         }
 
-        public string GetProduct() => CreateArgs.Product ?? ProductHelpers.UIDFromProduct(Product);
+        public string? GetProduct() => ProductCode;
+
+        /// <summary>
+        /// Tries to load an agent database for the current product
+        /// </summary>
+        /// <param name="createArgs"></param>
+        public ProductInstall? TryGetAgentDatabase() {
+            try {
+                var dbPath = Path.Combine(BasePath, CreateArgs.ProductDatabaseFilename);
+                if (File.Exists(dbPath)) {
+                    using var _ = new PerfCounter("AgentDatabase::ctor`string`bool");
+                    return new AgentDatabase(dbPath).Data.ProductInstall.FirstOrDefault(x => x.ProductCode == ProductCode);
+                }
+            } catch (Exception ex) {
+                Logger.Warn("Core", $"Failed loading Agent DB. {ex.Message}. This can be ignored.");
+            }
+
+            return null;
+        }
     }
 }
