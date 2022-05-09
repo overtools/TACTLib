@@ -7,18 +7,15 @@ namespace TACTLibTest {
         public static void Main(string[] args) {
             //const string path = @"C:\ow\game\Overwatch\";
             //const string path = @"D:\Games\Call of Duty Black Ops 4";
-            
+
             Logger.RegisterBasic();
 
             var ribbit = new RibbitClient(ClientCreateArgs.US_RIBBIT);
             var summary = ribbit.GetSummary();
             var ver = ribbit.GetVersions("pro");
-            
+
             //System.Diagnostics.Debugger.Break();
-            var clientHandler = new ClientHandler(args[0], new ClientCreateArgs
-            {
-                Flavor = "retail"
-            });
+            var clientHandler = new ClientHandler(args[0], new ClientCreateArgs());
 
             Logger.Info("LOAD", clientHandler.Product.ToString("G"));
 
