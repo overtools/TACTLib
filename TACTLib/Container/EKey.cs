@@ -44,18 +44,7 @@ namespace TACTLib.Container {
             if (array.Length < CASC_EKEY_SIZE)
                 throw new ArgumentException($"array size < {CASC_EKEY_SIZE}");
 
-            var fixedArray = array.AsMemory(0, CASC_EKEY_SIZE);
-            var pinnable = fixedArray.Pin().Pointer;
-            return FromPointer(pinnable);
-        }
-        
-        /// <summary>
-        /// Create <see cref="EKey"/> from a byte array
-        /// </summary>
-        /// <param name="array">Source array</param>
-        /// <returns></returns>
-        public static EKey FromPointer(void* array) {
-            return *(EKey*) array;
+            return MemoryMarshal.Read<EKey>(array);
         }
     }
 }

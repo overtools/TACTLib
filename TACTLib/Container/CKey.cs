@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using TACTLib.Helpers;
 using static TACTLib.Utils;
@@ -44,15 +45,11 @@ namespace TACTLib.Container {
             if (array.Length < CASC_CKEY_SIZE)
                 throw new ArgumentException($"array size < {CASC_CKEY_SIZE}");
 
-            var fixedArray = array.AsMemory(0, CASC_CKEY_SIZE);
-            var pinable = fixedArray.Pin().Pointer;
-            return *(CKey*) pinable;
+            return MemoryMarshal.Read<CKey>(array);
         }
 
         public EKey AsEKey() {
-            fixed(byte* ptr = Value) {
-                return EKey.FromPointer(ptr);
-            }
+            return Unsafe.As<CKey, EKey>(ref this);
         }
     }
 }
