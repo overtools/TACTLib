@@ -6,7 +6,7 @@ namespace TACTLib {
     public enum TACTProduct {
         /// <summary>fallback</summary>
         Unknown,
-        
+
         /// <summary>agent</summary>
         Agent,
 
@@ -60,7 +60,11 @@ namespace TACTLib {
         /// <param name="uid">Product uid</param>
         /// <returns>Product type</returns>
         /// <exception cref="NotImplementedException">Product is unknown</exception>
-        public static TACTProduct ProductFromUID(string uid) {
+        public static TACTProduct ProductFromUID(string? uid) {
+            if (string.IsNullOrEmpty(uid)) {
+                throw new ArgumentNullException(nameof(uid), "Cannot find TACT Product from null or empty product code");
+            }
+
             if (uid.StartsWith("hero"))
                 return TACTProduct.HeroesOfTheStorm;
 
@@ -101,8 +105,8 @@ namespace TACTLib {
                 return TACTProduct.BlackOps4;
             }
 
-            if(uid.StartsWith("odin")) {
-	            return TACTProduct.ModernWarfare;
+            if (uid.StartsWith("odin")) {
+                return TACTProduct.ModernWarfare;
             }
 
             throw new NotImplementedException($"Product \"{uid}\" is not supported.");
@@ -145,22 +149,22 @@ namespace TACTLib {
                 case TACTProduct.Catalog:
                     return "catalogs";
                 case TACTProduct.ModernWarfare:
-	                return "odin";
+                    return "odin";
                 default:
                     throw new ArgumentOutOfRangeException(nameof(product), product, null);
             }
         }
-        
+
         private static bool ScanExecutable(string path, string test) {
-            if(!Directory.Exists(path)) return false;
+            if (!Directory.Exists(path)) return false;
 
             var possibilities = new [] { test + ".exe", test + ".app", test };
             var flavors = (new [] { path }).Concat(Directory.EnumerateDirectories(path, "*", SearchOption.TopDirectoryOnly));
 
-            foreach(var flavor in flavors) {
-                foreach(var possibility in possibilities) {
+            foreach (var flavor in flavors) {
+                foreach (var possibility in possibilities) {
                     var combined = Path.Combine(flavor, possibility);
-                    if(File.Exists(combined) || Directory.Exists(combined)) {
+                    if (File.Exists(combined) || Directory.Exists(combined)) {
                         return true;
                     }
                 }
@@ -187,7 +191,7 @@ namespace TACTLib {
                 return TACTProduct.Warcraft3;
 
             if (Directory.Exists(Path.Combine(path, "Data")) || Directory.Exists(Path.Combine(path, "data"))) {
-                if (ScanExecutable(path, "Diablo III" )|| ScanExecutable(path, "Diablo III Launcher"))
+                if (ScanExecutable(path, "Diablo III") || ScanExecutable(path, "Diablo III Launcher"))
                     return TACTProduct.Diablo3;
 
                 if (ScanExecutable(path, "Diablo II Resurrected Launcher"))
@@ -211,11 +215,39 @@ namespace TACTLib {
                 if (ScanExecutable(path, "BlackOps4"))
                     return TACTProduct.BlackOps4;
 
-                if(ScanExecutable(path, "ModernWarfare"))
-	                return TACTProduct.ModernWarfare;
+                if (ScanExecutable(path, "ModernWarfare"))
+                    return TACTProduct.ModernWarfare;
             }
 
-            throw new NotImplementedException("unable to detect product. ensure that the archive directory is correct");  // hmm
+            throw new NotImplementedException("Unable to detect product from local install. Invalid directory?"); // hmm
+        }
+
+        public static TACTProduct TryGetProductFromLocalInstall(string path) {
+            try {
+                return ProductFromLocalInstall(path);
+            } catch {
+                return TACTProduct.Unknown;
+            }
+        }
+
+        public static string? TryGetUIDFromProduct(TACTProduct product) {
+            try {
+                return UIDFromProduct(product);
+            } catch {
+                return null;
+            }
+        }
+
+        public static TACTProduct TryGetProductFromUID(string? productCode) {
+            if (string.IsNullOrEmpty(productCode)) {
+                return TACTProduct.Unknown;
+            }
+
+            try {
+                return ProductFromUID(productCode);
+            } catch {
+                return TACTProduct.Unknown;
+            }
         }
     }
 }
