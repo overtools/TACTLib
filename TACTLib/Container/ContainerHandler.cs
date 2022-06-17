@@ -157,7 +157,11 @@ namespace TACTLib.Container {
 
             var size = indexEntry.EncodedSize;
             var buffer = new byte[size];
-            RandomAccess.Read(dataHandle, buffer, indexEntry.Offset);
+            var bytesRead = RandomAccess.Read(dataHandle, buffer, indexEntry.Offset);
+            if (bytesRead != buffer.Length)
+            {
+                throw new EndOfStreamException($"bytesRead != buffer.Length. {bytesRead} != {buffer.Length}");
+            }
             
             ref var fileHeader = ref MemoryMarshal.AsRef<DataHeader>(buffer);
             
