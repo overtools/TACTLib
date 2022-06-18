@@ -227,7 +227,7 @@ namespace TACTLib.Client {
             }
 
             if (CreateArgs.Online) {
-                return new BLTEStream(this, NetHandle!.OpenData(key), 0);
+                return new MemoryStream(BLTEDecoder.Decode(this, NetHandle!.OpenData(key)));
             }
 
             Debugger.Log(0, "ContainerHandler", $"Missing encoding entry for CKey {key.ToHexString()}\n");
@@ -241,7 +241,7 @@ namespace TACTLib.Client {
         /// <returns>Loaded file</returns>
         public Stream? OpenEKey(EKey key) {  // ekey = value of ckey in encoding table
             var stream = ContainerHandler?.OpenEKey(key);
-            return stream == null ? null : new BLTEStream(this, stream.Value.Array, stream.Value.Offset);
+            return stream == null ? null : new MemoryStream(BLTEDecoder.Decode(this, stream.Value.AsSpan()));
         }
 
         /// <summary>
@@ -272,7 +272,7 @@ namespace TACTLib.Client {
             }
 
             if (netMemStream == null) return null;
-            return new BLTEStream(this, netMemStream, 0);
+            return new MemoryStream(BLTEDecoder.Decode(this, netMemStream.AsSpan()));
         }
 
         public Stream? OpenConfigKey(string key) {
