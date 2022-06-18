@@ -18,11 +18,9 @@ namespace TACTLib.Core {
 
     /// <summary>BLTE encoded stream</summary>
     public class BLTEStream : Stream {
-        private static readonly Salsa20 s_salsa20 = new Salsa20();
-
-        private const byte EncryptionSalsa20 = 0x53;
-        private const byte EncryptionArc4 = 0x41;
         public const uint Magic = 0x45544C42;
+        private const byte EncryptionSalsa20 = (byte)'S';
+        private const byte EncryptionArc4 = (byte)'A';
         
         private readonly ClientHandler m_client;
 
@@ -90,10 +88,9 @@ namespace TACTLib.Core {
                 _reader.BaseStream.Position = oldPos;
             }*/
 
-            var numBlocks = 1;
+            int numBlocks;
 
-            if (headerSize > 0)
-            {
+            if (headerSize > 0) {
                 if (size < 12)
                     throw new BLTEDecoderException(Dump(), "not enough data: {0}", 12);
 
@@ -112,6 +109,8 @@ namespace TACTLib.Core {
 
                 if (size < frameHeaderSize)
                     throw new BLTEDecoderException(Dump(), "not enough data: {0}", frameHeaderSize);
+            } else {
+                numBlocks = 1;
             }
 
             // todo: if header: reverse endian inplace
@@ -219,22 +218,16 @@ namespace TACTLib.Core {
             if (encType == EncryptionSalsa20)
             {
                 var bodyData = data.Slice(dataOffset);
-                var bodyOffset = bodyData.Offset;
+                var bodySpan = bodyData.AsSpan();
+
+                var decryptor = new Salsa20(key, iv);
+                decryptor.Transform(bodySpan, bodySpan);
                 
-                using (var decryptor = s_salsa20.CreateDecryptor(key, iv.ToArray()))
-                {
-                    var decryptedCount = decryptor.TransformBlock(bodyData.Array!, bodyOffset, bodyData.Count, bodyData.Array!, bodyOffset);
-
-                    if (decryptedCount != bodyData.Count)
-                    {
-                        throw new InvalidDataException($"decryptedCount != bodyData.Count. {decryptedCount} != {bodyData.Count}");
-                    }
-                }
                 return bodyData;
+            } else
+            {
+                throw new BLTEDecoderException(Dump(), $"encType {encType} not implemented");
             }
-
-            // ARC4 ?
-            throw new BLTEDecoderException(Dump(), "encType ENCRYPTION_ARC4 not implemented");
         }
         
         private static void Decompress(ArraySegment<byte> data, Stream outputStream)
