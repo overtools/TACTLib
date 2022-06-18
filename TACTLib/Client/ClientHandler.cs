@@ -75,7 +75,9 @@ namespace TACTLib.Client {
                 if (!Directory.Exists(BasePath)) {
                     throw new FileNotFoundException($"Invalid archive directory. Directory {BasePath} does not exist. Please specify a valid directory.");
                 }
-
+            }
+            
+            if (createArgs.VersionSource == ClientCreateArgs.InstallMode.Local) {
                 try {
                     // if someone specified a flavor, try and see what flavor and fix the base path
                     var flavorInfoPath = Path.Combine(BasePath, ".flavor.info");
@@ -117,9 +119,12 @@ namespace TACTLib.Client {
                     }
 
                     // If product code is null this ProductFromUID will throw an exception
-                    ProductCode = installationInfo.Values.GetValueOrDefault("Product");
-                    Product = ProductHelpers.ProductFromUID(ProductCode);
-                    Logger.Info("Core", $"Found product \"{ProductCode}\" via {createArgs.InstallInfoFileName}");
+                    var foundProductCode = installationInfo.Values.GetValueOrDefault("Product");
+                    if (foundProductCode != ProductCode) {
+                        ProductCode = foundProductCode;
+                        Product = ProductHelpers.ProductFromUID(ProductCode);
+                        Logger.Info("Core", $"Found product \"{ProductCode}\" via {createArgs.InstallInfoFileName}");
+                    }
                 }
             }
 
