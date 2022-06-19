@@ -12,6 +12,7 @@ namespace TACTLib.Helpers {
             while (buffer.Length > 0)
             {
                 var read = stream.Read(buffer);
+                if (read == 0) throw new EndOfStreamException();
                 buffer = buffer.Slice(read);
             }
         }
