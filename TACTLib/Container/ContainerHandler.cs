@@ -258,21 +258,26 @@ namespace TACTLib.Container {
             /// <summary>Size of the encoded file</summary>
             public uint EncodedSize;
         }
-        
-        public struct IndexEntry {
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        public unsafe struct IndexEntry {
             /// <summary>Data file index</summary>
-            public int Index;
+            public ushort Index;
             
             /// <summary>Offset to data, in bytes</summary>
-            public int Offset;
+            public uint Offset;
             
             public uint EncodedSize;
 
-            public unsafe IndexEntry(EKeyEntry entry) {
+            public IndexEntry(EKeyEntry entry) {
                 var indexHigh = entry.FileOffsetBE[0];
                 var indexLow = Int32FromPtrBE(entry.FileOffsetBE + 1);
-                Index = indexHigh << 2 | (byte) ((indexLow & 0xC0000000) >> 30);
-                Offset = indexLow & 0x3FFFFFFF;
+
+                var indexInt = indexHigh << 2 | (byte)((indexLow & 0xC0000000) >> 30);
+                if (indexInt < 0 || indexInt > ushort.MaxValue) throw new InvalidDataException("this doesn't make sense");
+                
+                Index = (ushort)indexInt;
+                Offset = (uint)(indexLow & 0x3FFFFFFF);
 
                 EncodedSize = entry.EncodedSize;
             }
