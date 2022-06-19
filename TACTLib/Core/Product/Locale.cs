@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace TACTLib {
+namespace TACTLib.Core.Product {
     [Flags]
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public enum Locale : uint {

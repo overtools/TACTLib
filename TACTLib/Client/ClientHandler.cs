@@ -9,6 +9,7 @@ using TACTLib.Config;
 using TACTLib.Container;
 using TACTLib.Core;
 using TACTLib.Core.Product;
+using TACTLib.Core.VFS;
 using TACTLib.Helpers;
 using TACTLib.Protocol;
 using TACTLib.Protocol.NGDP;

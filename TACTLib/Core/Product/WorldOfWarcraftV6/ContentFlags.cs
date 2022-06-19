@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TACTLib.Container {
+namespace TACTLib.Core.Product.WorldOfWarcraftV6 {
     [Flags]
     public enum ContentFlags : uint {
         None = 0,

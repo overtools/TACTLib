@@ -9,7 +9,7 @@ using TACTLib.Container;
 using TACTLib.Helpers;
 using static TACTLib.Utils;
 
-namespace TACTLib.Core {
+namespace TACTLib.Core.VFS {
     public class VFSManifestReader {
         // ReSharper disable once InconsistentNaming
         public const uint TVFS_FOLDER_SIZE_MASK = 0x7FFFFFFF;

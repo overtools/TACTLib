@@ -102,13 +102,6 @@ namespace TACTLib.Core {
             
             /// <summary>Encoding Key. This is (trimmed) MD5 hash of the file header, containing MD5 hashes of all the logical blocks of the file</summary>
             public CKey EKey; // :kyaah:
-
-            /// <summary>Get content size</summary>
-            /// <returns>Content size</returns>
-            public int GetSize() {
-                fixed (byte* b = ContentSize)
-                    return Int32FromPtrBE(b);
-            }
         }
     }
 }

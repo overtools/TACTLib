@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using TACTLib.Client;
 
-namespace TACTLib.Core {
+namespace TACTLib.Core.VFS {
     public class VFSFileTree {
         private readonly ClientHandler _client;
 

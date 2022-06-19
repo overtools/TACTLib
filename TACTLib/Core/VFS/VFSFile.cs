@@ -1,6 +1,6 @@
 ﻿using TACTLib.Container;
 
-namespace TACTLib.Core {
+namespace TACTLib.Core.VFS {
     public class VFSFile {
         public string? Name;
         
