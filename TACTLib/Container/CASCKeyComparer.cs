@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace TACTLib.Container {
     public class CASCKeyComparer : IEqualityComparer<EKey>, IEqualityComparer<CKey> {
@@ -17,11 +18,9 @@ namespace TACTLib.Container {
         }
 
         private static unsafe bool Equals(byte* valA, byte* valB, int count) {
-            for (var i = 0; i < count; ++i)
-                if (valA[i] != valB[i])
-                    return false;
-
-            return true;
+            var spanA = new ReadOnlySpan<byte>(valA, count);
+            var spanB = new ReadOnlySpan<byte>(valB, count);
+            return spanA.SequenceEqual(spanB);
         }
         
         public unsafe int GetHashCode(EKey obj) {
