@@ -10,23 +10,12 @@ namespace TACTLibTest {
 
             Logger.RegisterBasic();
 
-            var ribbit = new RibbitClient(ClientCreateArgs.US_RIBBIT);
-            var summary = ribbit.GetSummary();
-            var ver = ribbit.GetVersions("pro");
-
-            //System.Diagnostics.Debugger.Break();
-            var clientHandler = new ClientHandler(args[0], new ClientCreateArgs());
-
-            Logger.Info("LOAD", clientHandler.Product.ToString("G"));
-
-            return;
-            /*
             ClientHandler onlineClientHandler = new ClientHandler(args[0], new ClientCreateArgs {
-                Mode = ClientCreateArgs.InstallMode.Ribbit,
-                OnlineProduct = TACTProduct.Overwatch
+                Product = "pro",
+                UseContainer = true,
+                LoadSupportKeyring = true
             });
             Logger.Info("LOAD", onlineClientHandler.Product.ToString("G"));
-            */
         }
     }
 }

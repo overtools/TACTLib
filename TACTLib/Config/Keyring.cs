@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Reflection;
-using TACTLib.Client;
 using static TACTLib.Utils;
 
 namespace TACTLib.Config {
@@ -13,7 +11,7 @@ namespace TACTLib.Config {
         /// </summary>
         public readonly Dictionary<ulong, byte[]> Keys;
 
-        public Keyring(ClientHandler client, Stream? stream) : base(client, stream) {
+        public Keyring(Stream? stream) : base(stream) {
             Keys = new Dictionary<ulong, byte[]>();
             foreach (var pair in Values) {
                 string reverseKey = pair.Key.Substring(pair.Key.Length - 16);
@@ -24,16 +22,6 @@ namespace TACTLib.Config {
                 
                 var keyID = ulong.Parse(keyIDString, NumberStyles.HexNumber);
                 Keys[keyID] = StringToByteArray(pair.Value[0]);
-                
-                //Console.Out.WriteLine(pair.Value[0]);
-            }
-
-
-            if (client.CreateArgs.LoadSupportKeyring) {
-                string keyFile = client.CreateArgs.SupportKeyring ?? Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $@"{client.Product:G}.keyring");
-                if (File.Exists(keyFile)) {
-                    LoadSupportFile(keyFile);
-                }
             }
         }
 

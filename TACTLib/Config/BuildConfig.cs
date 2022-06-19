@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using TACTLib.Client;
 using TACTLib.Container;
 
 namespace TACTLib.Config {
@@ -13,7 +12,7 @@ namespace TACTLib.Config {
         public FileRecord Encoding;
         public FileRecord? VFSRoot;
         
-        public BuildConfig(ClientHandler client, Stream? stream) : base(client, stream) {
+        public BuildConfig(Stream? stream) : base(stream) {
             GetFileRecord("root", out var root);
             GetFileRecord("install", out Install);
             GetFileRecord("patch", out Patch);

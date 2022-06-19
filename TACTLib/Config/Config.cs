@@ -2,13 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using TACTLib.Client;
 
 namespace TACTLib.Config {
     public class Config {
         public Dictionary<string, List<string>> Values;
 
-        protected Config(ClientHandler client, Stream? stream) {
+        protected Config(Stream? stream) {
             Values = new Dictionary<string, List<string>>();
             if (stream == null) return;
             
