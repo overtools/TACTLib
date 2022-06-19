@@ -75,7 +75,9 @@ namespace TACTLib.Client {
                 if (!Directory.Exists(BasePath)) {
                     throw new FileNotFoundException($"Invalid archive directory. Directory {BasePath} does not exist. Please specify a valid directory.");
                 }
-
+            }
+            
+            if (createArgs.VersionSource == ClientCreateArgs.InstallMode.Local) {
                 try {
                     // if someone specified a flavor, try and see what flavor and fix the base path
                     var flavorInfoPath = Path.Combine(BasePath, ".flavor.info");
@@ -117,9 +119,12 @@ namespace TACTLib.Client {
                     }
 
                     // If product code is null this ProductFromUID will throw an exception
-                    ProductCode = installationInfo.Values.GetValueOrDefault("Product");
-                    Product = ProductHelpers.ProductFromUID(ProductCode);
-                    Logger.Info("Core", $"Found product \"{ProductCode}\" via {createArgs.InstallInfoFileName}");
+                    var foundProductCode = installationInfo.Values.GetValueOrDefault("Product");
+                    if (foundProductCode != ProductCode) {
+                        ProductCode = foundProductCode;
+                        Product = ProductHelpers.ProductFromUID(ProductCode);
+                        Logger.Info("Core", $"Found product \"{ProductCode}\" via {createArgs.InstallInfoFileName}");
+                    }
                 }
             }
 
@@ -222,7 +227,7 @@ namespace TACTLib.Client {
             }
 
             if (CreateArgs.Online) {
-                return new BLTEStream(this, NetHandle!.OpenData(key));
+                return new MemoryStream(BLTEDecoder.Decode(this, NetHandle!.OpenData(key)));
             }
 
             Debugger.Log(0, "ContainerHandler", $"Missing encoding entry for CKey {key.ToHexString()}\n");
@@ -236,7 +241,7 @@ namespace TACTLib.Client {
         /// <returns>Loaded file</returns>
         public Stream? OpenEKey(EKey key) {  // ekey = value of ckey in encoding table
             var stream = ContainerHandler?.OpenEKey(key);
-            return stream == null ? null : new BLTEStream(this, stream);
+            return stream == null ? null : new MemoryStream(BLTEDecoder.Decode(this, stream.Value.AsSpan()));
         }
 
         /// <summary>
@@ -257,7 +262,7 @@ namespace TACTLib.Client {
 
             if (!CreateArgs.Online) return null;
 
-            Stream? netMemStream = null;
+            byte[]? netMemStream = null;
             if (m_cdnIdx!.CDNIndexData.TryGetValue(key, out var cdnIdx)) {
                 netMemStream = m_cdnIdx.OpenDataFile(cdnIdx);
             }
@@ -267,7 +272,7 @@ namespace TACTLib.Client {
             }
 
             if (netMemStream == null) return null;
-            return new BLTEStream(this, netMemStream);
+            return new MemoryStream(BLTEDecoder.Decode(this, netMemStream.AsSpan()));
         }
 
         public Stream? OpenConfigKey(string key) {

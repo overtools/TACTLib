@@ -300,10 +300,10 @@ namespace TACTLib.Core.Product.Tank {
                 var cmf = GetContentManifestForAsset(bundleGuid);
 
                 Bundle bundle;
-                Memory<byte> buf;
-                using (Stream bundleStream = cmf.OpenFile(m_client, bundleGuid)!) {
+                byte[] buf;
+                using (var bundleStream = cmf.OpenFile(m_client, bundleGuid)!) {
                     buf = new byte[(int) bundleStream.Length];
-                    bundleStream.Read(buf);
+                    bundleStream.DefinitelyRead(buf);
                     bundleStream.Position = 0;
 
                     //using (Stream outStr = File.OpenWrite($"{bundleGuid:X16}.bndl")) {

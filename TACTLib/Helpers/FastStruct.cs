@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 
 namespace TACTLib.Helpers {
-    public static class FastStruct<T> where T : struct 
+    public static class FastStruct<T> where T : unmanaged 
     {
         private delegate T LoadFromByteRefDelegate(ref byte source);
         private delegate void CopyMemoryDelegate(ref T dest, ref byte src, int count);
@@ -19,7 +19,7 @@ namespace TACTLib.Helpers {
             var methodLoadFromByteRef = new DynamicMethod("LoadFromByteRef<" + typeof(T).FullName + ">",
                 typeof(T), new[] { typeof(byte).MakeByRefType() }, typeof(FastStruct<T>));
 
-            ILGenerator generator = methodLoadFromByteRef.GetILGenerator();
+            var generator = methodLoadFromByteRef.GetILGenerator();
             generator.Emit(OpCodes.Ldarg_0);
             generator.Emit(OpCodes.Ldobj, typeof(T));
             generator.Emit(OpCodes.Ret);
@@ -32,7 +32,7 @@ namespace TACTLib.Helpers {
             var methodCopyMemory = new DynamicMethod("CopyMemory<" + typeof(T).FullName + ">",
                 typeof(void), new[] { typeof(T).MakeByRefType(), typeof(byte).MakeByRefType(), typeof(int) }, typeof(FastStruct<T>));
 
-            ILGenerator generator = methodCopyMemory.GetILGenerator();
+            var generator = methodCopyMemory.GetILGenerator();
             generator.Emit(OpCodes.Ldarg_0);
             generator.Emit(OpCodes.Ldarg_1);
             generator.Emit(OpCodes.Ldarg_2);
@@ -47,7 +47,7 @@ namespace TACTLib.Helpers {
             var methodCopyMemory = new DynamicMethod("RevCopyMemory<" + typeof(T).FullName + ">",
                 typeof(void), new[] { typeof(byte).MakeByRefType(), typeof(T).MakeByRefType(), typeof(int) }, typeof(FastStruct<T>));
 
-            ILGenerator generator = methodCopyMemory.GetILGenerator();
+            var generator = methodCopyMemory.GetILGenerator();
             generator.Emit(OpCodes.Ldarg_0);
             generator.Emit(OpCodes.Ldarg_1);
             generator.Emit(OpCodes.Ldarg_2);
@@ -64,7 +64,7 @@ namespace TACTLib.Helpers {
 
         public static T[] ReadArray(byte[] source)
         {
-            T[] buffer = new T[source.Length / Size];
+            var buffer = new T[source.Length / Size];
 
             if (source.Length > 0)
                 CopyMemory(ref buffer[0], ref source[0], source.Length);
@@ -74,7 +74,7 @@ namespace TACTLib.Helpers {
 
         public static byte[] StructureToArray(T source)
         {
-            byte[] buffer = new byte[Size];
+            var buffer = new byte[Size];
 
             if (buffer.Length > 0)
                 RevCopyMemory(ref buffer[0], ref source, buffer.Length);
@@ -84,7 +84,7 @@ namespace TACTLib.Helpers {
 
         public static byte[] WriteArray(T[] source)
         {
-            byte[] buffer = new byte[Size * source.Length];
+            var buffer = new byte[Size * source.Length];
 
             if (buffer.Length > 0)
                 RevCopyMemory(ref buffer[0], ref source[0], buffer.Length);
