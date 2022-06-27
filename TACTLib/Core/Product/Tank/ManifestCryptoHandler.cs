@@ -30,13 +30,6 @@ namespace TACTLib.Core.Product.Tank {
         private static readonly Dictionary<Type, Type> s_headerTypeToProviderType = new Dictionary<Type, Type>();
         private static bool _baseProvidersFound;
 
-        private static void FindProviders() {
-            foreach (var asm in AppDomain.CurrentDomain.GetAssemblies()) {
-                AddProviders<ICMFEncryptionProc>(asm, Providers);
-                AddProviders<ITRGEncryptionProc>(asm, Providers);
-            }
-        }
-
         public static void GenerateKeyIV<T>(string name, string manifestType, T header, uint buildVersion, TACTProduct product, out byte[] key, out byte[] iv) {
             if (!_baseProvidersFound) {
                 FindProviders();
@@ -111,14 +104,37 @@ namespace TACTLib.Core.Product.Tank {
             return digest;
         }
 
-        public static void AddProviders<T>(Assembly asm, Dictionary<TACTProduct, Dictionary<Type, Dictionary<uint, object>>> providers) {
-            if (!s_headerTypeToProviderType.ContainsKey(typeof(T))) {
-                var thisInterface = typeof(T).GetInterfaces().First(x =>
-                                                                      x.IsGenericType &&
-                                                                      x.GetGenericTypeDefinition() == typeof(IManifestCrypto<>));
-                s_headerTypeToProviderType[thisInterface.GetGenericArguments()[0]] = typeof(T);
+        public static Dictionary<Type, Dictionary<uint, object>> GetManifestProvidersForProduct(TACTProduct product) {
+            if (!Providers.TryGetValue(product, out var providerCryptoTypeMap)) {
+                providerCryptoTypeMap = new Dictionary<Type, Dictionary<uint, object>>();
+                Providers[product] = providerCryptoTypeMap;
+            }
+            return providerCryptoTypeMap;
+        }
+
+        public static Dictionary<uint, object> GetManifestProvidersForProductAndInterface(TACTProduct product, Type t) {
+            var providerCryptoTypeMap = GetManifestProvidersForProduct(product);
+
+            if (!providerCryptoTypeMap.TryGetValue(t, out var typeVersionMap)) {
+                typeVersionMap = new Dictionary<uint, object>();
+                providerCryptoTypeMap[t] = typeVersionMap;
+            }
+            return typeVersionMap;
+        }
+
+        public static void AddProvider(TACTProduct product, Type @interface, object provider, uint buildVersion) {
+            if (!s_headerTypeToProviderType.ContainsKey(@interface)) {
+                var thisInterface = @interface.GetInterfaces().First(x =>
+                                                                                 x.IsGenericType &&
+                                                                                 x.GetGenericTypeDefinition() == typeof(IManifestCrypto<>));
+                s_headerTypeToProviderType[thisInterface.GetGenericArguments()[0]] = @interface;
             }
 
+            var typeVersionMap = GetManifestProvidersForProductAndInterface(product, @interface);
+            typeVersionMap[buildVersion] = provider;
+        }
+
+        public static void AddProvidersFromAssembly<T>(Assembly asm) {
             List<Type> types = asm.GetTypes().Where(tt => tt != typeof(T) && typeof(T).IsAssignableFrom(tt)).ToList();
             foreach (Type tt in types) {
                 if (tt.IsInterface) continue;
@@ -126,26 +142,23 @@ namespace TACTLib.Core.Product.Tank {
                 var metadata = tt.GetCustomAttribute<ManifestCryptoAttribute>();
                 if (metadata == null) continue;
 
-                if (!providers.TryGetValue(metadata.Product, out var providerCryptoTypeMap)) {
-                    providerCryptoTypeMap = new Dictionary<Type, Dictionary<uint, object>>();
-                    providers[metadata.Product] = providerCryptoTypeMap;
-                }
-                if (!providerCryptoTypeMap.TryGetValue(typeof(T), out var typeVersionMap)) {
-                    typeVersionMap = new Dictionary<uint, object>();
-                    providerCryptoTypeMap[typeof(T)] = typeVersionMap;
-                }
-
                 var provider = (T)Activator.CreateInstance(tt)!;
                 if (metadata.AutoDetectVersion) {
-                    typeVersionMap[uint.Parse(tt.Name.Split('_')[1])] = provider;
+                    AddProvider(metadata.Product, typeof(T), provider, uint.Parse(tt.Name.Split('_')[1]));
                 }
 
                 if (metadata.BuildVersions != null) {
                     foreach (var buildVersion in metadata.BuildVersions) {
-                        typeVersionMap[buildVersion] = provider;
+                        AddProvider(metadata.Product, typeof(T), provider, buildVersion);
                     }
                 }
             }
+        }
+
+        private static void FindProviders() {
+            Assembly asm = typeof(ICMFEncryptionProc).Assembly;
+            AddProvidersFromAssembly<ICMFEncryptionProc>(asm);
+            AddProvidersFromAssembly<ITRGEncryptionProc>(asm);
         }
 
         [AttributeUsage(AttributeTargets.Class, Inherited = false)]
