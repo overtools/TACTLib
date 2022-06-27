@@ -12,7 +12,7 @@ namespace TACTLib.Container {
         // ReSharper disable once InconsistentNaming
         /// <summary>Encoding Key size, in bytes</summary>
         public const int CASC_EKEY_SIZE = 9;
-        
+
         /// <summary>Key value</summary>
         public fixed byte Value[CASC_EKEY_SIZE];
 
@@ -20,11 +20,11 @@ namespace TACTLib.Container {
         /// Convert to a hex string
         /// </summary>
         /// <returns>Hex stirng</returns>
-        public string ToHexString() {
+        public readonly string ToHexString() {
             fixed (byte* b = Value)
                 return PtrToSpan(b, CASC_EKEY_SIZE).ToHexString();
         }
-        
+
         /// <summary>
         /// Create from a hex string
         /// </summary>
@@ -33,7 +33,7 @@ namespace TACTLib.Container {
         public static EKey FromString(string @string) {
             return FromByteArray(StringToByteArray(@string));
         }
-        
+
         /// <summary>
         /// Create <see cref="EKey"/> from a byte array
         /// </summary>

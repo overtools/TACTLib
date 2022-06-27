@@ -13,7 +13,7 @@ namespace TACTLib.Container {
         // ReSharper disable once InconsistentNaming
         /// <summary>Content Key size, in bytes</summary>
         public const int CASC_CKEY_SIZE = 16;
-        
+
         /// <summary>Key value</summary>
         public fixed byte Value[CASC_CKEY_SIZE];
 
@@ -21,11 +21,11 @@ namespace TACTLib.Container {
         /// Convert to a hex string
         /// </summary>
         /// <returns>Hex stirng</returns>
-        public string ToHexString() {
+        public readonly string ToHexString() {
             fixed (byte* b = Value)
                 return PtrToSpan(b, CASC_CKEY_SIZE).ToHexString();
         }
-        
+
         /// <summary>
         /// Create from a hex string
         /// </summary>
