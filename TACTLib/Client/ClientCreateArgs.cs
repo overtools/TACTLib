@@ -42,7 +42,7 @@ namespace TACTLib.Client {
             set => m_useContainerBacking = value;
         }
 
-        private bool m_onlineBacking = true;
+        private bool m_onlineBacking;
         /// <summary>
         /// Download erroring files
         /// </summary>
@@ -99,5 +99,10 @@ namespace TACTLib.Client {
         /// Support keyring to load, if null it will attempt to load "{TACTProduct}.keyring"
         /// </summary>
         public string? SupportKeyring { get; set; } = null;
+
+        public string? OverrideBuildConfig { get; set; }
+        public string? OverrideVersionName { get; set; }
+
+        public ClientHandler? TryShareCDNIndexWithHandler { get; set; }
     }
 }

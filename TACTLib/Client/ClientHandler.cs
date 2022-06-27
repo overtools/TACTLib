@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using TACTLib.Agent;
@@ -77,7 +78,7 @@ namespace TACTLib.Client {
                     throw new FileNotFoundException($"Invalid archive directory. Directory {BasePath} does not exist. Please specify a valid directory.");
                 }
             }
-            
+
             if (createArgs.VersionSource == ClientCreateArgs.InstallMode.Local) {
                 try {
                     // if someone specified a flavor, try and see what flavor and fix the base path
@@ -171,6 +172,13 @@ namespace TACTLib.Client {
                 InstallationInfo = new InstallationInfo(NetHandle!, createArgs.OnlineRegion);
             }
 
+            if (createArgs.OverrideBuildConfig != null) {
+                InstallationInfo.Values["BuildKey"] = createArgs.OverrideBuildConfig;
+            }
+            if (createArgs.OverrideVersionName != null) {
+                InstallationInfo.Values["Version"] = createArgs.OverrideVersionName;
+            }
+
             // try to load the agent database and use the selected language if we don't already have one specified
             if (createArgs.UseContainer) {
                 AgentProduct = TryGetAgentDatabase();
@@ -207,13 +215,43 @@ namespace TACTLib.Client {
             }
 
             if (createArgs.Online) {
-                m_cdnIdx = CDNIndexHandler.Initialize(this);
+                if (CanShareCDNData(createArgs.TryShareCDNIndexWithHandler)) {
+                    m_cdnIdx = createArgs.TryShareCDNIndexWithHandler.m_cdnIdx;
+                } else {
+                    m_cdnIdx = CDNIndexHandler.Initialize(this);
+                }
             }
 
-            using (var _ = new PerfCounter("ProductHandlerFactory::GetHandler`TACTProduct`ClientHandler`Stream"))
-                ProductHandler = ProductHandlerFactory.GetHandler(Product, this, OpenCKey(ConfigHandler.BuildConfig.Root.ContentKey)!);
+            ProductHandler = CreateProductHandler();
 
             Logger.Info("CASC", "Ready");
+        }
+
+        public IProductHandler? CreateProductHandler() {
+            using var _ = new PerfCounter("ProductHandlerFactory::GetHandler`TACTProduct`ClientHandler`Stream");
+            return ProductHandlerFactory.GetHandler(Product, this, OpenCKey(ConfigHandler.BuildConfig.Root.ContentKey)!);
+        }
+
+        private bool CanShareCDNData([NotNullWhen(true)] ClientHandler? other) {
+            if (other == null) return false;
+
+            var cdnConfig = ConfigHandler.CDNConfig;
+            var otherCDNConfig = other.ConfigHandler.CDNConfig;
+
+            var archivesMatch = otherCDNConfig.Archives.Count == cdnConfig.Archives.Count;
+
+            if (archivesMatch) {
+                // count is same, compare all archive hashes
+                for (int i = 0; i < cdnConfig.Archives.Count; i++) {
+                    archivesMatch &= otherCDNConfig.Archives[i] == cdnConfig.Archives[i];
+                    if (!archivesMatch) break;
+                }
+            }
+
+            if (!archivesMatch) {
+                Logger.Warn("CDN", "Builds are using different CDN archives. Unable to share data");
+            }
+            return archivesMatch;
         }
 
         /// <summary>
