@@ -13,7 +13,7 @@ namespace TACTLib.Core
     {
         private const byte EncryptionSalsa20 = (byte)'S';
         private const byte EncryptionArc4 = (byte)'A';
-        
+
         private struct Header
         {
             public uint m_magic;
@@ -25,20 +25,18 @@ namespace TACTLib.Core
             public byte m_format;
             public UInt24BE m_blockCount;
         }
-        
+
         public static unsafe byte[] Decode(ClientHandler client, Span<byte> src) {
             if (src == null) throw new ArgumentNullException(nameof(src));
 
             var span = src;
-            
+
             ref var header = ref SpanHelper.ReadStruct<Header>(ref span);
             if (BitConverter.IsLittleEndian) header.m_frameHeaderSize = BinaryPrimitives.ReverseEndianness(header.m_frameHeaderSize);
-            
+
             if (header.m_magic != BLTEStream.Magic) throw new BLTEDecoderException(null, $"frame header mismatch (bad BLTE file) {header.m_magic:X}");
-            
-            Span<DataBlock> blocksStackMem = stackalloc DataBlock[1];
-            ReadOnlySpan<DataBlock> blocks = blocksStackMem; // assign to convince compile we aren't escaping the ref
-            
+
+            ReadOnlySpan<DataBlock> blocks = stackalloc DataBlock[0]; // assign to convince compile we aren't escaping the ref
             if (header.m_frameHeaderSize > 0)
             {
                 var frameHeaderSpan = SpanHelper.Advance(ref span, header.m_frameHeaderSize - 8);
@@ -60,15 +58,14 @@ namespace TACTLib.Core
                 blocks = blocksRW;
             } else
             {
-                blocksStackMem[0] = new DataBlock
+                Span<DataBlock> blocksRW = stackalloc DataBlock[1];
+                blocksRW[0] = new DataBlock
                 {
                     m_encodedSize = src.Length - 8,
                     m_decodedSize = src.Length - 8 - 1,
                     m_md5 = default,
                 };
-                blocks = blocksStackMem;
-                // blocks is already set to blocksStackMem
-                // can't do it here due normally due to ref escape
+                blocks = blocksRW;
             }
 
             var decodedSize = 0;
@@ -88,7 +85,7 @@ namespace TACTLib.Core
             }
             return output;
         }
-        
+
         private static void HandleDataBlock(ClientHandler client, Span<byte> inputData, Span<byte> outputData, int blockIndex)
         {
             switch ((char)SpanHelper.ReadByte(ref inputData)) {
@@ -109,7 +106,7 @@ namespace TACTLib.Core
                     throw new BLTEDecoderException(null, "unknown BLTE block type {0} (0x{1:X2})!", (char) inputData[0], inputData[0]);
             }
         }
-        
+
         private static Span<byte> Decrypt(ClientHandler client, Span<byte> data, int blockIndex)
         {
             var keyNameSize = SpanHelper.ReadByte(ref data);
@@ -118,7 +115,7 @@ namespace TACTLib.Core
 
             var keyNameData = SpanHelper.Advance(ref data, keyNameSize);
             var keyName = BinaryPrimitives.ReadUInt64LittleEndian(keyNameData);
-            
+
             var key = client.ConfigHandler.Keyring.GetKey(keyName);
             if (key == null)
                 throw new BLTEKeyException(keyName);
@@ -135,7 +132,7 @@ namespace TACTLib.Core
             // expand to 8 bytes
             Span<byte> iv = stackalloc byte[8];
             ivPart.CopyTo(iv);
-            
+
             // augment low dword of iv using blockIndex
             MemoryMarshal.AsRef<uint>(iv) ^= (uint)blockIndex;
             // alternative impl
@@ -151,7 +148,7 @@ namespace TACTLib.Core
                 throw new BLTEDecoderException(null, $"encType {encType} not implemented");
             }
         }
-        
+
         private static unsafe void Decompress(ReadOnlySpan<byte> input, Span<byte> output)
         {
             fixed (byte* pBuffer = &input[0]) {
