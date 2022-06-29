@@ -156,9 +156,10 @@ namespace TACTLib.Core.Product.Tank {
         }
 
         private static void FindProviders() {
-            Assembly asm = typeof(ICMFEncryptionProc).Assembly;
-            AddProvidersFromAssembly<ICMFEncryptionProc>(asm);
-            AddProvidersFromAssembly<ITRGEncryptionProc>(asm);
+            foreach (var asm in AppDomain.CurrentDomain.GetAssemblies()) {
+                AddProvidersFromAssembly<ICMFEncryptionProc>(asm);
+                AddProvidersFromAssembly<ITRGEncryptionProc>(asm);
+            }
         }
 
         [AttributeUsage(AttributeTargets.Class, Inherited = false)]
