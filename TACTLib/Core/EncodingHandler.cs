@@ -11,7 +11,7 @@ namespace TACTLib.Core {
     public class EncodingHandler {
         /// <summary>Encoding table</summary>
         public readonly Dictionary<CKey, CKeyEntry> Entries;
-        
+
         public unsafe EncodingHandler(ClientHandler client) {
             Entries = new Dictionary<CKey, CKeyEntry>(CASCKeyComparer.Instance);
 
@@ -25,10 +25,10 @@ namespace TACTLib.Core {
                     header.Version != 1) {
                     throw new InvalidDataException($"EncodingHandler: encoding header invalid (magic: {header.Signature:X4}, csize: {header.CKeySize}, esize: {header.EKeySize})");
                 }
-                
+
                 var cKeyPageSize = reader.ReadUInt16BE();  // in kilo bytes. e.g. 4 in here → 4096 byte pages (default)
                 var especPageSize = reader.ReadUInt16BE(); // same
-                
+
                 var cKeyPageCount = reader.ReadInt32BE();
                 var especPageCount = reader.ReadInt32BE();
 
@@ -48,14 +48,14 @@ namespace TACTLib.Core {
                     while (stream.Position <= pageEnd) {
                         var entry = reader.Read<CKeyEntry>();
                         if (entry.EKeyCount == 0) break;
-                    
+
                         stream.Position += (entry.EKeyCount - 1) * header.EKeySize;
-                        
+
                         if (Entries.ContainsKey(entry.CKey)) continue;
 
                         Entries[entry.CKey] = entry;
                     }
-                    
+
                     stream.Position = pageEnd; // just checking
                 }
             }
@@ -69,13 +69,13 @@ namespace TACTLib.Core {
         public struct Header {
             /// <summary>Encoding signature, "EN"</summary>
             public short Signature;
-            
+
             /// <summary>Version number</summary>
             public byte Version;
-            
+
             /// <summary>Number of bytes in a CKey</summary>
             public byte CKeySize;
-            
+
             /// <summary>Number of bytes in a EKey</summary>
             public byte EKeySize;
         }
@@ -84,24 +84,25 @@ namespace TACTLib.Core {
         public struct PageHeader {
             /// <summary>First key in the page</summary>
             public CKey FirstKey;
-            
+
             /// <summary>MD5 of the page</summary>
             public CKey PageHash;
         }
-        
+
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public unsafe struct CKeyEntry {
             /// <summary>Number of EKeys</summary>
             public ushort EKeyCount;
-            
+
             /// <summary>Content file size (big endian)</summary>
             public fixed byte ContentSize[4];
-            
+
             /// <summary>Content Key. MD5 of the file content.</summary>
             public CKey CKey;  // Content key. This is MD5 of the file content
-            
+
             /// <summary>Encoding Key. This is (trimmed) MD5 hash of the file header, containing MD5 hashes of all the logical blocks of the file</summary>
             public CKey EKey; // :kyaah:
+
         }
     }
 }
