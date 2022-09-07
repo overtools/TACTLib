@@ -19,13 +19,17 @@ namespace TACTLib.Config {
                 for (var i = 0; i < 8; ++i) {
                     keyIDString = reverseKey.Substring(i * 2, 2) + keyIDString;
                 }
-                
+
                 var keyID = ulong.Parse(keyIDString, NumberStyles.HexNumber);
                 Keys[keyID] = StringToByteArray(pair.Value[0]);
             }
         }
 
         public void AddKey(ulong keyName, byte[] value) {
+            if (keyName == 0) {
+                return;
+            }
+
             Keys[keyName] = value;
         }
 
@@ -34,14 +38,16 @@ namespace TACTLib.Config {
             using (TextReader r = new StreamReader(path)) {
                 string? line;
                 while ((line = r.ReadLine()) != null) {
-                    line = line.Trim().Split(new[] {'#'}, StringSplitOptions.None)[0].Trim();
+                    line = line.Trim().Split(new[] { '#' }, StringSplitOptions.None)[0].Trim();
                     if (string.IsNullOrWhiteSpace(line)) {
                         continue;
                     }
-                    string[] c = line.Split(new [] {' '}, StringSplitOptions.RemoveEmptyEntries);
+
+                    string[] c = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
                     if (c.Length < 2) {
                         continue;
                     }
+
                     var enabled = true;
                     if (c.Length >= 3) {
                         enabled = c[2] == "1";
@@ -55,7 +61,7 @@ namespace TACTLib.Config {
                     }
 
                     var keyByte = StringToByteArray(c[1]);
-                    
+
                     if (debugFileKeyCache.ContainsKey(v))
                         Logger.Debug("TACT", $"Duplicate key detected in keyring file. {c[0]}");
                     else
@@ -73,7 +79,7 @@ namespace TACTLib.Config {
                 }
             }
         }
-        
+
         /// <summary>
         /// Get encryption key value
         /// </summary>
