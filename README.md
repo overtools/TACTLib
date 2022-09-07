@@ -1,7 +1,6 @@
-# TACTLib 
+# TACTLib [![TACTLib](https://github.com/overtools/TACTLib/actions/workflows/dotnet.yml/badge.svg)](https://github.com/overtools/TACTLib/actions/workflows/dotnet.yml)
 
 ### License: MIT
-[![Build status](https://ci.appveyor.com/api/projects/status/7341i7g2qupdle6l?svg=true)](https://ci.appveyor.com/project/yukimono/tactlib)
 
 ----
 
