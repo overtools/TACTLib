@@ -5,11 +5,20 @@
     <TargetFramework>net6.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Version>1.0.0.0</Version>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Google.Protobuf" Version="3.21.5" />
   </ItemGroup>
+  <Target Name="SetSourceRevisionId" BeforeTargets="BeforeBuild">
+    <Exec Command="git describe --long --always --dirty --exclude=* --abbrev=8" ConsoleToMSBuild="True" IgnoreExitCode="False" ContinueOnError="True">
+      <Output PropertyName="SourceRevisionId" TaskParameter="ConsoleOutput" />
+    </Exec>
+    <OnError ExecuteTargets="SetSourceRevisionIdFallback" />
+  </Target>
+  <Target Name="SetSourceRevisionIdFallback">
+    <PropertyGroup>
+      <SourceRevisionId>develop</SourceRevisionId>
+    </PropertyGroup>
+  </Target>
 </Project>
