@@ -218,6 +218,7 @@ namespace TACTLib.Core.Product.Tank {
             }
 
             retry:
+            var ow2Fix = false;
             SkinHeader[] skins = new SkinHeader[m_header.m_skinCount];
             m_skins = new Dictionary<ulong, Skin>();
             using (var skinStream = new MemoryStream(skinBlock))
@@ -230,8 +231,8 @@ namespace TACTLib.Core.Product.Tank {
 
                     if (skinHeader.m_assetPtr == 0) continue;
                     // format changes without bumping the version is very cringe.
-                    if (version == 8 && (skinStart + skinHeader.m_assetPtr < 0 || skinStart + skinHeader.m_assetPtr >= skinBlock.Length)) {
-                        version = 9;
+                    if (version == 8 && !ow2Fix && (skinStart + skinHeader.m_assetPtr < 0 || skinStart + skinHeader.m_assetPtr >= skinBlock.Length)) {
+                        ow2Fix = true;
                         goto retry;
                     }
                     skinStream.Position = skinStart + skinHeader.m_assetPtr;
@@ -239,7 +240,7 @@ namespace TACTLib.Core.Product.Tank {
                     SkinAsset9[] assets;
                     if (version == 5) {
                         assets = skinReader.ReadArray<SkinAsset5>(skinHeader.m_assetCount).Select(x => x.Upgrade()).ToArray();
-                    } else if(version < 9) {
+                    } else if(version < 9 && !ow2Fix) {
                         assets = skinReader.ReadArray<SkinAsset6>(skinHeader.m_assetCount).Select(x => x.Upgrade()).ToArray();
                     } else {
                         assets = skinReader.ReadArray<SkinAsset9>(skinHeader.m_assetCount);
