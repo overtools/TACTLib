@@ -204,6 +204,9 @@ namespace TACTLib.Core.Product.Tank {
 
             SkinHeader[] skins = new SkinHeader[m_header.m_skinCount];
             m_skins = new Dictionary<ulong, Skin>();
+
+            // broken in ow2 - js
+            return;
             using (var skinStream = new MemoryStream(skinBlock))
             using (var skinReader = new BinaryReader(skinStream)) {
                 for (var i = 0; i < m_header.m_skinCount; i++) {
