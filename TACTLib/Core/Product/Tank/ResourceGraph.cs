@@ -106,7 +106,7 @@ namespace TACTLib.Core.Product.Tank {
             public ushort m_38;
         }
 
-        public record Skin(SkinHeader m_header, SkinAsset6[] m_assets);
+        public record Skin(SkinHeader m_header, SkinAsset9[] m_assets);
 
         [StructLayout(LayoutKind.Explicit, Pack = 1)]
         public struct Zach {
@@ -122,7 +122,7 @@ namespace TACTLib.Core.Product.Tank {
             public uint m_wtf1;
             public uint m_wtf2;
 
-            public SkinAsset6 Upgrade() => new SkinAsset6 {
+            public SkinAsset9 Upgrade() => new SkinAsset9 {
                 m_srcAsset = m_assetGUID,
                 m_wtf1 = m_wtf1,
                 m_wtf2 = m_wtf2
@@ -132,6 +132,21 @@ namespace TACTLib.Core.Product.Tank {
         public struct SkinAsset6 {
             public ulong m_srcAsset;
             public ulong m_destAsset;
+            public uint m_wtf1;
+            public uint m_wtf2;
+
+            public SkinAsset9 Upgrade() => new SkinAsset9 {
+                m_srcAsset = m_srcAsset,
+                m_destAsset = m_destAsset,
+                m_wtf1 = m_wtf1,
+                m_wtf2 = m_wtf2
+            };
+        }
+
+        public struct SkinAsset9 {
+            public ulong m_srcAsset;
+            public ulong m_destAsset;
+            public ulong m_wtf3;
             public uint m_wtf1;
             public uint m_wtf2;
         }
@@ -202,11 +217,9 @@ namespace TACTLib.Core.Product.Tank {
                 m_packages[package.m_assetGUID] = package;
             }
 
+            retry:
             SkinHeader[] skins = new SkinHeader[m_header.m_skinCount];
             m_skins = new Dictionary<ulong, Skin>();
-
-            // broken in ow2 - js
-            return;
             using (var skinStream = new MemoryStream(skinBlock))
             using (var skinReader = new BinaryReader(skinStream)) {
                 for (var i = 0; i < m_header.m_skinCount; i++) {
@@ -216,13 +229,20 @@ namespace TACTLib.Core.Product.Tank {
                     skins[i] = skinHeader;
 
                     if (skinHeader.m_assetPtr == 0) continue;
+                    // format changes without bumping the version is very cringe.
+                    if (version == 8 && (skinStart + skinHeader.m_assetPtr < 0 || skinStart + skinHeader.m_assetPtr >= skinBlock.Length)) {
+                        version = 9;
+                        goto retry;
+                    }
                     skinStream.Position = skinStart + skinHeader.m_assetPtr;
 
-                    SkinAsset6[] assets;
+                    SkinAsset9[] assets;
                     if (version == 5) {
                         assets = skinReader.ReadArray<SkinAsset5>(skinHeader.m_assetCount).Select(x => x.Upgrade()).ToArray();
+                    } else if(version < 9) {
+                        assets = skinReader.ReadArray<SkinAsset6>(skinHeader.m_assetCount).Select(x => x.Upgrade()).ToArray();
                     } else {
-                        assets = skinReader.ReadArray<SkinAsset6>(skinHeader.m_assetCount);
+                        assets = skinReader.ReadArray<SkinAsset9>(skinHeader.m_assetCount);
                     }
                     
                     m_skins[skinHeader.m_skinGUID] = new Skin(skinHeader, assets);

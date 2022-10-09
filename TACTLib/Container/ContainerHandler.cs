@@ -50,10 +50,8 @@ namespace TACTLib.Container {
 
             m_dataFiles = new Dictionary<int, SafeFileHandle>();
             
-            for (var i = 0; i < 100; i++) {
-                var path = GetDataFilePath(i);
-                if (!File.Exists(path)) continue;
-
+            foreach (var (i, path) in GetDataFilePaths()) {
+                Logger.Debug("CASC", $"Opening data file {i} at {path}");
                 m_dataFiles.Add(i, File.OpenHandle(path, FileMode.Open, FileAccess.Read, FileShare.Read));
             }
         }
@@ -143,6 +141,15 @@ namespace TACTLib.Container {
                 return null;
             }
             return OpenIndexEntry(indexEntry);
+        }
+
+        private IEnumerable<(int Index, string Path)> GetDataFilePaths() {
+            foreach (var path in Directory.EnumerateFiles(Path.Combine(ContainerDirectory, DataDirectory), $"data.*{_client.CreateArgs.ExtraFileEnding}")) {
+                var number = path[^(3 + (_client.CreateArgs.ExtraFileEnding?.Length ?? 0))..];
+                if(int.TryParse(number, NumberStyles.None, CultureInfo.InvariantCulture, out var index)) {
+                    yield return (index, path);
+                }
+            }
         }
 
         /// <summary>
