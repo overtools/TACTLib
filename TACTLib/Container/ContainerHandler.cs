@@ -50,8 +50,7 @@ namespace TACTLib.Container {
 
             m_dataFiles = new Dictionary<int, SafeFileHandle>();
             
-            for (var i = 0; i < 50; i++)
-            {
+            for (var i = 0; i < 100; i++) {
                 var path = GetDataFilePath(i);
                 if (!File.Exists(path)) continue;
 
