@@ -45,7 +45,7 @@ namespace TACTLib.Core.Product.Tank {
                 m_footerMagic = m_footerMagic
             };
         }
-        
+
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
         public struct TRGHeader { // version 7
             public uint m_0; // 0
@@ -67,17 +67,17 @@ namespace TACTLib.Core.Product.Tank {
 
             public const uint UNENCRYPTED_MAGIC = 0x747267;
             public const uint ENCRYPTED_MAGIC = 0x677274;
-            
+
             public uint GetNonEncryptedMagic()
             {
                 return (uint)(UNENCRYPTED_MAGIC | (GetVersion() << 24));
             }
-            
+
             public byte GetVersion()
             {
                 return IsEncrypted() ? (byte)(m_footerMagic & 0x000000FF) : (byte)((m_footerMagic & 0xFF000000) >> 24);
             }
-            
+
             public bool IsEncrypted()
             {
                 return (m_footerMagic >> 8) == ENCRYPTED_MAGIC;
@@ -93,7 +93,7 @@ namespace TACTLib.Core.Product.Tank {
             public uint m_24;
             public byte m_28;
         }
-        
+
         public struct SkinHeader {
             public long m_assetPtr;
             public ulong m_skinGUID;
@@ -106,36 +106,36 @@ namespace TACTLib.Core.Product.Tank {
             public ushort m_38;
         }
 
-        public record Skin(SkinHeader m_header, SkinAsset9[] m_assets);
+        public record Skin(SkinHeader m_header, SkinAsset8B[] m_assets);
 
         [StructLayout(LayoutKind.Explicit, Pack = 1)]
         public struct Zach {
             [FieldOffset(0)] public ulong m_assetGUID;
             [FieldOffset(0)] public uint m_ref;
-            
+
             [FieldOffset(8)] public byte m_8;
             [FieldOffset(9)] public byte m_9;
         }
-        
+
         public struct SkinAsset5 {
             public ulong m_assetGUID;
             public uint m_wtf1;
             public uint m_wtf2;
 
-            public SkinAsset9 Upgrade() => new SkinAsset9 {
+            public SkinAsset8B Upgrade() => new SkinAsset8B {
                 m_srcAsset = m_assetGUID,
                 m_wtf1 = m_wtf1,
                 m_wtf2 = m_wtf2
             };
         }
-        
+
         public struct SkinAsset6 {
             public ulong m_srcAsset;
             public ulong m_destAsset;
             public uint m_wtf1;
             public uint m_wtf2;
 
-            public SkinAsset9 Upgrade() => new SkinAsset9 {
+            public SkinAsset8B Upgrade() => new SkinAsset8B {
                 m_srcAsset = m_srcAsset,
                 m_destAsset = m_destAsset,
                 m_wtf1 = m_wtf1,
@@ -143,7 +143,7 @@ namespace TACTLib.Core.Product.Tank {
             };
         }
 
-        public struct SkinAsset9 {
+        public struct SkinAsset8B {
             public ulong m_srcAsset;
             public ulong m_destAsset;
             public ulong m_wtf3;
@@ -156,7 +156,7 @@ namespace TACTLib.Core.Product.Tank {
         public Dictionary<ulong, Skin> m_skins;
         public byte[] m_graphBlock;
         public byte[]? m_typeBundleIndexBlock;
-        
+
         public static bool IsPre152(TRGHeader header)
         {
             return header.m_buildVersion < ProductHandler_Tank.VERSION_152_PTR || header.m_buildVersion == 72604; // 72604 = 1.51 on proc2
@@ -169,7 +169,7 @@ namespace TACTLib.Core.Product.Tank {
                     stream.Position = 0;
                     m_header = reader.Read<TRGHeader6>().Upgrade();
                 }
-                
+
                 var version = m_header.GetVersion();
                 if (version != 5 && version != 6 && version != 7 && version != 8) {
                     throw new InvalidDataException($"unable to parse TRG. invalid version {version}, expected 5, 6, 7 or 8");
@@ -192,7 +192,7 @@ namespace TACTLib.Core.Product.Tank {
 
         private void ParseBlocks(BinaryReader reader, string name) {
             var version = m_header.GetVersion();
-            
+
             byte[] packageBlock = reader.ReadBytes(m_header.m_packageBlockSize);
             byte[] skinBlock = reader.ReadBytes(m_header.m_skinBlockSize);
             m_graphBlock = reader.ReadBytes(m_header.m_graphBlockSize);
@@ -200,7 +200,7 @@ namespace TACTLib.Core.Product.Tank {
                 m_typeBundleIndexBlock = reader.ReadBytes(m_header.m_typeBundleIndexBlockSize);
                 //File.WriteAllBytes(name + "_typeBundleIndex", m_typeBundleIndexBlock);
             }
-            
+
             // todo: don't waste time and memory by loading into byte arrays
 
             //File.WriteAllBytes(name + "_package", packageBlockTest);
@@ -217,8 +217,8 @@ namespace TACTLib.Core.Product.Tank {
                 m_packages[package.m_assetGUID] = package;
             }
 
-            retry:
             var ow2Fix = false;
+            retry:
             SkinHeader[] skins = new SkinHeader[m_header.m_skinCount];
             m_skins = new Dictionary<ulong, Skin>();
             using (var skinStream = new MemoryStream(skinBlock))
@@ -237,15 +237,15 @@ namespace TACTLib.Core.Product.Tank {
                     }
                     skinStream.Position = skinStart + skinHeader.m_assetPtr;
 
-                    SkinAsset9[] assets;
+                    SkinAsset8B[] assets;
                     if (version == 5) {
                         assets = skinReader.ReadArray<SkinAsset5>(skinHeader.m_assetCount).Select(x => x.Upgrade()).ToArray();
                     } else if(version < 9 && !ow2Fix) {
                         assets = skinReader.ReadArray<SkinAsset6>(skinHeader.m_assetCount).Select(x => x.Upgrade()).ToArray();
                     } else {
-                        assets = skinReader.ReadArray<SkinAsset9>(skinHeader.m_assetCount);
+                        assets = skinReader.ReadArray<SkinAsset8B>(skinHeader.m_assetCount);
                     }
-                    
+
                     m_skins[skinHeader.m_skinGUID] = new Skin(skinHeader, assets);
                 }
             }
