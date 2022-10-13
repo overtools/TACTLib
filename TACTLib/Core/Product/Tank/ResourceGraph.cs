@@ -146,7 +146,7 @@ namespace TACTLib.Core.Product.Tank {
         public struct SkinAsset8B {
             public ulong m_srcAsset;
             public ulong m_destAsset;
-            public ulong m_wtf3;
+            public ulong m_addedWithoutBumpingVersionNumberWhy;
             public uint m_wtf1;
             public uint m_wtf2;
         }
@@ -217,8 +217,9 @@ namespace TACTLib.Core.Product.Tank {
                 m_packages[package.m_assetGUID] = package;
             }
 
-            var ow2Fix = false;
-            retry:
+            var ver8ButWithExtraDataWhoDidThis = version == 8 && m_header.m_buildVersion >= 105760;
+            // ow2: added random crap without bumping version. thanks blizz
+
             SkinHeader[] skins = new SkinHeader[m_header.m_skinCount];
             m_skins = new Dictionary<ulong, Skin>();
             using (var skinStream = new MemoryStream(skinBlock))
@@ -230,20 +231,15 @@ namespace TACTLib.Core.Product.Tank {
                     skins[i] = skinHeader;
 
                     if (skinHeader.m_assetPtr == 0) continue;
-                    // format changes without bumping the version is very cringe.
-                    if (version == 8 && !ow2Fix && (skinStart + skinHeader.m_assetPtr < 0 || skinStart + skinHeader.m_assetPtr >= skinBlock.Length)) {
-                        ow2Fix = true;
-                        goto retry;
-                    }
                     skinStream.Position = skinStart + skinHeader.m_assetPtr;
 
                     SkinAsset8B[] assets;
                     if (version == 5) {
                         assets = skinReader.ReadArray<SkinAsset5>(skinHeader.m_assetCount).Select(x => x.Upgrade()).ToArray();
-                    } else if(version < 9 && !ow2Fix) {
-                        assets = skinReader.ReadArray<SkinAsset6>(skinHeader.m_assetCount).Select(x => x.Upgrade()).ToArray();
-                    } else {
+                    } else if (ver8ButWithExtraDataWhoDidThis) {
                         assets = skinReader.ReadArray<SkinAsset8B>(skinHeader.m_assetCount);
+                    } else {
+                        assets = skinReader.ReadArray<SkinAsset6>(skinHeader.m_assetCount).Select(x => x.Upgrade()).ToArray();
                     }
 
                     m_skins[skinHeader.m_skinGUID] = new Skin(skinHeader, assets);
