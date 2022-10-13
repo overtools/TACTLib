@@ -23,13 +23,13 @@ namespace TACTLib.Container {
 
         /// <summary>Data directory name</summary>
         public const string DataDirectory = "data";
-        
+
         /// <summary>Config directory name</summary>
         public const string ConfigDirectory = "config";
-        
+
         /// <summary>Indices directory name</summary>
         public const string CDNIndicesDirectory = "indices";
-        
+
         /// <summary>Patch directory name</summary>
         public const string PatchDirectory = "patch";
 
@@ -49,9 +49,9 @@ namespace TACTLib.Container {
             LoadIndexFiles();
 
             m_dataFiles = new Dictionary<int, SafeFileHandle>();
-            
+
             foreach (var (i, path) in GetDataFilePaths()) {
-                Logger.Debug("CASC", $"Opening data file {i} at {path}");
+                //Logger.Debug("CASC", $"Opening data file {i} at {path}");
                 m_dataFiles.Add(i, File.OpenHandle(path, FileMode.Open, FileAccess.Read, FileShare.Read));
             }
         }
@@ -89,7 +89,7 @@ namespace TACTLib.Container {
         {
             using Stream stream = File.OpenRead(file);
             using BinaryReader reader = new BinaryReader(stream);
-            
+
             var header = reader.Read<IndexHeaderV2>();
             if (header.IndexVersion != 0x07 ||
                 header.BucketIndex != bucketIndex ||
@@ -111,7 +111,7 @@ namespace TACTLib.Container {
                     continue;
                 }
 
-                var indexEntry = new IndexEntry(entry); 
+                var indexEntry = new IndexEntry(entry);
 
                 if (!dataFileSizes.TryGetValue(indexEntry.Index, out var dataFileSize)) {
                     var path = GetDataFilePath(indexEntry.Index);
@@ -125,7 +125,7 @@ namespace TACTLib.Container {
                 if (indexEntry.Offset >= dataFileSize) {
                     continue;
                 }
-                    
+
                 IndexEntries[entry.EKey] = indexEntry;
             }
         }
@@ -168,9 +168,9 @@ namespace TACTLib.Container {
             {
                 throw new EndOfStreamException($"bytesRead != buffer.Length. {bytesRead} != {buffer.Length}");
             }
-            
+
             ref var fileHeader = ref MemoryMarshal.AsRef<DataHeader>(buffer);
-            
+
             if (fileHeader.m_size != indexEntry.EncodedSize) {
                 throw new InvalidDataException($"fileHeader.m_size != indexEntry.EncodedSize. {fileHeader.m_size} != {indexEntry.EncodedSize}");
             }
@@ -192,7 +192,7 @@ namespace TACTLib.Container {
         private string GetDataFilePath(int index) {
             return Path.Combine(ContainerDirectory, DataDirectory, $"data.{index:D3}") + _client.CreateArgs.ExtraFileEnding;
         }
-        
+
         /// <summary>
         /// Get container directory from product type
         /// </summary>
@@ -215,7 +215,7 @@ namespace TACTLib.Container {
 
             if (product == TACTProduct.Overwatch)
                 return Path.Combine("data", "casc");
-            
+
             throw new NotImplementedException($"Product \"{product}\" is not supported.");
         }
 
@@ -246,7 +246,7 @@ namespace TACTLib.Container {
             /// Block size, in bytes
             /// </summary>
             public int BlockSize;
-            
+
             /// <summary>
             /// hashlittle2 on the following BlockSize bytes of the file with an initial value of 0 for pb and pc.
             /// </summary>
@@ -257,10 +257,10 @@ namespace TACTLib.Container {
         public unsafe struct EKeyEntry {
             /// <summary>Encoding Key</summary>
             public EKey EKey;                   // The first 9 bytes of the encoded key
-            
+
             /// <summary>Index of data file and offset within (big endian)</summary>
             public fixed byte FileOffsetBE[5];
-            
+
             /// <summary>Size of the encoded file</summary>
             public uint EncodedSize;
         }
@@ -269,10 +269,10 @@ namespace TACTLib.Container {
         public unsafe struct IndexEntry {
             /// <summary>Data file index</summary>
             public ushort Index;
-            
+
             /// <summary>Offset to data, in bytes</summary>
             public uint Offset;
-            
+
             public uint EncodedSize;
 
             public IndexEntry(EKeyEntry entry) {
@@ -281,7 +281,7 @@ namespace TACTLib.Container {
 
                 var indexInt = indexHigh << 2 | (byte)((indexLow & 0xC0000000) >> 30);
                 if (indexInt < 0 || indexInt > ushort.MaxValue) throw new InvalidDataException("this doesn't make sense");
-                
+
                 Index = (ushort)indexInt;
                 Offset = (uint)(indexLow & 0x3FFFFFFF);
 
