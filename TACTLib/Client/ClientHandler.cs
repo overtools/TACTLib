@@ -11,6 +11,7 @@ using TACTLib.Container;
 using TACTLib.Core;
 using TACTLib.Core.Product;
 using TACTLib.Core.VFS;
+using TACTLib.Exceptions;
 using TACTLib.Helpers;
 using TACTLib.Protocol;
 using TACTLib.Protocol.NGDP;
@@ -295,6 +296,7 @@ namespace TACTLib.Client {
                     if (cascBlte != null) return cascBlte;
                 } catch (Exception e) {
                     if (!CreateArgs.Online) throw;
+                    if (e is BLTEKeyException) throw;
                     Logger.Warn("CASC", $"Unable to open {key.ToHexString()} from CASC. Will try to download. Exception: {e}");
                 }
             }
