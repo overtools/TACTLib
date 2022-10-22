@@ -12,10 +12,13 @@ namespace TACTLib.Core {
         /// <summary>Encoding table</summary>
         public readonly Dictionary<CKey, CKeyEntry> Entries;
 
-        public unsafe EncodingHandler(ClientHandler client) {
-            Entries = new Dictionary<CKey, CKeyEntry>(CASCKeyComparer.Instance);
+        public EncodingHandler(ClientHandler client) : this(client,
+            client.ConfigHandler.BuildConfig.Encoding.EncodingKey)
+        {
+        }
 
-            var key = client.ConfigHandler.BuildConfig.Encoding.EncodingKey;
+        public unsafe EncodingHandler(ClientHandler client, CKey key) {
+            Entries = new Dictionary<CKey, CKeyEntry>(CASCKeyComparer.Instance);
 
             using (var stream = client.CreateArgs.VersionSource > ClientCreateArgs.InstallMode.Local ? client.OpenCKey(key)! : client.OpenEKey(key.AsEKey())!)
             using (var reader = new BinaryReader(stream)) {
