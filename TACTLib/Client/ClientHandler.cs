@@ -69,8 +69,18 @@ namespace TACTLib.Client {
         public readonly CDNIndexHandler? m_cdnIdx;
 
         public ClientHandler(string? basePath, ClientCreateArgs createArgs) {
-            BasePath = basePath ?? ""; // should it be empty string? lol
             CreateArgs = createArgs;
+
+            if (basePath == "?autodetect") {
+                using var _ = new PerfCounter("AgentDatabase::ctor`string`bool");
+                try {
+                    basePath = new AgentDatabase().Data.ProductInstall.FirstOrDefault(x => x.ProductCode == CreateArgs.Product)?.Settings?.InstallPath;
+                } catch {
+                    basePath = "";
+                }
+            }
+
+            BasePath = basePath ?? ""; // should it be empty string? lol
             ProductCode = createArgs.Product;
 
             // If we are using a container OR if InstallMode == Local
