@@ -96,6 +96,16 @@ namespace TACTLib.Client {
         public bool LoadSupportKeyring { get; set; } = true;
 
         /// <summary>
+        /// When true, it will load a support keyring remotely from the url set in <see cref="RemoteKeyringUrl"/>
+        /// </summary>
+        public bool LoadSupportKeyringFromRemote { get; set; } = true;
+
+        /// <summary>
+        /// URL to load the remote keyring from if <see cref="LoadSupportKeyringFromRemote"/> is true
+        /// </summary>
+        public string? RemoteKeyringUrl { get; set; }
+
+        /// <summary>
         /// Support keyring to load, if null it will attempt to load "{TACTProduct}.keyring"
         /// </summary>
         public string? SupportKeyring { get; set; } = null;

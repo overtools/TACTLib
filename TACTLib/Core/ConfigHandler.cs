@@ -22,23 +22,27 @@ namespace TACTLib.Core {
 
             if (buildConfig == null) throw new NullReferenceException(nameof(buildConfig));
             BuildConfig = buildConfig;
-            
+
             if (cdnConfig == null) throw new NullReferenceException(nameof(cdnConfig));
             CDNConfig = cdnConfig;
-            
+
             if (keyring == null) {
                 keyring = new Keyring(null);
             }
             Keyring = keyring;
-            
+
             if (client.CreateArgs.LoadSupportKeyring) {
                 var keyFileName = client.CreateArgs.SupportKeyring ?? $@"{client.Product:G}.keyring";
                 var keyFile = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), keyFileName);
                 if (File.Exists(keyFile)) {
-                    Keyring.LoadSupportFile(keyFile);
+                    Keyring.LoadSupportFileFromDisk(keyFile);
                 } else {
                     Logger.Warn("TACT", $"Keyring file {keyFileName} not found");
                 }
+            }
+
+            if (client.CreateArgs.LoadSupportKeyringFromRemote && !string.IsNullOrEmpty(client.CreateArgs.RemoteKeyringUrl)) {
+                Keyring.LoadSupportFileFromRemote(client.CreateArgs.RemoteKeyringUrl);
             }
         }
 

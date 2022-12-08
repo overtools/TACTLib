@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Net.Http;
 using static TACTLib.Utils;
 
 namespace TACTLib.Config {
@@ -33,9 +34,31 @@ namespace TACTLib.Config {
             Keys[keyName] = value;
         }
 
-        public void LoadSupportFile(string path) {
+        public void LoadSupportFileFromDisk(string filePath) {
+            try {
+                using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+                LoadSupportFile(fileStream);
+            } catch (Exception ex) {
+                Logger.Warn("TACT", $"Failed to loading keyring from disk: {ex.Message}");
+            }
+        }
+
+        public void LoadSupportFileFromRemote(string url) {
+            try {
+                Logger.Debug("TACT", $"Loading keyring from remote: {url}");
+                var response = new HttpClient().Send(new HttpRequestMessage(HttpMethod.Get, url));
+                response.EnsureSuccessStatusCode();
+
+                using var stream = response.Content.ReadAsStream();
+                LoadSupportFile(stream);
+            } catch (Exception ex) {
+                Logger.Warn("TACT", $"Failed to load keyring from remote: {ex.Message}");
+            }
+        }
+
+        public void LoadSupportFile(Stream stream) {
             var debugFileKeyCache = new Dictionary<ulong, byte[]>();
-            using (TextReader r = new StreamReader(path)) {
+            using (TextReader r = new StreamReader(stream)) {
                 string? line;
                 while ((line = r.ReadLine()) != null) {
                     line = line.Trim().Split(new[] { '#' }, StringSplitOptions.None)[0].Trim();
@@ -89,6 +112,5 @@ namespace TACTLib.Config {
             Keys.TryGetValue(keyID, out var key);
             return key;
         }
-
     }
 }
