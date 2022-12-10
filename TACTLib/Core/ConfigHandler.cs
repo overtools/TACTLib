@@ -30,20 +30,7 @@ namespace TACTLib.Core {
                 keyring = new Keyring(null);
             }
             Keyring = keyring;
-
-            if (client.CreateArgs.LoadSupportKeyring) {
-                var keyFileName = client.CreateArgs.SupportKeyring ?? $@"{client.Product:G}.keyring";
-                var keyFile = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), keyFileName);
-                if (File.Exists(keyFile)) {
-                    Keyring.LoadSupportFileFromDisk(keyFile);
-                } else {
-                    Logger.Warn("TACT", $"Keyring file {keyFileName} not found");
-                }
-            }
-
-            if (client.CreateArgs.LoadSupportKeyringFromRemote && !string.IsNullOrEmpty(client.CreateArgs.RemoteKeyringUrl)) {
-                Keyring.LoadSupportFileFromRemote(client.CreateArgs.RemoteKeyringUrl);
-            }
+            Keyring.LoadSupportKeyrings(client);
         }
 
         private void LoadFromInstallationInfo<T>(ClientHandler client, string name, out T? @out) where T : Config.Config {

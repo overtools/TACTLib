@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net.Http;
+using System.Reflection;
+using TACTLib.Client;
 using static TACTLib.Utils;
 
 namespace TACTLib.Config {
@@ -34,73 +36,132 @@ namespace TACTLib.Config {
             Keys[keyName] = value;
         }
 
-        public void LoadSupportFileFromDisk(string filePath) {
+        private static Dictionary<ulong, byte[]?> ParseSupportFile(Stream stream) {
+            var keys = new Dictionary<ulong, byte[]?>();
+
+            using TextReader r = new StreamReader(stream);
+            string? line;
+            while ((line = r.ReadLine()) != null) {
+                line = line.Trim().Split(new[] { '#' }, StringSplitOptions.None)[0].Trim();
+                if (string.IsNullOrWhiteSpace(line)) {
+                    continue;
+                }
+
+                string[] c = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                if (c.Length < 2) {
+                    continue;
+                }
+
+                var enabled = true;
+                if (c.Length >= 3) {
+                    enabled = c[2] == "1";
+                }
+
+                ulong v;
+                try {
+                    v = ulong.Parse(c[0], NumberStyles.HexNumber);
+                } catch {
+                    continue;
+                }
+
+                var keyByte = StringToByteArray(c[1]);
+
+                if (keys.ContainsKey(v))
+                    Logger.Debug("TACT", $"Duplicate key detected in keyring file. {c[0]}");
+
+                if (enabled) {
+                    keys[v] = keyByte;
+                } else {
+                    keys[v] = null;
+                }
+            }
+
+            return keys;
+        }
+
+        private static Dictionary<ulong, byte[]?>? LoadSupportFileFromDisk(string filePath) {
+            if (!File.Exists(filePath)) {
+                Logger.Warn("TACT", $"Keyring file {filePath} not found");
+                return null;
+            }
+
             try {
                 using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-                LoadSupportFile(fileStream);
+                return ParseSupportFile(fileStream);
             } catch (Exception ex) {
                 Logger.Warn("TACT", $"Failed to loading keyring from disk: {ex.Message}");
             }
+            return null;
         }
 
-        public void LoadSupportFileFromRemote(string url) {
+        private static Dictionary<ulong, byte[]?>? LoadSupportFileFromRemote(string url) {
             try {
                 Logger.Debug("TACT", $"Loading keyring from remote: {url}");
                 var response = new HttpClient().Send(new HttpRequestMessage(HttpMethod.Get, url));
                 response.EnsureSuccessStatusCode();
 
                 using var stream = response.Content.ReadAsStream();
-                LoadSupportFile(stream);
+                return ParseSupportFile(stream);
             } catch (Exception ex) {
                 Logger.Warn("TACT", $"Failed to load keyring from remote: {ex.Message}");
+                Logger.Warn("TACT", "Some content may be unavailable");
             }
+            return null;
         }
 
-        public void LoadSupportFile(Stream stream) {
-            var debugFileKeyCache = new Dictionary<ulong, byte[]>();
-            using (TextReader r = new StreamReader(stream)) {
-                string? line;
-                while ((line = r.ReadLine()) != null) {
-                    line = line.Trim().Split(new[] { '#' }, StringSplitOptions.None)[0].Trim();
-                    if (string.IsNullOrWhiteSpace(line)) {
-                        continue;
+        private void AddLocalKeyringKeys(Dictionary<ulong, byte[]?>? keys) {
+            if (keys == null) return;
+
+            foreach (var keyPair in keys) {
+                if (keyPair.Value != null) {
+                    if (!Keys.ContainsKey(keyPair.Key)) {
+                        AddKey(keyPair.Key, keyPair.Value);
                     }
-
-                    string[] c = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                    if (c.Length < 2) {
-                        continue;
-                    }
-
-                    var enabled = true;
-                    if (c.Length >= 3) {
-                        enabled = c[2] == "1";
-                    }
-
-                    ulong v;
-                    try {
-                        v = ulong.Parse(c[0], NumberStyles.HexNumber);
-                    } catch {
-                        continue;
-                    }
-
-                    var keyByte = StringToByteArray(c[1]);
-
-                    if (debugFileKeyCache.ContainsKey(v))
-                        Logger.Debug("TACT", $"Duplicate key detected in keyring file. {c[0]}");
-                    else
-                        debugFileKeyCache.Add(v, keyByte);
-
-                    if (enabled) {
-                        if (!Keys.ContainsKey(v)) {
-                            Keys.Add(v, keyByte);
-                        }
-                    } else {
-                        if (Keys.ContainsKey(v)) {
-                            Keys.Remove(v);
-                        }
+                } else {
+                    if (Keys.ContainsKey(keyPair.Key)) {
+                        Keys.Remove(keyPair.Key);
                     }
                 }
             }
+        }
+
+        private void AddRemoteKeyringKeys(Dictionary<ulong, byte[]?>? remoteKeys, Dictionary<ulong, byte[]?>? localKeys) {
+            if (remoteKeys == null) return;
+
+            var remoteAddedCount = 0;
+            foreach (var remoteKeyPair in remoteKeys) {
+                // ignore whatever remote has if local file has it
+                if (localKeys != null && localKeys.ContainsKey(remoteKeyPair.Key)) continue;
+
+                // disabled in remote lol...
+                if (remoteKeyPair.Value == null) continue;
+
+                AddKey(remoteKeyPair.Key, remoteKeyPair.Value);
+                remoteAddedCount++;
+            }
+
+            if (remoteAddedCount > 0) {
+                Logger.Info("TACT", $"Downloaded {remoteAddedCount} key(s) from remote keyring");
+            }
+        }
+
+        public void LoadSupportKeyrings(ClientHandler client) {
+            Dictionary<ulong, byte[]?>? localKeys = null;
+            Dictionary<ulong, byte[]?>? remoteKeys = null;
+
+            if (client.CreateArgs.LoadSupportKeyring) {
+                var keyFileName = client.CreateArgs.SupportKeyring ?? $@"{client.Product:G}.keyring";
+                var keyFile = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), keyFileName);
+
+                localKeys = LoadSupportFileFromDisk(keyFile);
+            }
+
+            if (!string.IsNullOrEmpty(client.CreateArgs.RemoteKeyringUrl)) {
+                remoteKeys = LoadSupportFileFromRemote(client.CreateArgs.RemoteKeyringUrl);
+            }
+
+            AddLocalKeyringKeys(localKeys);
+            AddRemoteKeyringKeys(remoteKeys, localKeys);
         }
 
         /// <summary>
