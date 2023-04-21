@@ -196,8 +196,8 @@ namespace TACTLib.Core {
             //Keys.Add(keyName.ToString("X16"));
 
             var ivPartSize = data[dataOffset++];
-            if (ivPartSize != 4 || ivPartSize > 0x10)
-                throw new BLTEDecoderException(Dump(), "IVSize != 4 || IVSize > 0x10");
+            if (ivPartSize != 4 && ivPartSize != 8)
+                throw new BLTEDecoderException(Dump(), $"ivPartSize should be 4 or 8. got {ivPartSize}");
             var ivPart = data.Slice(dataOffset, ivPartSize);
             dataOffset += ivPartSize;
 

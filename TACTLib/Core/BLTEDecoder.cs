@@ -121,8 +121,8 @@ namespace TACTLib.Core
                 throw new BLTEKeyException(keyName);
 
             var ivPartSize = SpanHelper.ReadByte(ref data);
-            if (ivPartSize != 4 || ivPartSize > 0x10)
-                throw new BLTEDecoderException(null, "IVSize != 4 || IVSize > 0x10");
+            if (ivPartSize != 4 && ivPartSize != 8)
+                throw new BLTEDecoderException(null, $"ivPartSize should be 4 or 8. got {ivPartSize}");
             var ivPart = SpanHelper.Advance(ref data, ivPartSize);
 
             var encType = SpanHelper.ReadByte(ref data);
