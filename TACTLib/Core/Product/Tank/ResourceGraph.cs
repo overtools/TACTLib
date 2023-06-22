@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using TACTLib.Client;
+using TACTLib.Exceptions;
 using TACTLib.Helpers;
 
 namespace TACTLib.Core.Product.Tank {
@@ -85,13 +86,34 @@ namespace TACTLib.Core.Product.Tank {
         }
 
         [StructLayout(LayoutKind.Sequential, Size = 29, Pack = 1)]
-        public struct Package {
+        public struct Package5 { // before 9
             public ulong m_assetGUID;
             public ulong m_resourceKeyID;
             public uint m_16;
             public uint m_20;
             public uint m_24;
             public byte m_28;
+
+            public Package Upgrade() => new Package()
+            {
+                m_assetGUID = m_assetGUID,
+                m_resourceKeyID = m_resourceKeyID,
+                m_16 = m_16,
+                m_20 = m_20,
+                m_24 = m_24,
+                m_28 = m_28
+            };
+        }
+        
+        [StructLayout(LayoutKind.Sequential, Size = 30, Pack = 1)]
+        public struct Package { // 9+
+            public ulong m_assetGUID;
+            public ulong m_resourceKeyID;
+            public uint m_16;
+            public uint m_20;
+            public uint m_24;
+            public byte m_28;
+            public byte m_29;
         }
 
         public struct SkinHeader {
@@ -171,8 +193,8 @@ namespace TACTLib.Core.Product.Tank {
                 }
 
                 var version = m_header.GetVersion();
-                if (version != 5 && version != 6 && version != 7 && version != 8) {
-                    throw new InvalidDataException($"unable to parse TRG. invalid version {version}, expected 5, 6, 7 or 8");
+                if (version != 5 && version != 6 && version != 7 && version != 8 && version != 9) {
+                    throw new UnsupportedBuildVersionException($"unable to parse TRG. invalid version {version}, expected 5, 6, 7, 8 or 9");
                 }
 
                 var isEnc = m_header.IsEncrypted();
@@ -196,7 +218,7 @@ namespace TACTLib.Core.Product.Tank {
             byte[] packageBlock = reader.ReadBytes(m_header.m_packageBlockSize);
             byte[] skinBlock = reader.ReadBytes(m_header.m_skinBlockSize);
             m_graphBlock = reader.ReadBytes(m_header.m_graphBlockSize);
-            if (version == 7) {
+            if (version >= 7) {
                 m_typeBundleIndexBlock = reader.ReadBytes(m_header.m_typeBundleIndexBlockSize);
                 //File.WriteAllBytes(name + "_typeBundleIndex", m_typeBundleIndexBlock);
             }
@@ -209,7 +231,11 @@ namespace TACTLib.Core.Product.Tank {
             Package[] packages;
             using (var packageStream = new MemoryStream(packageBlock))
             using (var packageReader = new BinaryReader(packageStream)) {
-                packages = packageReader.ReadArray<Package>(m_header.m_packageCount);
+                if (version >= 9) {
+                    packages = packageReader.ReadArray<Package>(m_header.m_packageCount);
+                } else {
+                    packages = packageReader.ReadArray<Package5>(m_header.m_packageCount).Select(x => x.Upgrade()).ToArray();
+                }
             }
 
             m_packages = new Dictionary<ulong, Package>();
@@ -234,12 +260,12 @@ namespace TACTLib.Core.Product.Tank {
                     skinStream.Position = skinStart + skinHeader.m_assetPtr;
 
                     SkinAsset8B[] assets;
-                    if (version == 5) {
-                        assets = skinReader.ReadArray<SkinAsset5>(skinHeader.m_assetCount).Select(x => x.Upgrade()).ToArray();
-                    } else if (ver8ButWithExtraDataWhoDidThis) {
+                    if (version > 8 || ver8ButWithExtraDataWhoDidThis) {
                         assets = skinReader.ReadArray<SkinAsset8B>(skinHeader.m_assetCount);
-                    } else {
+                    } else if (version >= 6) {
                         assets = skinReader.ReadArray<SkinAsset6>(skinHeader.m_assetCount).Select(x => x.Upgrade()).ToArray();
+                    } else {
+                        assets = skinReader.ReadArray<SkinAsset5>(skinHeader.m_assetCount).Select(x => x.Upgrade()).ToArray();
                     }
 
                     m_skins[skinHeader.m_skinGUID] = new Skin(skinHeader, assets);
