@@ -172,7 +172,20 @@ namespace TACTLib.Container {
             ref var fileHeader = ref MemoryMarshal.AsRef<DataHeader>(buffer);
 
             if (fileHeader.m_size != indexEntry.EncodedSize) {
-                throw new InvalidDataException($"fileHeader.m_size != indexEntry.EncodedSize. {fileHeader.m_size} != {indexEntry.EncodedSize}");
+                // header struct: https://github.com/ladislav-zezula/CascLib/blob/22b558e710d730edaa7b1610349081fce7fb0f7a/src/CascStructs.h#L244
+                
+                // header check: https://github.com/ladislav-zezula/CascLib/blob/22b558e710d730edaa7b1610349081fce7fb0f7a/src/CascReadFile.cpp#L177
+                // also validating size matches
+                // BUT
+                // apparently the data can just blte with no DataHeader?
+                // lets collect a fourCC to try debug the crashes here
+
+                var fourCC = 0xDEADBEEFu;
+                if (buffer.Length >= 4) {
+                    fourCC = MemoryMarshal.Read<uint>(buffer);
+                }
+
+                throw new InvalidDataException($"fileHeader.m_size != indexEntry.EncodedSize. {fileHeader.m_size} != {indexEntry.EncodedSize}. fourCC: {fourCC:X8}");
             }
 
             var segment = new ArraySegment<byte>(buffer);
