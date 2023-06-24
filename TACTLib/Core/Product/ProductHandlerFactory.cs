@@ -14,7 +14,7 @@ namespace TACTLib.Core.Product {
             var handlerType = GetHandlerType(product);
             if (handlerType == null) return null;
 
-            using (var _ = new PerfCounter($"{handlerType.Name}::ctor"))
+            using (var _ = new PerfCounter($"{handlerType.Name}::ctor`ClientHandler`Stream"))
                 return (IProductHandler)Activator.CreateInstance(handlerType, client, root)!;
         }
 

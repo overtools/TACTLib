@@ -134,7 +134,7 @@ namespace TACTLib.Client {
                     // If product code is null this ProductFromUID will throw an exception
                     var foundProductCode = installationInfo.Values.GetValueOrDefault("Product");
                     if (foundProductCode != ProductCode) {
-                        ProductCode = foundProductCode;
+                        ProductCode ??= foundProductCode;
                         Product = ProductHelpers.ProductFromUID(ProductCode);
                         Logger.Info("Core", $"Found product \"{ProductCode}\" via {createArgs.InstallInfoFileName}");
                     }

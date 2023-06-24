@@ -195,11 +195,17 @@ namespace TACTLib.Core.VFS {
             public PathEntryFlags NodeFlags;
             public int NodeValue; // Node value
         }
+
+        private static byte PeekByte(BinaryReader reader) {
+            var value = reader.ReadByte();
+            reader.BaseStream.Position -= 1;
+            return value;
+        }
         
         private static PathEntry ReadPathEntry(BinaryReader reader, long pathTableEnd) {
             var pathEntry = new PathEntry();
-            
-            var bBefore = (byte)reader.PeekChar();
+
+            var bBefore = PeekByte(reader);
             if (reader.BaseStream.Position < pathTableEnd && bBefore == 0) {
                 pathEntry.NodeFlags |= PathEntryFlags.PATH_SEPARATOR_PRE;
                 reader.BaseStream.Position++;
@@ -210,14 +216,14 @@ namespace TACTLib.Core.VFS {
                 pathEntry.Name = Encoding.UTF8.GetString(reader.ReadBytes(length));
             }
 
-            var bAfter = (byte) reader.PeekChar();
+            var bAfter = PeekByte(reader);
             if (reader.BaseStream.Position < pathTableEnd && bAfter == 0) {
                 pathEntry.NodeFlags |= PathEntryFlags.PATH_SEPARATOR_POST;
                 reader.BaseStream.Position++;
             }
 
             if (reader.BaseStream.Position < pathTableEnd) {
-                var check = (byte)reader.PeekChar();
+                var check = PeekByte(reader);
                 if (check == 0xFF) { // Check for node value
                     reader.BaseStream.Position += 1;
                     
@@ -225,7 +231,7 @@ namespace TACTLib.Core.VFS {
                     pathEntry.NodeFlags |= PathEntryFlags.NODE_VALUE;
                 } else {  // Non-0xFF after the name means path separator after
                     pathEntry.NodeFlags |= PathEntryFlags.PATH_SEPARATOR_POST;
-                    Debug.Assert(reader.PeekChar() != 0);
+                    Debug.Assert(PeekByte(reader) != 0);
                 }
             }
 

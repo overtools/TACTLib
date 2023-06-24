@@ -51,6 +51,9 @@ namespace TACTLib {
 
         /// <summary>odin</summary>
         ModernWarfare,
+        
+        /// <summary>fenris</summary>
+        Diablo4,
     }
 
     public static class ProductHelpers {
@@ -107,6 +110,10 @@ namespace TACTLib {
 
             if (uid.StartsWith("odin")) {
                 return TACTProduct.ModernWarfare;
+            }
+
+            if (uid.StartsWith("fenris")) {
+                return TACTProduct.Diablo4;
             }
 
             throw new NotImplementedException($"Product \"{uid}\" is not supported.");
