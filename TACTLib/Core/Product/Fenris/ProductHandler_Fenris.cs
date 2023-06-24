@@ -11,103 +11,133 @@ namespace TACTLib.Core.Product.Fenris;
 [ProductHandler(TACTProduct.Diablo4)]
 public class ProductHandler_Fenris : IProductHandler {
     public ClientHandler Client { get; }
-    public VFSFileTree VFS { get; }
-    public VFSFileTree? BaseLocaleVFS { get; private set; }
-    public VFSFileTree? SpeechLocaleVFS { get; private set; }
-    public VFSFileTree? TextLocaleVFS { get; private set; }
+
+#region SNO Lists
+
     public EncryptedSnos EncryptedSnos { get; }
     public ReplacedSnos ReplacedSnos { get; }
-    public CoreTOC TOC { get; }
     public SharedPayloadsMapping SharedPayloads { get; }
+    public CoreTOC TOC { get; }
+
+#endregion
+
+#region VFS
+
+    public VFSFileTree CoreVFS { get; }
+    public VFSFileTree? BaseVFS { get; private set; }
+    public VFSFileTree? SpeechVFS { get; private set; }
+    public VFSFileTree? TextVFS { get; private set; }
+
+#endregion
+
+#region Manifests
+
+    public SnoManifest CoreManifest { get; }
+    public SnoManifest? BaseManifest { get; private set; }
+    public SnoManifest? SpeechManifest { get; private set; }
+    public SnoManifest? TextManifest { get; private set; }
+
+#endregion
+
+#region Locale
+
     public Locale BaseLocale { get; set; }
     public Locale SpeechLocale { get; set; }
     public Locale TextLocale { get; set; }
     private Locale LoadedBaseLocale { get; set; }
     private Locale LoadedSpeechLocale { get; set; }
     private Locale LoadedTextLocale { get; set; }
+
+#endregion
+
     public Dictionary<uint, Dictionary<string, uint>> Ids { get; }
 
     public ProductHandler_Fenris(ClientHandler client, IDisposable? stream) {
         stream?.Dispose();
-        
-        if (Enum.TryParse<Locale>(client.CreateArgs.TextLanguage, out var textLocale)) {
-            TextLocale = textLocale;
-        }
-        
-        if (Enum.TryParse<Locale>(client.CreateArgs.SpeechLanguage, out var speechLocale)) {
-            SpeechLocale = speechLocale;
-        }
-        
+
         if (client.VFS == null) {
             throw new ArgumentException(null, nameof(client.VFS));
         }
-        
-        Client = client;
 
-        using (var baseVfs = client.VFS.Open("base")) {
-            VFS = new VFSFileTree(client, baseVfs);
+        if (Enum.TryParse<Locale>(client.CreateArgs.TextLanguage, out var textLocale)) {
+            TextLocale = textLocale;
         }
 
-        using (var encryptedSno = VFS.Open("EncryptedSNOs.dat")) {
+        if (Enum.TryParse<Locale>(client.CreateArgs.SpeechLanguage, out var speechLocale)) {
+            SpeechLocale = speechLocale;
+        }
+
+        Client = client;
+
+        CoreVFS = LoadVFS("base") ?? throw new InvalidOperationException();
+        CoreManifest = LoadManifest("Base") ?? throw new InvalidOperationException();
+
+        using (var encryptedSno = CoreVFS.Open("EncryptedSNOs.dat")) {
             EncryptedSnos = new EncryptedSnos(encryptedSno);
         }
 
-        using (var toc = VFS.Open("CoreTOC.dat")) {
+        using (var toc = CoreVFS.Open("CoreTOC.dat")) {
             TOC = new CoreTOC(toc, EncryptedSnos);
         }
 
-        LoadLocaleVFS();
+        LoadLocale();
 
-        using (var replaced = VFS.Open("CoreTOCReplacedSnosMapping.dat")) {
+        using (var replaced = CoreVFS.Open("CoreTOCReplacedSnosMapping.dat")) {
             ReplacedSnos = new ReplacedSnos(replaced);
         }
-        
-        using (var shared = VFS.Open("CoreTOCSharedPayloadsMapping.dat")) {
+
+        using (var shared = CoreVFS.Open("CoreTOCSharedPayloadsMapping.dat")) {
             SharedPayloads = new SharedPayloadsMapping(shared);
         }
 
         Ids = TOC.Files.GroupBy(x => x.Key.Group)
-                 .ToDictionary(x => x.Key, 
-                               x => x.ToDictionary(y => y.Value, 
+                 .ToDictionary(x => x.Key,
+                               x => x.ToDictionary(y => y.Value,
                                                    y => y.Key.Id));
     }
 
-    private void LoadLocaleVFS() {
+    private VFSFileTree? LoadVFS(string path) {
+        if (Client.VFS!.Files.Contains(path)) {
+            using var locStream = Client.VFS.Open(path);
+            return new VFSFileTree(Client, locStream);
+        }
+
+        return null;
+    }
+
+    private SnoManifest? LoadManifest(string path) {
+        if (Client.VFS!.Files.Contains(path)) {
+            using var locStream = Client.VFS.Open(path);
+            return new SnoManifest(locStream);
+        }
+
+        return null;
+    }
+
+    private void LoadLocale() {
         if (LoadedBaseLocale == BaseLocale && LoadedSpeechLocale == SpeechLocale && LoadedTextLocale == TextLocale) {
             return;
         }
-        
+
         using var _ = new PerfCounter("ProductHandler_Fenris::LoadLocaleVFS");
         if (LoadedBaseLocale != BaseLocale) {
             LoadedBaseLocale = BaseLocale;
-            if (Client.VFS!.Files.Contains($"{BaseLocale:G}_Base")) {
-                using var locStream = Client.VFS.Open($"{BaseLocale:G}_Base");
-                BaseLocaleVFS = new VFSFileTree(Client, locStream);
-            } else {
-                BaseLocaleVFS = null;
-            }
+            BaseVFS = LoadVFS($"{BaseLocale:G}_Base");
+            BaseManifest = LoadManifest($"{BaseLocale:G}.base");
         }
-        
-        
+
+
         if (LoadedSpeechLocale != SpeechLocale) {
             LoadedSpeechLocale = SpeechLocale;
-            if (Client.VFS!.Files.Contains($"{SpeechLocale:G}_Speech")) {
-                using var locStream = Client.VFS.Open($"{SpeechLocale:G}_Speech");
-                SpeechLocaleVFS = new VFSFileTree(Client, locStream);
-            } else {
-                SpeechLocaleVFS = null;
-            }
+            SpeechVFS = LoadVFS($"{SpeechLocale:G}_Speech");
+            SpeechManifest = LoadManifest($"{SpeechLocale:G}.speech");
         }
-        
-        
+
+
         if (LoadedTextLocale != TextLocale) {
             LoadedTextLocale = TextLocale;
-            if (Client.VFS!.Files.Contains($"{TextLocale:G}_Text")) {
-                using var locStream = Client.VFS.Open($"{TextLocale:G}_Text");
-                TextLocaleVFS = new VFSFileTree(Client, locStream);
-            } else {
-                TextLocaleVFS = null;
-            }
+            TextVFS = LoadVFS($"{TextLocale:G}_Text");
+            TextManifest = LoadManifest($"{TextLocale:G}.text");
         }
     }
 
@@ -123,7 +153,7 @@ public class ProductHandler_Fenris : IProductHandler {
         if (id == 0) { // 0 = null
             return null;
         }
-        
+
         // i assume if replacedId is zero then it's deleted, but we don't care.
         if (ReplacedSnos.Lookup.TryGetValue(id, out var replacedId) && replacedId > 0) {
             id = replacedId;
@@ -147,23 +177,23 @@ public class ProductHandler_Fenris : IProductHandler {
         if (type is SnoType.Child) {
             path += $"-{subId}";
         }
-        
-        LoadLocaleVFS();
 
-        if (BaseLocaleVFS?.Files.Contains(path) == true) {
-            return BaseLocaleVFS.Open(path);
+        LoadLocale();
+
+        if (BaseVFS?.Files.Contains(path) == true) {
+            return BaseVFS.Open(path);
         }
-        
-        if (VFS.Files.Contains(path)) {
-            return VFS.Open(path);
+
+        if (CoreVFS.Files.Contains(path)) {
+            return CoreVFS.Open(path);
         }
-        
-        if (SpeechLocaleVFS?.Files.Contains(path) == true) {
-            return SpeechLocaleVFS.Open(path);
+
+        if (SpeechVFS?.Files.Contains(path) == true) {
+            return SpeechVFS.Open(path);
         }
-        
-        if (TextLocaleVFS?.Files.Contains(path) == true) {
-            return TextLocaleVFS.Open(path);
+
+        if (TextVFS?.Files.Contains(path) == true) {
+            return TextVFS.Open(path);
         }
 
         return type switch { // quality waterfall. payload = hires, paymid = without hires, paylow = tiny files 

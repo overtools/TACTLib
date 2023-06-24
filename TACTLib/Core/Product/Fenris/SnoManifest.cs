@@ -45,7 +45,7 @@ public class SnoManifest {
             SnoIds = Array.Empty<uint>();
         }
 
-        if (stream.Read(header) != 4) {
+        if (stream.Read(header[..4]) != 4) {
             throw new DataException();
         }
         count = BinaryPrimitives.ReadUInt32LittleEndian(header);
