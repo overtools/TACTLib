@@ -100,6 +100,9 @@ namespace TACTLib.Container {
                 throw new InvalidDataException("invalid index header");
             }
 
+            if (header.FileOffsetBits != 30)
+                throw new InvalidDataException($"invalid index header: header.FileOffsetBits ({header.FileOffsetBits}) != 30");
+
             var eKey1Block = reader.Read<BlockSizeAndHash>();
             var entryCount = eKey1Block.BlockSize / sizeof(EKeyEntry);
 
@@ -249,7 +252,7 @@ namespace TACTLib.Container {
             public byte SpanSizeBytes;             // Size of field with file size
             public byte SpanOffsBytes;             // Size of field with file offset
             public byte EKeyBytes;                 // Size of the file key (bytes)
-            public byte ArchiveFileHeaderBytes;    // Number of bits for the file offset (rest is archive index)
+            public byte FileOffsetBits;            // Number of bits for the file offset (rest is archive index)
             public ulong ArchiveTotalSizeMaximum;  // The maximum size of a casc installation; 0x4000000000, or 256GiB.
             public fixed byte Padding[8];          // Always here
         }
@@ -280,7 +283,7 @@ namespace TACTLib.Container {
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public unsafe struct IndexEntry {
+        public struct IndexEntry {
             /// <summary>Data file index</summary>
             public ushort Index;
 
@@ -289,15 +292,16 @@ namespace TACTLib.Container {
 
             public uint EncodedSize;
 
-            public IndexEntry(EKeyEntry entry) {
+            public unsafe IndexEntry(EKeyEntry entry) {
                 var indexHigh = entry.FileOffsetBE[0];
-                var indexLow = Int32FromPtrBE(entry.FileOffsetBE + 1);
+                var indexLow = (uint)Int32FromPtrBE(entry.FileOffsetBE + 1);
+                
+                ulong indexInt = ((ulong)indexHigh << 32) | indexLow;
 
-                var indexInt = indexHigh << 2 | (byte)((indexLow & 0xC0000000) >> 30);
-                if (indexInt < 0 || indexInt > ushort.MaxValue) throw new InvalidDataException("this doesn't make sense");
+                const int fileOffsetBitCount = 30; // technically can vary via header but hardcoded same as everything else
 
-                Index = (ushort)indexInt;
-                Offset = (uint)(indexLow & 0x3FFFFFFF);
+                Index = (ushort)(indexInt >> fileOffsetBitCount);
+                Offset = (uint)(indexInt & ((1 << fileOffsetBitCount) - 1));
 
                 EncodedSize = entry.EncodedSize;
             }
