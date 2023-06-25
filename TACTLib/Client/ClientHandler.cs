@@ -222,7 +222,8 @@ namespace TACTLib.Client {
 
             if (ConfigHandler.BuildConfig.VFSRoot != null) {
                 using var _ = new PerfCounter("VFSFileTree::ctor`ClientHandler");
-                VFS = new VFSFileTree(this);
+                using var vfsStream = OpenCKey(ConfigHandler.BuildConfig.VFSRoot!.ContentKey)!;
+                VFS = new VFSFileTree(this, vfsStream);
             }
 
             if (createArgs.Online) {
