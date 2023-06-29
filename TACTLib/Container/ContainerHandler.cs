@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using TACTLib.Client;
+using TACTLib.Core;
 using TACTLib.Helpers;
 using static TACTLib.Utils;
 
@@ -39,6 +40,10 @@ namespace TACTLib.Container {
         private readonly ClientHandler _client;
 
         private readonly Dictionary<int, SafeFileHandle> m_dataFiles;
+
+        private bool m_seenZeroedHeader;
+        private static unsafe ReadOnlySpan<byte> ZEROED_HEADER => new byte[sizeof(DataHeader)];
+        public static bool ALLOW_ZEROED_HEADER = true;
 
         public ContainerHandler(ClientHandler client) {
             _client = client;
@@ -184,11 +189,20 @@ namespace TACTLib.Container {
                 // lets collect a fourCC to try debug the crashes here
 
                 var fourCC = 0xDEADBEEFu;
-                if (buffer.Length >= 4) {
-                    fourCC = MemoryMarshal.Read<uint>(buffer);
+                if (buffer.Length >= sizeof(DataHeader) + 4) {
+                    fourCC = MemoryMarshal.Read<uint>(buffer.AsSpan(sizeof(DataHeader)));
+                }
+                
+                var headerSpan = buffer.AsSpan(0, sizeof(DataHeader));
+                if (ALLOW_ZEROED_HEADER && headerSpan.SequenceEqual(ZEROED_HEADER) && fourCC == BLTEStream.Magic) {
+                    if (!m_seenZeroedHeader) {
+                        Logger.Error("CASC", "zeroed header detected");
+                        m_seenZeroedHeader = true;
+                    }
+                } else {
+                    throw new InvalidDataException($"fileHeader.m_size != indexEntry.EncodedSize. {fileHeader.m_size} != {indexEntry.EncodedSize}. fourCC: {fourCC:X8}");
                 }
 
-                throw new InvalidDataException($"fileHeader.m_size != indexEntry.EncodedSize. {fileHeader.m_size} != {indexEntry.EncodedSize}. fourCC: {fourCC:X8}");
             }
 
             var segment = new ArraySegment<byte>(buffer);
@@ -205,7 +219,29 @@ namespace TACTLib.Container {
             return dataSegment;
         }
 
-        private string GetDataFilePath(int index) {
+        public unsafe bool OpenIndexEntryForDebug(IndexEntry indexEntry, out DataHeader header) {
+            
+            header = default;
+
+            var sizeToRead = sizeof(DataHeader);
+            if (indexEntry.EncodedSize < sizeToRead) return false;
+            
+            var dataHandle = m_dataFiles[indexEntry.Index];
+            var buffer = new byte[sizeToRead];
+            var bytesRead = RandomAccess.Read(dataHandle, buffer, indexEntry.Offset);
+            if (bytesRead != buffer.Length)
+            {
+                throw new EndOfStreamException($"bytesRead != buffer.Length. {bytesRead} != {buffer.Length}");
+            }
+
+            header = MemoryMarshal.Read<DataHeader>(buffer);
+            // todo: check BLTE..?
+            return true;
+        }
+
+        public IEnumerable<int> GetDataFileIndices() => m_dataFiles.Keys;
+
+        public string GetDataFilePath(int index) {
             return Path.Combine(ContainerDirectory, DataDirectory, $"data.{index:D3}") + _client.CreateArgs.ExtraFileEnding;
         }
 
