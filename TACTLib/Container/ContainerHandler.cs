@@ -42,9 +42,9 @@ namespace TACTLib.Container {
 
         private readonly Dictionary<int, SafeFileHandle> m_dataFiles;
 
-        private bool m_seenZeroedHeader;
-        private static unsafe ReadOnlySpan<byte> ZEROED_HEADER => new byte[sizeof(DataHeader)];
-        public static bool ALLOW_ZEROED_HEADER = true;
+        private bool m_seenCorruptHeader;
+        //private static unsafe ReadOnlySpan<byte> ZEROED_HEADER => new byte[sizeof(DataHeader)];
+        public static bool ALLOW_CORRUPT_HEADER = true;
 
         public ContainerHandler(ClientHandler client) {
             _client = client;
@@ -193,11 +193,22 @@ namespace TACTLib.Container {
                     fourCC = 0xDEADBEEFu;
                 }
                 
+                // todo: i was checking for just zeroed here.. but some headers are invalid data
+                // from aini:
+                // Size Wrong Other Samples[0]:
+                //   EKey: 09ea93678a82a9c94c
+                //   CKey: 07994465b4e6cd87335f502ac2ca0650
+                //   Header: aad8ae3d2cffa11a6d7ba9fe5be0b4d9965f89c8cbc2fe2af4d998afc6af
+                //   FourCC: 45544C42
+                //   Expected Size: 30581
+                //   Offset: 0x1FDEA87E
+                
+                // && headerSpan.SequenceEqual(ZEROED_HEADER)
                 var headerSpan = buffer.AsSpan(0, sizeof(DataHeader));
-                if (ALLOW_ZEROED_HEADER && headerSpan.SequenceEqual(ZEROED_HEADER) && fourCC == BLTEStream.Magic) {
-                    if (!m_seenZeroedHeader) {
-                        Logger.Error("CASC", "Corrupt install detected! To help us debug this issue, use debug-install-issues in DataTool and upload the result on Discord.");
-                        m_seenZeroedHeader = true;
+                if (ALLOW_CORRUPT_HEADER && fourCC == BLTEStream.Magic) {
+                    if (!m_seenCorruptHeader) {
+                        Logger.Error("CASC", "Corrupt install detected! To help us debug this issue, use the debug-install-issues mode in DataTool and upload the result to Discord.");
+                        m_seenCorruptHeader = true;
                     }
                 } else {
                     throw new InvalidDataException($"fileHeader.m_size != indexEntry.EncodedSize. {fileHeader.m_size} != {indexEntry.EncodedSize}. fourCC: {fourCC:X8}");

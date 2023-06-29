@@ -180,7 +180,7 @@ namespace TACTLib.Core.Product.Tank {
             RegisterCMFAssets(m_textContentManifest, PACKAGE_IDX_FAKE_TEXT_CMF);
             RegisterCMFAssets(m_speechContentManifest, PACKAGE_IDX_FAKE_SPEECH_CMF);
 
-            if (m_usingResourceGraph) {
+            if (m_usingResourceGraph && clientArgs.LoadBundlesForLookup) {
                 m_hackedLookedUpBundles = new HashSet<ulong>();
                 m_hackedBundleLookup = new Dictionary<ulong, ulong>();
                 DoBundleLookupHack();
@@ -258,11 +258,9 @@ namespace TACTLib.Core.Product.Tank {
         public Stream OpenFile(ulong guid) {
             if (!m_assets.TryGetValue(guid, out var asset)) throw new FileNotFoundException($"{guid:X8}");
 
-            if (m_usingResourceGraph) {
-                if (m_hackedBundleLookup!.TryGetValue(guid, out var bundleGUID)) {
-                    var foundStream = OpenFileFromBundle(bundleGUID, guid);
-                    return GuidStream.Create(foundStream, guid);
-                }
+            if (m_hackedBundleLookup != null && m_hackedBundleLookup.TryGetValue(guid, out var bundleGUID)) {
+                var foundStream = OpenFileFromBundle(bundleGUID, guid);
+                return GuidStream.Create(foundStream, guid);
             }
 
             var normalStream = OpenFile(asset);
