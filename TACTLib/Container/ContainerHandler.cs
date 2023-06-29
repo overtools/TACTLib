@@ -1,4 +1,5 @@
 using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -187,22 +188,20 @@ namespace TACTLib.Container {
                 // BUT
                 // apparently the data can just blte with no DataHeader?
                 // lets collect a fourCC to try debug the crashes here
-
-                var fourCC = 0xDEADBEEFu;
-                if (buffer.Length >= sizeof(DataHeader) + 4) {
-                    fourCC = MemoryMarshal.Read<uint>(buffer.AsSpan(sizeof(DataHeader)));
+                
+                if (!BinaryPrimitives.TryReadUInt32LittleEndian(buffer.AsSpan(sizeof(DataHeader)), out var fourCC)) {
+                    fourCC = 0xDEADBEEFu;
                 }
                 
                 var headerSpan = buffer.AsSpan(0, sizeof(DataHeader));
                 if (ALLOW_ZEROED_HEADER && headerSpan.SequenceEqual(ZEROED_HEADER) && fourCC == BLTEStream.Magic) {
                     if (!m_seenZeroedHeader) {
-                        Logger.Error("CASC", "zeroed header detected");
+                        Logger.Error("CASC", "Corrupt install detected! To help us debug this issue, use debug-install-issues in DataTool and upload the result on Discord.");
                         m_seenZeroedHeader = true;
                     }
                 } else {
                     throw new InvalidDataException($"fileHeader.m_size != indexEntry.EncodedSize. {fileHeader.m_size} != {indexEntry.EncodedSize}. fourCC: {fourCC:X8}");
                 }
-
             }
 
             var segment = new ArraySegment<byte>(buffer);
@@ -219,12 +218,18 @@ namespace TACTLib.Container {
             return dataSegment;
         }
 
-        public unsafe bool OpenIndexEntryForDebug(IndexEntry indexEntry, out DataHeader header) {
+        public unsafe bool OpenIndexEntryForDebug(IndexEntry indexEntry, out DataHeader header, out uint fourCC) {
             
             header = default;
+            fourCC = 0xDEADBEEFu;
 
             var sizeToRead = sizeof(DataHeader);
             if (indexEntry.EncodedSize < sizeToRead) return false;
+
+            if (indexEntry.EncodedSize >= sizeToRead + 4) {
+                // give me fourCC
+                sizeToRead += 4;
+            }
             
             var dataHandle = m_dataFiles[indexEntry.Index];
             var buffer = new byte[sizeToRead];
@@ -235,7 +240,9 @@ namespace TACTLib.Container {
             }
 
             header = MemoryMarshal.Read<DataHeader>(buffer);
-            // todo: check BLTE..?
+            if (BinaryPrimitives.TryReadUInt32LittleEndian(buffer.AsSpan(sizeof(DataHeader)), out var fourCC2)) {
+                fourCC = fourCC2;
+            }
             return true;
         }
 
