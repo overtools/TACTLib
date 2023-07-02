@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using TACTLib.Protocol;
@@ -53,13 +54,12 @@ namespace TACTLib.Config {
 
         private void Parse(TextReader reader, string product) {
             var vals = ParseToDict(reader);
-            Values = vals.First(x => {
-                if (x.TryGetValue("Product", out var entryProduct) && !entryProduct.Equals(product)) {
-                    return false;
-                }
+            // fix for when product is not set by battle.net?
+            Values = vals.OrderBy(x => x["Active"] == "1").ThenBy(x => x.TryGetValue("Product", out var entryProduct) && entryProduct.Equals(product, StringComparison.OrdinalIgnoreCase)).First();
 
-                return x["Active"] == "1";
-            });
+            if (Values.TryGetValue("Product", out var chosenProduct) && !string.IsNullOrEmpty(chosenProduct) && !chosenProduct.Equals(product, StringComparison.OrdinalIgnoreCase)) {
+                throw new Exception($"Failed to find installation info for product {product} (found {chosenProduct})");
+            }
         }
     }
 
