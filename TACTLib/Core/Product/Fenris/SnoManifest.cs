@@ -8,9 +8,10 @@ using TACTLib.Helpers;
 
 namespace TACTLib.Core.Product.Fenris;
 
+// Both for convenience, and also as a priority order.
 public enum SnoManifestRole {
-    Core,
     Base,
+    Core,
     Speech,
     Text,
 }
