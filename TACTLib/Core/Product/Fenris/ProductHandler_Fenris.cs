@@ -23,6 +23,7 @@ public class ProductHandler_Fenris : IProductHandler {
 #endregion
 
 #region Manfiests
+
     public VFSFileTree?[] CoreVFS { get; } = new VFSFileTree[4];
     public SnoManifest?[] CoreManifest { get; } = new SnoManifest[4];
     public Locale BaseLocale { get; set; } = Locale.Unused;
@@ -54,15 +55,15 @@ public class ProductHandler_Fenris : IProductHandler {
 
         Client = client;
 
-        var core = CoreVFS[(int)SnoManifestRole.Core] = LoadVFS("base") ?? throw new InvalidOperationException();
-        CoreManifest[(int)SnoManifestRole.Core] = LoadManifest("Base", Locale.All, SnoManifestRole.Core) ?? throw new InvalidOperationException();
+        var core = CoreVFS[(int) SnoManifestRole.Core] = LoadVFS("base") ?? throw new InvalidOperationException();
+        CoreManifest[(int) SnoManifestRole.Core] = LoadManifest("Base", Locale.All, SnoManifestRole.Core) ?? throw new InvalidOperationException();
 
         using (var encryptedSno = core.Open("EncryptedSNOs.dat")) {
             EncryptedSnos = new EncryptedSnos(encryptedSno);
         }
 
         using (var toc = core.Open("CoreTOC.dat")) {
-            TOC = new CoreTOC(toc, clientArgs.LoadEncryptedSnos ? null : EncryptedSnos);
+            TOC = new CoreTOC(toc, EncryptedSnos, client.ConfigHandler.Keyring);
         }
 
         using (var replaced = core.Open("CoreTOCReplacedSnosMapping.dat")) {
@@ -158,6 +159,7 @@ public class ProductHandler_Fenris : IProductHandler {
             if (LogLevel >= 1) {
                 Logger.Debug("Fenris", $"{type} {id} {subId} is deleted");
             }
+
             return null;
         }
 
@@ -207,10 +209,10 @@ public class ProductHandler_Fenris : IProductHandler {
         }
 
         value = type switch { // quality waterfall. payload = hires, paymid = without hires, paylow = tiny files
-                   SnoType.Payload when waterfall is false => OpenFile(id, SnoType.Paymid, subId),
-                   SnoType.Paymid when waterfall is false => OpenFile(id, SnoType.Paylow, subId),
-                   _                                       => null,
-               };
+                    SnoType.Payload when waterfall => OpenFile(id, SnoType.Paymid, subId),
+                    SnoType.Paymid when waterfall  => OpenFile(id, SnoType.Paylow, subId),
+                    _                              => null,
+                };
 
         if (value is null && LogLevel >= 1) {
             Logger.Debug("Fenris", $"{id}{(type is SnoType.Child ? "-" + subId : "")} {type:G} not found in any locale ({BaseLocale:G}, {SpeechLocale:G}, {TextLocale:G})");

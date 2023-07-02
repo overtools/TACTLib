@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using TACTLib.Config;
 using TACTLib.Helpers;
 
 namespace TACTLib.Core.Product.Fenris;
@@ -22,7 +23,7 @@ public class CoreTOC {
     public uint PrimaryId { get; }
     public Dictionary<SnoHandle, string> Files { get; } = new();
 
-    public CoreTOC(Stream? stream, EncryptedSnos? encrypted) {
+    public CoreTOC(Stream? stream, EncryptedSnos encrypted, Keyring keyring) {
         using var _ = new PerfCounter("CoreTOC::cctor`Stream`EncryptedSnos");
         if (stream == null) {
             throw new ArgumentNullException(nameof(stream));
@@ -93,9 +94,13 @@ public class CoreTOC {
                 }
                 var entry = MemoryMarshal.Read<TOCEntry>(stackBuffer);
 
-                if (encrypted?.Lookup.ContainsKey(entry.Sno) == true) {
-                    // todo: implement EncryptedNameDict, encrypted names are replaced with spaces and stored in that file.
-                    continue;
+                if (encrypted.Lookup.TryGetValue(entry.Sno, out var keyId)) {
+                    if (!keyring.Keys.ContainsKey(keyId)) {
+                        // todo: implement EncryptedNameDict, encrypted names are replaced with spaces and stored in that file.
+                        continue;
+                    } else {
+                        continue;
+                    }
                 }
 
                 var tmp = stream.Position;
