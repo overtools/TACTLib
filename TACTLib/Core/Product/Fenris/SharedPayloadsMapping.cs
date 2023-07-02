@@ -17,7 +17,7 @@ public class SharedPayloadsMapping {
         if (stream == null) {
             return;
         }
-        
+
         Span<byte> header = stackalloc byte[8];
         if (stream.Read(header) != 8) {
             throw new DataException();
@@ -45,7 +45,7 @@ public class SharedPayloadsMapping {
                 SharedPayloads[entries[i << 1]] = entries[(i << 1) + 1];
             }
         }
-        
+
         if (stream.Read(header[..4]) != 4) {
             throw new DataException();
         }

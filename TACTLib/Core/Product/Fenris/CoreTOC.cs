@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using TACTLib.Helpers;
 
-namespace TACTLib.Core.Product.Fenris; 
+namespace TACTLib.Core.Product.Fenris;
 
 public class CoreTOC {
     [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 0xC)]
@@ -15,19 +15,19 @@ public class CoreTOC {
         public SnoHandle Sno;
         public int NameOffset;
     }
-    
+
     public int[] GroupCounts { get; }
     public int[] GroupOffsets { get; }
     public int[] GroupCounts2 { get; }
     public uint PrimaryId { get; }
-    public Dictionary<SnoHandle, string> Files { get; } = new();    
+    public Dictionary<SnoHandle, string> Files { get; } = new();
 
-    public CoreTOC(Stream? stream, EncryptedSnos encrypted) {
+    public CoreTOC(Stream? stream, EncryptedSnos? encrypted) {
         using var _ = new PerfCounter("CoreTOC::cctor`Stream`EncryptedSnos");
         if (stream == null) {
             throw new ArgumentNullException(nameof(stream));
         }
-        
+
         Span<byte> stackBuffer = stackalloc byte[0x4];
         if (stream.Read(stackBuffer) != 4) {
             throw new InvalidDataException();
@@ -37,7 +37,7 @@ public class CoreTOC {
         GroupCounts = new int[count];
         GroupOffsets = new int[count];
         GroupCounts2 = new int[count];
-        
+
         var buffer = MemoryMarshal.AsBytes(GroupCounts.AsSpan());
         var offset = 0;
         while (offset < buffer.Length) {
@@ -48,7 +48,7 @@ public class CoreTOC {
 
             offset += read;
         }
-        
+
         buffer = MemoryMarshal.AsBytes(GroupOffsets.AsSpan());
         offset = 0;
         while (offset < buffer.Length) {
@@ -59,7 +59,7 @@ public class CoreTOC {
 
             offset += read;
         }
-        
+
         buffer = MemoryMarshal.AsBytes(GroupCounts2.AsSpan());
         offset = 0;
         while (offset < buffer.Length) {
@@ -70,7 +70,7 @@ public class CoreTOC {
 
             offset += read;
         }
-        
+
         if (stream.Read(stackBuffer) != 4) {
             throw new InvalidDataException();
         }
@@ -93,14 +93,14 @@ public class CoreTOC {
                 }
                 var entry = MemoryMarshal.Read<TOCEntry>(stackBuffer);
 
-                if (encrypted.Lookup.ContainsKey(entry.Sno)) {
+                if (encrypted?.Lookup.ContainsKey(entry.Sno) == true) {
                     // todo: implement EncryptedNameDict, encrypted names are replaced with spaces and stored in that file.
                     continue;
                 }
 
                 var tmp = stream.Position;
                 stream.Position = stringOffset + entry.NameOffset;
-                
+
                 if (stream.Read(stringBuffer) > 0) {
                     Files[entry.Sno] = Encoding.ASCII.GetString(stringBuffer[..stringBuffer.IndexOf((byte) 0)]);
                 }
