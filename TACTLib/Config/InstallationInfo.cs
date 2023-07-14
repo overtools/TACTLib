@@ -54,12 +54,40 @@ namespace TACTLib.Config {
 
         private void Parse(TextReader reader, string product) {
             var vals = ParseToDict(reader);
-            // fix for when product is not set by battle.net?
-            Values = vals.OrderBy(x => x["Active"] == "1").ThenBy(x => x.TryGetValue("Product", out var entryProduct) && entryProduct.Equals(product, StringComparison.OrdinalIgnoreCase)).First();
 
-            if (Values.TryGetValue("Product", out var chosenProduct) && !string.IsNullOrEmpty(chosenProduct) && !chosenProduct.Equals(product, StringComparison.OrdinalIgnoreCase)) {
-                throw new Exception($"Failed to find installation info for product {product} (found {chosenProduct})");
+            var activeProducts = vals.Where(x => x["Active"] == "1").ToArray();
+            if (activeProducts.Length == 0) {
+                Logger.Error("InstallationInfo", "Found no Active products in installation info. Searching all.");
+                activeProducts = vals.ToArray();
             }
+
+            if (activeProducts.Length == 0) {
+                throw new Exception($"Installation info contains 0 products. Requested product: {product}");
+            }
+
+            var valuesMatchingRequestedProduct = activeProducts.Where(x => {
+                if (!x.TryGetValue("Product", out var foundProduct)) return false;
+                return foundProduct.Equals(product, StringComparison.OrdinalIgnoreCase);
+            }).SingleOrDefault();
+
+            if (valuesMatchingRequestedProduct != null) {
+                Values = valuesMatchingRequestedProduct;
+                return;
+            }
+
+            // fenris has empty product field
+            var containsProductField = activeProducts.Any(x => x.TryGetValue("Product", out var foundProduct) && !string.IsNullOrWhiteSpace(foundProduct));
+            if (!containsProductField) {
+                if (activeProducts.Length > 1) throw new Exception($"Installation info didn't contain (useful) Product field but >1 product was found. Requested product: {product}");
+                Values = activeProducts.Single();
+                return;
+            }
+
+            throw new Exception($"Failed to find installation info for requested product {product} (found [{string.Join(", ", vals.Select(x => {
+                x.TryGetValue("Product", out var foundProduct);
+                foundProduct ??= "null";
+                return foundProduct;
+            }))}])");
         }
     }
 
