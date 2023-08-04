@@ -3,7 +3,6 @@ using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using TACTLib.Core.VFS;
 using TACTLib.Helpers;
@@ -61,7 +60,7 @@ public class EncryptedSnos {
             if (!NameDicts.ContainsKey(entry.KeyId)) {
                 EncryptedNameDict? nameDict = null;
                 try {
-                    using var dict = vfs.Open($"Base\\EncryptedNameDict-0x{entry.KeyId}.dat");
+                    using var dict = vfs.Open($"EncryptedNameDict-0x{entry.KeyId:x16}.dat");
                     if (dict != null) {
                         nameDict = new EncryptedNameDict(dict);
                     }
@@ -72,7 +71,5 @@ public class EncryptedSnos {
                 }
             }
         }
-
-        Lookup = Entries.ToDictionary(x => x.Sno, x => x.KeyId);
     }
 }
