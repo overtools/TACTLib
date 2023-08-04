@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
-using TACTLib.Config;
 using TACTLib.Helpers;
 
 namespace TACTLib.Core.Product.Fenris;
@@ -23,7 +22,7 @@ public class CoreTOC {
     public uint PrimaryId { get; }
     public Dictionary<SnoHandle, string> Files { get; } = new();
 
-    public CoreTOC(Stream? stream, EncryptedSnos encrypted, Keyring keyring) {
+    public CoreTOC(Stream? stream, EncryptedSnos encrypted) {
         using var _ = new PerfCounter("CoreTOC::cctor`Stream`EncryptedSnos");
         if (stream == null) {
             throw new ArgumentNullException(nameof(stream));
@@ -94,23 +93,27 @@ public class CoreTOC {
                 }
                 var entry = MemoryMarshal.Read<TOCEntry>(stackBuffer);
 
+                var name = default(string);
                 if (encrypted.Lookup.TryGetValue(entry.Sno, out var keyId)) {
-                    if (!keyring.Keys.ContainsKey(keyId)) {
-                        // todo: implement EncryptedNameDict, encrypted names are replaced with spaces and stored in that file.
-                        continue;
-                    } else {
+                    if (!encrypted.NameDicts.TryGetValue(keyId, out var encryptedNameDict) ||
+                        encryptedNameDict == null ||
+                        !encryptedNameDict.Files.TryGetValue(entry.Sno, out name)) {
                         continue;
                     }
+                } else {
+                    var tmp = stream.Position;
+                    stream.Position = stringOffset + entry.NameOffset;
+
+                    if (stream.Read(stringBuffer) > 0) {
+                        name = Encoding.ASCII.GetString(stringBuffer[..stringBuffer.IndexOf((byte) 0)]);
+                    }
+
+                    stream.Position = tmp;
                 }
 
-                var tmp = stream.Position;
-                stream.Position = stringOffset + entry.NameOffset;
-
-                if (stream.Read(stringBuffer) > 0) {
-                    Files[entry.Sno] = Encoding.ASCII.GetString(stringBuffer[..stringBuffer.IndexOf((byte) 0)]);
+                if (!string.IsNullOrEmpty(name)) {
+                    Files[entry.Sno] = name;
                 }
-
-                stream.Position = tmp;
             }
         }
     }

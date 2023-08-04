@@ -59,11 +59,11 @@ public class ProductHandler_Fenris : IProductHandler {
         CoreManifest[(int) SnoManifestRole.Core] = LoadManifest("Base", Locale.All, SnoManifestRole.Core) ?? throw new InvalidOperationException();
 
         using (var encryptedSno = core.Open("EncryptedSNOs.dat")) {
-            EncryptedSnos = new EncryptedSnos(encryptedSno);
+            EncryptedSnos = new EncryptedSnos(encryptedSno, core);
         }
 
         using (var toc = core.Open("CoreTOC.dat")) {
-            TOC = new CoreTOC(toc, EncryptedSnos, client.ConfigHandler.Keyring);
+            TOC = new CoreTOC(toc, EncryptedSnos);
         }
 
         using (var replaced = core.Open("CoreTOCReplacedSnosMapping.dat")) {
