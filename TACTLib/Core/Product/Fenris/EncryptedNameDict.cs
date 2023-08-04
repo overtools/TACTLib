@@ -16,9 +16,13 @@ public class EncryptedNameDict {
     public Dictionary<SnoHandle, string> Files { get; } = new();
 
     public EncryptedNameDict(Stream stream) {
-        Span<int> header = stackalloc int[2];
+        Span<uint> header = stackalloc uint[2];
         if (stream.Read(MemoryMarshal.AsBytes(header)) != 8) {
             throw new DataException();
+        }
+
+        if (header[0] != 0xABCD4567) {
+            throw new InvalidDataException("Not an EncryptedNameDict");
         }
 
         var present = new SnoHandle[header[1]].AsSpan();
@@ -39,7 +43,7 @@ public class EncryptedNameDict {
 
             if (stream.Read(stringBuffer) > 0) {
                 Files[present[i]] = Encoding.ASCII.GetString(stringBuffer[..stringBuffer.IndexOf((byte) 0)]);
-                stream.Position = tmp + stringBuffer.IndexOf((byte) 0);
+                stream.Position = tmp + stringBuffer.IndexOf((byte) 0) + 1;
             }
         }
     }

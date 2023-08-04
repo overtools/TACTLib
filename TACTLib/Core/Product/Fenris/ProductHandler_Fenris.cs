@@ -1,4 +1,6 @@
 using System;
+using System.Buffers.Binary;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -19,6 +21,7 @@ public class ProductHandler_Fenris : IProductHandler {
     public ReplacedSnos ReplacedSnos { get; }
     public SharedPayloadsMapping SharedPayloads { get; }
     public CoreTOC TOC { get; }
+    public Dictionary<ulong, EncryptedNameDict> EncryptedNameDicts = new();
 
 #endregion
 
@@ -59,11 +62,26 @@ public class ProductHandler_Fenris : IProductHandler {
         CoreManifest[(int) SnoManifestRole.Core] = LoadManifest("Base", Locale.All, SnoManifestRole.Core) ?? throw new InvalidOperationException();
 
         using (var encryptedSno = core.Open("EncryptedSNOs.dat")) {
-            EncryptedSnos = new EncryptedSnos(encryptedSno, core);
+            EncryptedSnos = new EncryptedSnos(encryptedSno);
         }
 
         using (var toc = core.Open("CoreTOC.dat")) {
             TOC = new CoreTOC(toc, EncryptedSnos);
+        }
+
+        foreach (var key in client.ConfigHandler.Keyring.Keys.Keys) {
+            try {
+                using var dict = core.Open($"EncryptedNameDict-0x{BinaryPrimitives.ReverseEndianness(key):x16}.dat");
+                if (dict != null) {
+                    var end = new EncryptedNameDict(dict);
+                    EncryptedNameDicts[key] = end;
+                    foreach (var (id, name) in end.Files) {
+                        TOC.Files[id] = name;
+                    }
+                }
+            } catch (FileNotFoundException) {
+                // ignored
+            }
         }
 
         using (var replaced = core.Open("CoreTOCReplacedSnosMapping.dat")) {

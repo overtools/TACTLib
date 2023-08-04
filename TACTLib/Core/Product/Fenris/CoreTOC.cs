@@ -93,27 +93,18 @@ public class CoreTOC {
                 }
                 var entry = MemoryMarshal.Read<TOCEntry>(stackBuffer);
 
-                var name = default(string);
-                if (encrypted.Lookup.TryGetValue(entry.Sno, out var keyId)) {
-                    if (!encrypted.NameDicts.TryGetValue(keyId, out var encryptedNameDict) ||
-                        encryptedNameDict == null ||
-                        !encryptedNameDict.Files.TryGetValue(entry.Sno, out name)) {
-                        continue;
-                    }
-                } else {
-                    var tmp = stream.Position;
-                    stream.Position = stringOffset + entry.NameOffset;
-
-                    if (stream.Read(stringBuffer) > 0) {
-                        name = Encoding.ASCII.GetString(stringBuffer[..stringBuffer.IndexOf((byte) 0)]);
-                    }
-
-                    stream.Position = tmp;
+                if (encrypted.Lookup.ContainsKey(entry.Sno)) {
+                    continue;
                 }
 
-                if (!string.IsNullOrEmpty(name)) {
-                    Files[entry.Sno] = name;
+                var tmp = stream.Position;
+                stream.Position = stringOffset + entry.NameOffset;
+
+                if (stream.Read(stringBuffer) > 0) {
+                    Files[entry.Sno] = Encoding.ASCII.GetString(stringBuffer[..stringBuffer.IndexOf((byte) 0)]);
                 }
+
+                stream.Position = tmp;
             }
         }
     }

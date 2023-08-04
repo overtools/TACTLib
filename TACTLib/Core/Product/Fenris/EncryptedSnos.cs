@@ -3,8 +3,8 @@ using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
-using TACTLib.Core.VFS;
 using TACTLib.Helpers;
 
 namespace TACTLib.Core.Product.Fenris;
@@ -18,9 +18,8 @@ public class EncryptedSnos {
 
     public EncryptedSno[] Entries { get; }
     public Dictionary<SnoHandle, ulong> Lookup = new();
-    public Dictionary<ulong, EncryptedNameDict?> NameDicts = new();
 
-    public EncryptedSnos(Stream? stream, VFSFileTree vfs) {
+    public EncryptedSnos(Stream? stream) {
         using var _ = new PerfCounter("EncryptedSnos::cctor`Stream");
         if (stream == null) {
             Entries = Array.Empty<EncryptedSno>();
@@ -54,22 +53,6 @@ public class EncryptedSnos {
             offset += read;
         }
 
-        foreach (var entry in Entries) {
-            Lookup[entry.Sno] = entry.KeyId;
-
-            if (!NameDicts.ContainsKey(entry.KeyId)) {
-                EncryptedNameDict? nameDict = null;
-                try {
-                    using var dict = vfs.Open($"EncryptedNameDict-0x{entry.KeyId:x16}.dat");
-                    if (dict != null) {
-                        nameDict = new EncryptedNameDict(dict);
-                    }
-                } catch {
-                    // ignored
-                } finally {
-                    NameDicts[entry.KeyId] = nameDict;
-                }
-            }
-        }
+        Lookup = Entries.ToDictionary(x => x.Sno, x => x.KeyId);
     }
 }
