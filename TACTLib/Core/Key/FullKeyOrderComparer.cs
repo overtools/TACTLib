@@ -2,13 +2,12 @@ using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using CommunityToolkit.HighPerformance;
-using TACTLib.Core;
 
-namespace TACTLib.Container {
-    public class CKeyOrderComparer : IComparer<CKey>,
+namespace TACTLib.Core.Key {
+    public class FullKeyOrderComparer : IComparer<CKey>,
                                      IComparer<EncodingHandler.EKeyESpecEntry>,
                                      IComparer<EncodingHandler.CKeyEKeyEntry> {
-        public static readonly CKeyOrderComparer Instance = new CKeyOrderComparer();
+        public static readonly FullKeyOrderComparer Instance = new FullKeyOrderComparer();
 
         public int Compare(CKey x, CKey y) {
             return CKeyCompare(y, x);

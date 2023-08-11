@@ -4,7 +4,6 @@ using System.Buffers.Binary;
 using System.IO;
 using System.IO.Compression;
 using TACTLib.Client;
-using TACTLib.Container;
 using TACTLib.Exceptions;
 using TACTLib.Helpers;
 

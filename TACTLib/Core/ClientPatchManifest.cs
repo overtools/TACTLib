@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace TACTLib.Container {
+namespace TACTLib.Core {
     public class ClientPatchManifest {
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public unsafe struct Header {

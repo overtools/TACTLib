@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using TACTLib.Container;
 
 namespace TACTLib.Config {
     public class BuildConfig : Config {
@@ -10,7 +9,7 @@ namespace TACTLib.Config {
         public FileRecord? Patch;
         public FileRecord? Download;
         public FileRecord Encoding;
-        public SizeRecord? m_encodingSize;
+        public SizeRecord? EncodingSize;
         public FileRecord? VFSRoot;
         
         public BuildConfig(Stream? stream) : base(stream) {
@@ -19,7 +18,7 @@ namespace TACTLib.Config {
             GetFileRecord("patch", out Patch);
             GetFileRecord("download", out Download);
             GetFileRecord("encoding", out var encoding);
-            GetSizeRecord("encoding-size", out m_encodingSize);
+            GetSizeRecord("encoding-size", out EncodingSize);
             GetFileRecord("vfs-root", out VFSRoot);
 
             if (root == null) throw new NullReferenceException(nameof(root));
@@ -30,16 +29,11 @@ namespace TACTLib.Config {
         }
 
         private void GetFileRecord(string key, out FileRecord? @out) {
-            if (Values.ContainsKey(key)) {
-                @out = GetFileRecord(Values[key]);
-                
-                //string sizeString = $"{key}-size";
-                //if (Values.ContainsKey(sizeString)) {
-                //    @out.Size = int.Parse(Values[sizeString][0]);  // todo: hmm
-                //}
-            } else {
+            if (!Values.TryGetValue(key, out var list)) {
                 @out = null;
+                return;
             }
+            @out = GetFileRecord(Values[key]);
         }
         
         private void GetSizeRecord(string key, out SizeRecord? @out) {
@@ -48,12 +42,12 @@ namespace TACTLib.Config {
                 return;
             }
             @out = new SizeRecord {
-                m_contentSize = int.Parse(list[0]),
-                m_encodedSize = int.Parse(list[1])
+                ContentSize = int.Parse(list[0]),
+                EncodedSize = int.Parse(list[1])
             };
         }
 
-        private FileRecord GetFileRecord(IReadOnlyList<string> vals) {
+        private static FileRecord GetFileRecord(IReadOnlyList<string> vals) {
             FileRecord record = new FileRecord();
 
             if (vals.Count > 0) {
@@ -70,14 +64,11 @@ namespace TACTLib.Config {
         public class FileRecord {
             public CKey ContentKey;
             public CKey EncodingKey;
-            
-            //public int DecodedSize;
-            //public int EncodedSize;
         }
 
         public class SizeRecord {
-            public int m_contentSize;
-            public int m_encodedSize;
+            public int ContentSize;
+            public int EncodedSize;
         }
     }
 }

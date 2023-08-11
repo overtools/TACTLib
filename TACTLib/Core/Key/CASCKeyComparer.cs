@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace TACTLib.Container {
+namespace TACTLib.Core.Key {
     public class CASCKeyComparer : IEqualityComparer<EKey>, IEqualityComparer<CKey> {
         private const uint FnvPrime32 = 0x1000193;
         private const uint FnvOffset32 = 0x811C9DC5;
@@ -10,11 +10,11 @@ namespace TACTLib.Container {
         public static CASCKeyComparer Instance = new CASCKeyComparer();
         
         public unsafe bool Equals(EKey x, EKey y) {
-            return Equals(x.Value, y.Value, EKey.CASC_EKEY_SIZE);
+            return Equals(x.Value, y.Value, EKey.CASC_TRUNCATED_KEY_SIZE);
         }
         
         public unsafe bool Equals(CKey x, CKey y) {
-            return Equals(x.Value, y.Value, CKey.CASC_CKEY_SIZE);
+            return Equals(x.Value, y.Value, CKey.CASC_FULL_KEY_SIZE);
         }
 
         private static unsafe bool Equals(byte* valA, byte* valB, int count) {

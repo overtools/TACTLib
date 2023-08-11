@@ -3,18 +3,18 @@ using System.Runtime.InteropServices;
 using TACTLib.Helpers;
 using static TACTLib.Utils;
 
-namespace TACTLib.Container {
+namespace TACTLib.Core.Key {
     /// <summary>
     /// Encoding Key
     /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct EKey {
+    public unsafe struct TruncatedKey {
         // ReSharper disable once InconsistentNaming
         /// <summary>Encoding Key size, in bytes</summary>
-        public const int CASC_EKEY_SIZE = 9;
+        public const int CASC_TRUNCATED_KEY_SIZE = 9;
 
         /// <summary>Key value</summary>
-        public fixed byte Value[CASC_EKEY_SIZE];
+        public fixed byte Value[CASC_TRUNCATED_KEY_SIZE];
 
         /// <summary>
         /// Convert to a hex string
@@ -22,7 +22,7 @@ namespace TACTLib.Container {
         /// <returns>Hex stirng</returns>
         public readonly string ToHexString() {
             fixed (byte* b = Value)
-                return PtrToSpan(b, CASC_EKEY_SIZE).ToHexString();
+                return PtrToSpan(b, CASC_TRUNCATED_KEY_SIZE).ToHexString();
         }
 
         /// <summary>
@@ -30,21 +30,21 @@ namespace TACTLib.Container {
         /// </summary>
         /// <param name="string">Source stirng</param>
         /// <returns>Created EKey</returns>
-        public static EKey FromString(string @string) {
+        public static TruncatedKey FromString(string @string) {
             return FromByteArray(StringToByteArray(@string));
         }
 
         /// <summary>
-        /// Create <see cref="EKey"/> from a byte array
+        /// Create <see cref="TruncatedKey"/> from a byte array
         /// </summary>
         /// <param name="array">Source array</param>
         /// <returns></returns>
-        /// <exception cref="ArgumentException">Array length != <see cref="CASC_EKEY_SIZE"/></exception>
-        public static EKey FromByteArray(byte[] array) {
-            if (array.Length < CASC_EKEY_SIZE)
-                throw new ArgumentException($"array size < {CASC_EKEY_SIZE}");
+        /// <exception cref="ArgumentException">Array length != <see cref="CASC_TRUNCATED_KEY_SIZE"/></exception>
+        public static TruncatedKey FromByteArray(byte[] array) {
+            if (array.Length < CASC_TRUNCATED_KEY_SIZE)
+                throw new ArgumentException($"array size < {CASC_TRUNCATED_KEY_SIZE}");
 
-            return MemoryMarshal.Read<EKey>(array);
+            return MemoryMarshal.Read<TruncatedKey>(array);
         }
     }
 }

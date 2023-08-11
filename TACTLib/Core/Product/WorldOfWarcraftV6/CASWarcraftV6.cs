@@ -1,5 +1,4 @@
 using System.IO;
-using TACTLib.Container;
 using TACTLib.Helpers;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global

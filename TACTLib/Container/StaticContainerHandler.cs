@@ -49,7 +49,7 @@ namespace TACTLib.Container {
 
             ulong ekeyHiUl;
             unsafe {
-                var ekeySpan = new ReadOnlySpan<byte>(ekey.Value, 16);
+                var ekeySpan = new ReadOnlySpan<byte>(ekey.Value, sizeof(CKey));
                 ekeyHiUl = BinaryPrimitives.ReadUInt64BigEndian(ekeySpan.Slice(8));
             }
             //Console.Out.WriteLine($"{ekeyHiUl}");

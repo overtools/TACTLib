@@ -97,7 +97,7 @@ namespace TACTLib.Core.Product.Tank {
 
         private static byte[] CreateDigest(string value) {
             byte[] digest;
-            using (SHA1 shaM = new SHA1Managed()) {
+            using (SHA1 shaM = SHA1.Create()) {
                 byte[] stringBytes = Encoding.ASCII.GetBytes(value);
                 digest = shaM.ComputeHash(stringBytes);
             }
@@ -166,7 +166,7 @@ namespace TACTLib.Core.Product.Tank {
         public class ManifestCryptoAttribute : Attribute {
             public bool AutoDetectVersion = true;
             public TACTProduct Product = TACTProduct.Overwatch;
-            public uint[]? BuildVersions = new uint[0];
+            public uint[]? BuildVersions = Array.Empty<uint>();
         }
     }
 }

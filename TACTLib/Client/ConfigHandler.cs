@@ -1,9 +1,8 @@
 ﻿using System;
 using System.IO;
-using TACTLib.Client;
 using TACTLib.Config;
 
-namespace TACTLib.Core {
+namespace TACTLib.Client {
     public class ConfigHandler {
         /// <summary>Build config</summary>
         public readonly BuildConfig BuildConfig;

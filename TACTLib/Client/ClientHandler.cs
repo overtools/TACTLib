@@ -155,7 +155,6 @@ namespace TACTLib.Client {
 
             // If there is no product specified it's because we aren't using a container or we're using online mode.
             // Find the product from the productCode provided by createArgs or if there is none, find it from the local install path
-            // tho i'm not sure what the chances are of there being an install path provided if you're loading from remote as it would be kind of redundant but whatever
             if (Product == TACTProduct.Unknown) {
                 Product = ProductHelpers.TryGetProductFromUID(ProductCode);
 

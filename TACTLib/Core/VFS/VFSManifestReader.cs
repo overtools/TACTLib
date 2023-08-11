@@ -5,7 +5,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
-using TACTLib.Container;
 using TACTLib.Helpers;
 using static TACTLib.Utils;
 

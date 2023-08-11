@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using TACTLib.Client;
 using TACTLib.Container;
+using TACTLib.Core.Key;
 using TACTLib.Helpers;
 
 namespace TACTLib.Protocol
@@ -45,7 +46,7 @@ namespace TACTLib.Protocol
         private void ParseIndex(Stream stream, int i)
         {
             const int pageLength = 4 << 10;
-            const int MD5_HASH_SIZE = CKey.CASC_CKEY_SIZE;
+            const int MD5_HASH_SIZE = CKey.CASC_FULL_KEY_SIZE;
             
             using (var br = new BinaryReader(stream))
             {

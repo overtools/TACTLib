@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using TACTLib.Container;
 
 // ReSharper disable file NotAccessedField.Global
 namespace TACTLib.Core.Product.CommonV2 {

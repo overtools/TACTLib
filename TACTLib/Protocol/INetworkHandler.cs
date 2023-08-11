@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.IO;
-using TACTLib.Container;
 
 namespace TACTLib.Protocol {
     public interface INetworkHandler {

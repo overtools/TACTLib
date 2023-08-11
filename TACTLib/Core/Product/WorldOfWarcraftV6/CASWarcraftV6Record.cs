@@ -1,5 +1,4 @@
 using System.Runtime.InteropServices;
-using TACTLib.Container;
 
 namespace TACTLib.Core.Product.WorldOfWarcraftV6 {
     

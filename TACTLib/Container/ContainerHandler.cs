@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using TACTLib.Client;
 using TACTLib.Core;
+using TACTLib.Core.Key;
 using TACTLib.Helpers;
 
 namespace TACTLib.Container {
@@ -101,7 +102,7 @@ namespace TACTLib.Container {
                 header.ExtraBytes != 0x00 ||
                 header.SpanSizeBytes != 0x04 ||
                 header.SpanOffsBytes != 0x05 ||
-                header.EKeyBytes != EKey.CASC_EKEY_SIZE) {
+                header.EKeyBytes != EKey.CASC_TRUNCATED_KEY_SIZE) {
                 throw new InvalidDataException("invalid index header");
             }
 

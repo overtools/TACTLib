@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using TACTLib.Client;
-using TACTLib.Container;
+using TACTLib.Core.Key;
 using TACTLib.Helpers;
 
 namespace TACTLib.Core {
@@ -16,7 +16,7 @@ namespace TACTLib.Core {
         private readonly byte[][] EKeyESpecPages;
 
         public EncodingHandler(ClientHandler client) : this(client,
-            client.ConfigHandler.BuildConfig.Encoding.EncodingKey, client.ConfigHandler.BuildConfig.m_encodingSize!.m_encodedSize)
+            client.ConfigHandler.BuildConfig.Encoding.EncodingKey, client.ConfigHandler.BuildConfig.EncodingSize!.EncodedSize)
         {
         }
 
@@ -89,7 +89,7 @@ namespace TACTLib.Core {
         }
 
         public bool TryGetEncodingEntry(CKey cKey, out CKeyEKeyEntry entry) {
-            var searchResult = Array.BinarySearch(CKeyEKeyHeaderKeys, cKey, CKeyOrderComparer.Instance);
+            var searchResult = Array.BinarySearch(CKeyEKeyHeaderKeys, cKey, FullKeyOrderComparer.Instance);
 
             int pageIndex;
             if (searchResult > 0) {
@@ -103,7 +103,7 @@ namespace TACTLib.Core {
                 CKey = cKey
             };
             var entries = CKeyEKeyPages[pageIndex];
-            var foundIndex = Array.BinarySearch(entries, speculativeEntry, CKeyOrderComparer.Instance);
+            var foundIndex = Array.BinarySearch(entries, speculativeEntry, FullKeyOrderComparer.Instance);
 
             if (foundIndex >= 0) {
                 entry = entries[foundIndex];
@@ -116,7 +116,7 @@ namespace TACTLib.Core {
         }
 
         public int GetEncodedSize(CKey ekey) {
-            var searchResult = Array.BinarySearch(EKeyESpecHeaderKeys, ekey, CKeyOrderComparer.Instance);
+            var searchResult = Array.BinarySearch(EKeyESpecHeaderKeys, ekey, FullKeyOrderComparer.Instance);
 
             int pageIndex;
             if (searchResult >= 0) {
@@ -130,7 +130,7 @@ namespace TACTLib.Core {
                 EKey = ekey
             };
             var entries = MemoryMarshal.Cast<byte, EKeyESpecEntry>(EKeyESpecPages[pageIndex]);
-            var foundIndex = entries.BinarySearch(speculativeEntry, CKeyOrderComparer.Instance);
+            var foundIndex = entries.BinarySearch(speculativeEntry, FullKeyOrderComparer.Instance);
 
             if (foundIndex >= 0) {
                 return (int)entries[foundIndex].FileSize.ToInt();

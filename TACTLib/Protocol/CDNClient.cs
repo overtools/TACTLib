@@ -4,7 +4,6 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using TACTLib.Client;
-using TACTLib.Container;
 
 namespace TACTLib.Protocol {
     public abstract class CDNClient : INetworkHandler {

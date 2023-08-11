@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using TACTLib.Client;
-using TACTLib.Container;
 using TACTLib.Helpers;
 
 namespace TACTLib.Core.Product.Tank {

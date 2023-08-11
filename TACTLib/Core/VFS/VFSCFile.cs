@@ -1,6 +1,4 @@
-﻿using TACTLib.Container;
-
-namespace TACTLib.Core.VFS {
+﻿namespace TACTLib.Core.VFS {
     public class VFSCFile : VFSFile {
         public CKey CKey;
     }
