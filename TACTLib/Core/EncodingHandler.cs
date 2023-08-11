@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -10,82 +9,100 @@ using TACTLib.Helpers;
 
 namespace TACTLib.Core {
     public class EncodingHandler {
-        /// <summary>Encoding table</summary>
-        public readonly Dictionary<CKey, CKeyEKeyEntry> Entries;
+        private readonly CKey[] CKeyEKeyHeaderKeys;
+        private readonly byte[][] CKeyEKeyPages;
         
         private readonly CKey[] EKeyESpecHeaderKeys;
-        private byte[][] EKeyESpecPages;
+        private readonly byte[][] EKeyESpecPages;
 
         public EncodingHandler(ClientHandler client) : this(client,
             client.ConfigHandler.BuildConfig.Encoding.EncodingKey, client.ConfigHandler.BuildConfig.m_encodingSize!.m_encodedSize)
         {
         }
 
-        public unsafe EncodingHandler(ClientHandler client, CKey key, int eSize) {
-            Entries = new Dictionary<CKey, CKeyEKeyEntry>(CASCKeyComparer.Instance);
-
-            using (var stream = client.CreateArgs.VersionSource > ClientCreateArgs.InstallMode.Local ? client.OpenCKey(key)! : client.OpenEKey(key, eSize)!)
-            using (var reader = new BinaryReader(stream)) {
-                /*using (var outFile = File.OpenWrite("steam_encoding.bin")) {
-                    stream.CopyTo(outFile);
-                }
-                stream.Position = 0;
+        public EncodingHandler(ClientHandler client, CKey key, int eSize) {
+            using var stream = client.CreateArgs.VersionSource > ClientCreateArgs.InstallMode.Local ? client.OpenCKey(key)! : client.OpenEKey(key, eSize)!; // todo: why..
+            using var reader = new BinaryReader(stream);
+            /*using (var outFile = File.OpenWrite("steam_encoding.bin")) {
+                stream.CopyTo(outFile);
+            }
+            stream.Position = 0;
+            File.WriteAllBytes("steam_encoding_encoded.bin", client.ContainerHandler!.OpenEKey(key, eSize)!.Value.ToArray());*/
                 
-                File.WriteAllBytes("steam_encoding_encoded.bin", client.ContainerHandler!.OpenEKey(key, eSize)!.Value.ToArray());*/
+            var header = reader.Read<Header>();
+            if (header.Signature != 0x4E45 || header.CKeySize != 16 || header.EKeySize != 16 ||
+                header.Version != 1) {
+                throw new InvalidDataException($"EncodingHandler: encoding header invalid (magic: {header.Signature:X4}, csize: {header.CKeySize}, esize: {header.EKeySize})");
+            }
+
+            var cKeyEKeyPageSize = header.m_ckeyEKeyPageSize.ToInt();  
+            var eKeyESpecPageSize = header.m_eKeyESpecPageSize.ToInt(); 
+
+            var cKeyEKeyPageCount = header.m_cKeyEKeyPageCount.ToInt();
+            var eKeyEspecPageCount = header.m_eKeyEspecPageCount.ToInt();
                 
-                var header = reader.Read<Header>();
+            Debug.Assert(header.m_unknown == 0); // asserted by agent
 
-                if (header.Signature != 0x4E45 || header.CKeySize != 16 || header.EKeySize != 16 ||
-                    header.Version != 1) {
-                    throw new InvalidDataException($"EncodingHandler: encoding header invalid (magic: {header.Signature:X4}, csize: {header.CKeySize}, esize: {header.EKeySize})");
-                }
-
-                var cKeyEKeyPageSize = header.m_ckeyEKeyPageSize.ToInt();  
-                var eKeyESpecPageSize = header.m_eKeyESpecPageSize.ToInt(); 
-
-                var cKeyEKeyPageCount = header.m_cKeyEKeyPageCount.ToInt();
-                var eKeyEspecPageCount = header.m_eKeyEspecPageCount.ToInt();
+            //string[] strings = Encoding.ASCII.GetString(reader.ReadBytes(especBlockSize)).Split(new[] { '\0' }, StringSplitOptions.RemoveEmptyEntries);
+            stream.Position += header.m_especBlockSize.ToInt();
                 
-                Debug.Assert(header.m_unknown == 0); // asserted by agent
-
-                //string[] strings = Encoding.ASCII.GetString(reader.ReadBytes(especBlockSize)).Split(new[] { '\0' }, StringSplitOptions.RemoveEmptyEntries);
-                stream.Position += header.m_especBlockSize.ToInt();
-
-                //PageHeader[] pageHeaders = reader.ReadArray<PageHeader>(cKeyPageCount);
-                stream.Position += cKeyEKeyPageCount * sizeof(PageHeader);
-                for (var i = 0; i < cKeyEKeyPageCount; i++) {
-                    var pageEnd = stream.Position + cKeyEKeyPageSize * 1024;
-
-                    while (stream.Position <= pageEnd) {
-                        var entry = reader.Read<CKeyEKeyEntry>();
-                        if (entry.EKeyCount == 0) break;
-
-                        stream.Position += (entry.EKeyCount - 1) * header.EKeySize;
-
-                        if (Entries.ContainsKey(entry.CKey)) {
-                            //Console.Out.WriteLine($"double or nothing {entry.CKey.ToHexString()}");
-                            continue;
-                        }
-
-                        Entries[entry.CKey] = entry;
-                    }
-
-                    stream.Position = pageEnd; // just checking
-                }
+            var CKeyEKeyHeaders = reader.ReadArray<PageHeader>((int)cKeyEKeyPageCount);
+            CKeyEKeyHeaderKeys = CKeyEKeyHeaders.Select(x => x.FirstKey).ToArray();
+            CKeyEKeyPages = new byte[CKeyEKeyHeaders.Length][];
+            for (var i = 0; i < CKeyEKeyHeaders.Length; i++) {
+                var page = new byte[cKeyEKeyPageSize * 1024];
+                stream.DefinitelyRead(page);
+                CKeyEKeyPages[i] = page;
+            }
                 
-                var EKeyESpecHeaders = reader.ReadArray<PageHeader>((int)eKeyEspecPageCount);
-                EKeyESpecHeaderKeys = EKeyESpecHeaders.Select(x => x.FirstKey).ToArray();
-                EKeyESpecPages = new byte[eKeyEspecPageCount][];
-                for (var i = 0; i < eKeyEspecPageCount; i++) {
-                    var page = new byte[eKeyESpecPageSize * 1024];
-                    stream.DefinitelyRead(page);
-                    EKeyESpecPages[i] = page;
-                }
+            var EKeyESpecHeaders = reader.ReadArray<PageHeader>((int)eKeyEspecPageCount);
+            EKeyESpecHeaderKeys = EKeyESpecHeaders.Select(x => x.FirstKey).ToArray();
+            EKeyESpecPages = new byte[EKeyESpecHeaders.Length][];
+            for (var i = 0; i < EKeyESpecHeaders.Length; i++) {
+                var page = new byte[eKeyESpecPageSize * 1024];
+                stream.DefinitelyRead(page);
+                EKeyESpecPages[i] = page;
             }
         }
 
         public bool TryGetEncodingEntry(CKey cKey, out CKeyEKeyEntry entry) {
-            return Entries.TryGetValue(cKey, out entry);
+            var searchResult = Array.BinarySearch(CKeyEKeyHeaderKeys, cKey, CKeyOrderComparer.Instance);
+
+            int pageIndex;
+            if (searchResult > 0) {
+                pageIndex = searchResult;
+            } else {
+                var firstElementLarger = ~searchResult;
+                pageIndex = firstElementLarger - 1;
+            }
+
+            int structSize;
+            unsafe {
+                structSize = sizeof(CKeyEKeyEntry);
+            }
+
+            var page = CKeyEKeyPages[pageIndex];
+            var entries = MemoryMarshal.Cast<byte, CKeyEKeyEntry>(CKeyEKeyPages[pageIndex]);
+            // todo: is another binary search worth..? and how do i deal with dynamic size..
+            var arrOffset = 0;
+            while (true) {
+                var foundEntrySpan = page.AsSpan(arrOffset);
+                if (foundEntrySpan.Length < structSize) break;
+                var foundEntry = MemoryMarshal.Read<CKeyEKeyEntry>(foundEntrySpan);
+                arrOffset += structSize;
+                arrOffset += (foundEntry.EKeyCount - 1) * 16;
+
+                var comparison = CKeyOrderComparer.CKeyCompare(cKey, foundEntry.CKey);
+                if (comparison == 0) {
+                    entry = foundEntry;
+                    return true;
+                }
+                if (comparison > 0) break;
+            }
+
+            entry = new CKeyEKeyEntry();
+            Console.Out.WriteLine($"cant get ekey for {cKey.ToHexString()}. a o");
+            return false;
         }
         
         public int GetEncodedSize(CKey ekey) {
@@ -110,7 +127,6 @@ namespace TACTLib.Core {
             Console.Out.WriteLine($"cant get size for {ekey.ToHexString()}. a o");
             return 0;
         }
-
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public struct Header {
