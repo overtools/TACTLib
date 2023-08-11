@@ -46,7 +46,9 @@ namespace TACTLib.Core.VFS {
                 if (vfsFile is VFSCFile cFile) {
                     return _client.OpenCKey(cFile.CKey);
                 }
-                return _client.OpenEKey(vfsFile.EKey);
+
+                throw new NotImplementedException("where esize?");
+                //return _client.OpenEKey(vfsFile.EKey);
             }
             throw new FileNotFoundException(file);
         }

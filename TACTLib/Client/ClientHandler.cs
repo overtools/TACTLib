@@ -39,7 +39,7 @@ namespace TACTLib.Client {
         public readonly InstallationInfoFile? InstallationInfoFile;
 
         /// <summary>Container handler</summary>
-        public readonly ContainerHandler? ContainerHandler;
+        public readonly IContainerHandler? ContainerHandler;
 
         /// <summary>Encoding table handler</summary>
         public readonly EncodingHandler? EncodingHandler;
@@ -89,8 +89,20 @@ namespace TACTLib.Client {
                     throw new FileNotFoundException($"Invalid archive directory. Directory {BasePath} does not exist. Please specify a valid directory.");
                 }
             }
+            
+            var staticBuildConfigPath = Path.Combine(BasePath, "data", ".build.config"); // todo: um
+            var isStaticContainer = File.Exists(staticBuildConfigPath);
+            if (isStaticContainer) {
+                if (createArgs.VersionSource != ClientCreateArgs.InstallMode.Local) throw new Exception("only local version sources are supported for static containers (steam)");
+                createArgs.Online = false;
 
-            if (createArgs.VersionSource == ClientCreateArgs.InstallMode.Local) {
+                // needed early for keyring
+                Product = ProductHelpers.TryGetProductFromUID(ProductCode);
+                
+                using var buildConfigStream = File.OpenRead(staticBuildConfigPath);
+                var buildConfig = new Config.BuildConfig(buildConfigStream);
+                ConfigHandler = ConfigHandler.ForStaticContainer(this, buildConfig);
+            } else if (createArgs.VersionSource == ClientCreateArgs.InstallMode.Local) {
                 try {
                     // if someone specified a flavor, try and see what flavor and fix the base path
                     var flavorInfoPath = Path.Combine(BasePath, ".flavor.info");
@@ -170,7 +182,11 @@ namespace TACTLib.Client {
                 }
             }
 
-            if (createArgs.VersionSource == ClientCreateArgs.InstallMode.Local) {
+            if (isStaticContainer) {
+                InstallationInfo = new InstallationInfo(new Dictionary<string, string> {
+                    {"Version", ConfigHandler!.BuildConfig.Values["build-name"][0]}
+                });
+            } else if (createArgs.VersionSource == ClientCreateArgs.InstallMode.Local) {
                 // should always exist as it's fetched above but we can't continue without being able to load the installation info
                 if (!File.Exists(InstallationInfoPath)) {
                     throw new FileNotFoundException(InstallationInfoPath);
@@ -210,12 +226,19 @@ namespace TACTLib.Client {
 
             if (createArgs.UseContainer) {
                 Logger.Info("CASC", "Initializing...");
-                using var _ = new PerfCounter("ContainerHandler::ctor`ClientHandler");
-                ContainerHandler = new ContainerHandler(this);
+                if (isStaticContainer) {
+                    ContainerHandler = new StaticContainerHandler(this);
+                } else {
+                    using var _ = new PerfCounter("ContainerHandler::ctor`ClientHandler");
+                    ContainerHandler = new ContainerHandler(this);
+                }
             }
 
-            using (var _ = new PerfCounter("ConfigHandler::ctor`ClientHandler"))
-                ConfigHandler = new ConfigHandler(this);
+            if (ConfigHandler == null) {
+                // static container does early init
+                using (var _ = new PerfCounter("ConfigHandler::ctor`ClientHandler"))
+                    ConfigHandler = ConfigHandler.ForDynamicContainer(this);
+            }
 
             using (var _ = new PerfCounter("EncodingHandler::ctor`ClientHandler"))
                 EncodingHandler = new EncodingHandler(this);
@@ -274,7 +297,7 @@ namespace TACTLib.Client {
         public Stream? OpenCKey(CKey key) {
             // todo: EncodingHandler can't be null after constructor has finished, but can be during init
             if (EncodingHandler != null && EncodingHandler.TryGetEncodingEntry(key, out var entry)) {
-                return OpenEKey(entry.EKey);
+                return OpenEKey(entry.EKey, EncodingHandler.GetEncodedSize(entry.EKey));
             }
 
             if (CreateArgs.Online) {
@@ -290,8 +313,8 @@ namespace TACTLib.Client {
         /// </summary>
         /// <param name="key">The Encoding Key</param>
         /// <returns>Loaded file</returns>
-        public Stream? OpenEKey(EKey key) {  // ekey = value of ckey in encoding table
-            var stream = ContainerHandler?.OpenEKey(key);
+        private Stream? OpenEKeyFromContainer(CKey key, int eSize) {  // ekey = value of ckey in encoding table
+            var stream = ContainerHandler?.OpenEKey(key, eSize);
             return stream == null ? null : new MemoryStream(BLTEDecoder.Decode(this, stream.Value.AsSpan()));
         }
 
@@ -300,10 +323,10 @@ namespace TACTLib.Client {
         /// </summary>
         /// <param name="key">The Long Encoding Key</param>
         /// <returns>Loaded file</returns>
-        public Stream? OpenEKey(CKey key) {  // ekey = value of ckey in encoding table
+        public Stream? OpenEKey(CKey key, int eSize) {  // ekey = value of ckey in encoding table
             if (ContainerHandler != null) {
                 try {
-                    var cascBlte = OpenEKey(key.AsEKey());
+                    var cascBlte = OpenEKeyFromContainer(key, eSize);
                     if (cascBlte != null) return cascBlte;
                 } catch (Exception e) {
                     if (!CreateArgs.Online) throw;
@@ -328,15 +351,16 @@ namespace TACTLib.Client {
         }
 
         public Stream? OpenConfigKey(string key) {
-            if (ContainerHandler != null) {
-                var path = Path.Combine(ContainerHandler.ContainerDirectory, ContainerHandler.ConfigDirectory, key.Substring(0, 2), key.Substring(2, 2), key);
-                if (File.Exists(path + CreateArgs.ExtraFileEnding)) {
-                    return File.OpenRead(path + CreateArgs.ExtraFileEnding);
-                }
+            if (ContainerHandler is not ContainerHandler dynamicContainer) {
+                throw new Exception("this method is only supported for dynamic containers");
+            }
+            var path = Path.Combine(dynamicContainer.ContainerDirectory, Container.ContainerHandler.ConfigDirectory, key.Substring(0, 2), key.Substring(2, 2), key);
+            if (File.Exists(path + CreateArgs.ExtraFileEnding)) {
+                return File.OpenRead(path + CreateArgs.ExtraFileEnding);
+            }
 
-                if (File.Exists(path)) {
-                    return File.OpenRead(path);
-                }
+            if (File.Exists(path)) {
+                return File.OpenRead(path);
             }
 
             return CreateArgs.Online ? NetHandle!.OpenConfig(key) : null;

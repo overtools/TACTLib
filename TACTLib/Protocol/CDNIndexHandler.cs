@@ -100,7 +100,7 @@ namespace TACTLib.Protocol
         {
             try
             {
-                var dir = m_client.ContainerHandler!.ContainerDirectory;
+                var dir = ((ContainerHandler)m_client.ContainerHandler!).ContainerDirectory;
                 var path = Path.Combine(dir, ContainerHandler.CDNIndicesDirectory, archive + ".index");
                 if (File.Exists(path))
                 {

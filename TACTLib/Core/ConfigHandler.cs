@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Reflection;
 using TACTLib.Client;
 using TACTLib.Config;
 
@@ -15,7 +14,7 @@ namespace TACTLib.Core {
         /// <summary>Keyring config</summary>
         public readonly Keyring Keyring;
 
-        public ConfigHandler(ClientHandler client) {
+        private ConfigHandler(ClientHandler client) {
             LoadFromInstallationInfo(client, "BuildKey", out BuildConfig? buildConfig);
             LoadFromInstallationInfo(client, "CDNKey", out CDNConfig? cdnConfig);
             LoadFromInstallationInfo(client, "Keyring", out Keyring? keyring);
@@ -33,6 +32,15 @@ namespace TACTLib.Core {
             Keyring.LoadSupportKeyrings(client);
         }
 
+        private ConfigHandler(ClientHandler client, BuildConfig buildConfig) {
+            BuildConfig = buildConfig;
+            
+            CDNConfig = new CDNConfig(null);
+            
+            Keyring = new Keyring(null);
+            Keyring.LoadSupportKeyrings(client);
+        }
+
         private void LoadFromInstallationInfo<T>(ClientHandler client, string name, out T? @out) where T : Config.Config {
             if (client.InstallationInfo.Values.TryGetValue(name, out var key) && !string.IsNullOrWhiteSpace(key)) {
                 using (var stream = client.OpenConfigKey(key)) {
@@ -46,6 +54,14 @@ namespace TACTLib.Core {
         private static void LoadConfig<T>(Stream? stream, out T @out) {
             // hmm
             @out = (T) Activator.CreateInstance(typeof(T), stream)!;
+        }
+
+        public static ConfigHandler ForDynamicContainer(ClientHandler client) {
+            return new ConfigHandler(client);
+        }
+
+        public static ConfigHandler ForStaticContainer(ClientHandler client, BuildConfig buildConfig) {
+            return new ConfigHandler(client, buildConfig);
         }
     }
 }

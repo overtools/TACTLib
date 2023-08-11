@@ -242,8 +242,6 @@ namespace TACTLib.Core.Product.MNDX
                     return Handler.OpenCKey(entry.Key);
                 case CKey ckey:
                     return Handler.OpenCKey(ckey);
-                case EKey ekey:
-                    return Handler.OpenEKey(ekey);
                 default:
                     throw new ArgumentException(nameof(key));
             }

@@ -10,10 +10,9 @@ using Microsoft.Win32.SafeHandles;
 using TACTLib.Client;
 using TACTLib.Core;
 using TACTLib.Helpers;
-using static TACTLib.Utils;
 
 namespace TACTLib.Container {
-    public class ContainerHandler {
+    public class ContainerHandler : IContainerHandler {
         // ReSharper disable once InconsistentNaming
         /// <summary>Number of index files</summary>
         public const int CASC_INDEX_COUNT = 0x10;
@@ -150,6 +149,10 @@ namespace TACTLib.Container {
                 return null;
             }
             return OpenIndexEntry(indexEntry);
+        }
+
+        public ArraySegment<byte>? OpenEKey(CKey ekey, int eSize) {
+            return OpenEKey(ekey.AsEKey());
         }
 
         private IEnumerable<(int Index, string Path)> GetDataFilePaths() {
@@ -325,12 +328,12 @@ namespace TACTLib.Container {
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public unsafe struct EKeyEntry {
+        public struct EKeyEntry {
             /// <summary>Encoding Key</summary>
             public EKey EKey;                   // The first 9 bytes of the encoded key
 
             /// <summary>Index of data file and offset within (big endian)</summary>
-            public fixed byte FileOffsetBE[5];
+            public UInt40BE FileOffsetBE;
 
             /// <summary>Size of the encoded file</summary>
             public uint EncodedSize;
@@ -347,10 +350,7 @@ namespace TACTLib.Container {
             public uint EncodedSize;
 
             public unsafe IndexEntry(EKeyEntry entry) {
-                var indexHigh = entry.FileOffsetBE[0];
-                var indexLow = (uint)Int32FromPtrBE(entry.FileOffsetBE + 1);
-                
-                ulong indexInt = ((ulong)indexHigh << 32) | indexLow;
+                var indexInt = entry.FileOffsetBE.ToInt();
 
                 const int fileOffsetBitCount = 30; // technically can vary via header but hardcoded same as everything else
 

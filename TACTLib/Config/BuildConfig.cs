@@ -10,6 +10,7 @@ namespace TACTLib.Config {
         public FileRecord? Patch;
         public FileRecord? Download;
         public FileRecord Encoding;
+        public SizeRecord? m_encodingSize;
         public FileRecord? VFSRoot;
         
         public BuildConfig(Stream? stream) : base(stream) {
@@ -18,6 +19,7 @@ namespace TACTLib.Config {
             GetFileRecord("patch", out Patch);
             GetFileRecord("download", out Download);
             GetFileRecord("encoding", out var encoding);
+            GetSizeRecord("encoding-size", out m_encodingSize);
             GetFileRecord("vfs-root", out VFSRoot);
 
             if (root == null) throw new NullReferenceException(nameof(root));
@@ -38,6 +40,17 @@ namespace TACTLib.Config {
             } else {
                 @out = null;
             }
+        }
+        
+        private void GetSizeRecord(string key, out SizeRecord? @out) {
+            if (!Values.TryGetValue(key, out var list)) {
+                @out = null;
+                return;
+            }
+            @out = new SizeRecord {
+                m_contentSize = int.Parse(list[0]),
+                m_encodedSize = int.Parse(list[1])
+            };
         }
 
         private FileRecord GetFileRecord(IReadOnlyList<string> vals) {
@@ -60,6 +73,11 @@ namespace TACTLib.Config {
             
             //public int DecodedSize;
             //public int EncodedSize;
+        }
+
+        public class SizeRecord {
+            public int m_contentSize;
+            public int m_encodedSize;
         }
     }
 }
