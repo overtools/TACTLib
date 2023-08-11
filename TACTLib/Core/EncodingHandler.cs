@@ -14,7 +14,7 @@ namespace TACTLib.Core {
         private readonly CKeyEKeyEntry[][] CKeyEKeyPages;
 
         private readonly FullEKey[] EKeyESpecHeaderKeys;
-        private readonly byte[][] EKeyESpecPages;
+        private readonly EKeyESpecEntry[][] EKeyESpecPages;
 
         public EncodingHandler(ClientHandler client) : this(client,
             client.ConfigHandler.BuildConfig.Encoding.EncodingKey, client.ConfigHandler.BuildConfig.EncodingSize!.EncodedSize)
@@ -81,11 +81,20 @@ namespace TACTLib.Core {
 
             var EKeyESpecHeaders = reader.ReadArray<PageHeader>((int)eKeyEspecPageCount);
             EKeyESpecHeaderKeys = EKeyESpecHeaders.Select(x => x.FirstKey).ToArray();
-            EKeyESpecPages = new byte[EKeyESpecHeaders.Length][];
+            EKeyESpecPages = new EKeyESpecEntry[EKeyESpecHeaders.Length][];
             for (var i = 0; i < EKeyESpecHeaders.Length; i++) {
                 var page = new byte[eKeyESpecPageSize * 1024];
                 stream.DefinitelyRead(page);
-                EKeyESpecPages[i] = page;
+                
+                var entries = MemoryMarshal.Cast<byte, EKeyESpecEntry>(page);
+                for (var j = 0; j < entries.Length; j++)
+                {
+                    if (entries[j].ESpecIndex.ToInt() != uint.MaxValue) continue;
+                    // FFFFF.. = terminator
+                    entries = entries.Slice(0, j);
+                    break;
+                }
+                EKeyESpecPages[i] = entries.ToArray();
             }
         }
 
@@ -130,8 +139,8 @@ namespace TACTLib.Core {
             var speculativeEntry = new EKeyESpecEntry {
                 EKey = ekey
             };
-            var entries = MemoryMarshal.Cast<byte, EKeyESpecEntry>(EKeyESpecPages[pageIndex]);
-            var foundIndex = entries.BinarySearch(speculativeEntry, FullKeyOrderComparer.Instance);
+            var entries = EKeyESpecPages[pageIndex];
+            var foundIndex = Array.BinarySearch(entries, speculativeEntry, FullKeyOrderComparer.Instance);
 
             if (foundIndex >= 0) {
                 return (int)entries[foundIndex].FileSize.ToInt();
