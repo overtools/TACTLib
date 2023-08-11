@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -138,6 +139,14 @@ namespace TACTLib.Core {
 
             Console.Out.WriteLine($"cant get size for {ekey.ToHexString()}. a o");
             return 0;
+        }
+
+        public IEnumerable<CKey> GetCKeys() {
+            foreach (var page in CKeyEKeyPages) {
+                foreach (var entry in page) {
+                    yield return entry.CKey;
+                }
+            }
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
