@@ -24,7 +24,7 @@ namespace TACTLib.Client {
         /// <summary>
         /// The <see cref="Product"/> that this container belongs to.
         /// </summary>
-        public readonly TACTProduct Product = TACTProduct.Unknown;
+        public TACTProduct Product => ProductHelpers.TryGetProductFromUID(ProductCode);
 
         public readonly string? ProductCode = null;
 
@@ -62,7 +62,7 @@ namespace TACTLib.Client {
         /// <summary>The base path of the container. E.g where the game executables are.</summary>
         public readonly string BasePath;
 
-        public readonly string? InstallationInfoPath;
+        private readonly string? InstallationInfoPath;
 
         public readonly ClientCreateArgs CreateArgs;
 
@@ -83,11 +83,25 @@ namespace TACTLib.Client {
             BasePath = basePath ?? ""; // should it be empty string? lol
             ProductCode = createArgs.Product;
 
-            // If we are using a container OR if InstallMode == Local
             if (createArgs.UseContainer) {
                 if (!Directory.Exists(BasePath)) {
                     throw new FileNotFoundException($"Invalid archive directory. Directory {BasePath} does not exist. Please specify a valid directory.");
                 }
+                
+                // if someone specified a flavor, try and see what flavor and fix the base path
+                var flavorInfoPath = Path.Combine(BasePath, ".flavor.info");
+                if (File.Exists(flavorInfoPath)) {
+                    try {
+                        // mixed installation, store the product code to be used below
+                        ProductCode = File.ReadLines(flavorInfoPath).Skip(1).First();
+                        BasePath = Path.GetFullPath(Path.Combine(BasePath, "../")); // base path is a directory up from the flavor
+                        Logger.Info("Core", $".flavor.info detected. Found product \"{ProductCode}\"");
+                    } catch (Exception ex) {
+                        Logger.Warn("Core", $"Failed reading .flavor.info file! {ex.Message}");
+                    }
+                }
+                
+                ProductCode ??= ProductHelpers.TryGetUIDFromProduct(ProductHelpers.TryGetProductFromLocalInstall(BasePath));
             }
             
             var staticBuildConfigPath = Path.Combine(BasePath, "data", ".build.config"); // todo: um
@@ -96,80 +110,23 @@ namespace TACTLib.Client {
                 if (createArgs.VersionSource != ClientCreateArgs.InstallMode.Local) throw new Exception("only local version sources are supported for static containers (steam)");
                 createArgs.Online = false;
 
-                // needed early for keyring
-                Product = ProductHelpers.TryGetProductFromUID(ProductCode);
+                if (Product == TACTProduct.Unknown && createArgs.LoadSupportKeyring) throw new Exception("product must be set for static containers when a keyring is expected to be loaded");
                 
                 using var buildConfigStream = File.OpenRead(staticBuildConfigPath);
                 var buildConfig = new Config.BuildConfig(buildConfigStream);
                 ConfigHandler = ConfigHandler.ForStaticContainer(this, buildConfig);
             } else if (createArgs.VersionSource == ClientCreateArgs.InstallMode.Local) {
-                try {
-                    // if someone specified a flavor, try and see what flavor and fix the base path
-                    var flavorInfoPath = Path.Combine(BasePath, ".flavor.info");
-                    if (File.Exists(flavorInfoPath)) {
-                        // mixed installation, store the product code to be used below
-                        ProductCode = File.ReadLines(flavorInfoPath).Skip(1).First();
-                        Product = ProductHelpers.ProductFromUID(ProductCode);
-                        BasePath = Path.GetFullPath(Path.Combine(BasePath, "../")); // base path is a directory up from the flavor
-
-                        Logger.Info("Core", $".flavor.info detected. Found product \"{ProductCode}\"");
-                    }
-                } catch (Exception ex) {
-                    Logger.Warn("Core", $"Failed reading .flavor.info file! {ex.Message}");
-                }
-
                 // ensure to see the .build.info file exists. if it doesn't then we can't continue
                 InstallationInfoPath = Path.Combine(BasePath, createArgs.InstallInfoFileName) + createArgs.ExtraFileEnding;
                 if (!File.Exists(InstallationInfoPath)) {
                     throw new FileNotFoundException($"Invalid archive directory! {InstallationInfoPath} was not found. You must provide the path to a valid install.");
                 }
-
-                // If there was no flavor specified, try to find the flavor in the .build.info file
-                ProductCode ??= createArgs.Product ?? ProductHelpers.TryGetUIDFromProduct(ProductHelpers.TryGetProductFromLocalInstall(BasePath));
+                
                 InstallationInfoFile = new InstallationInfoFile(InstallationInfoPath);
-
-                // If product is unknown it means we loaded on the base path and not a flavor e.g. C:/Games/Overwatch
-                // so we need to load the .build.info file and get the product from there
-                if (Product == TACTProduct.Unknown) {
-                    var installationInfo = InstallationInfoFile.GetInstallationInfoForProduct(ProductCode);
-
-                    if (installationInfo == null) {
-                        Logger.Warn("Core", $"Failed to find product \"{ProductCode}\" in {createArgs.InstallInfoFileName} file! Using first available.");
-                        installationInfo = InstallationInfoFile.GetFirstOrDefault();
-                    }
-
-                    // if there's no data in the .build.info file? Shouldn't really be possible
-                    if (installationInfo == null) {
-                        throw new Exception($"Failed to find a valid product in {createArgs.InstallInfoFileName} file!");
-                    }
-
-                    // If product code is null this ProductFromUID will throw an exception
-                    var foundProductCode = installationInfo.Values.GetValueOrDefault("Product");
-                    if (foundProductCode != ProductCode) {
-                        ProductCode ??= foundProductCode;
-                        Product = ProductHelpers.ProductFromUID(ProductCode);
-                        Logger.Info("Core", $"Found product \"{ProductCode}\" via {createArgs.InstallInfoFileName}");
-                    }
-                }
             }
 
-            // If there is no product specified it's because we aren't using a container or we're using online mode.
-            // Find the product from the productCode provided by createArgs or if there is none, find it from the local install path
             if (Product == TACTProduct.Unknown) {
-                Product = ProductHelpers.TryGetProductFromUID(ProductCode);
-
-                // if no product was specified via ClientCreateArgs, try and find it from the local install path
-                if (Product == TACTProduct.Unknown) {
-                    Product = ProductHelpers.TryGetProductFromLocalInstall(BasePath);
-                }
-
-                if (Product == TACTProduct.Unknown) {
-                    if (createArgs.VersionSource == ClientCreateArgs.InstallMode.Remote) {
-                        throw new Exception("Failed to determine TACT Product. This is required if you're loading from remote.");
-                    }
-
-                    Logger.Warn("Core", "Failed to determine TACT Product! This could potentially cause issues!");
-                }
+                throw new Exception($"Failed to determine TACT Product at `{BasePath}`");
             }
 
             if (createArgs.Online) {
@@ -186,13 +143,7 @@ namespace TACTLib.Client {
                     {"Version", ConfigHandler!.BuildConfig.Values["build-name"][0]}
                 });
             } else if (createArgs.VersionSource == ClientCreateArgs.InstallMode.Local) {
-                // should always exist as it's fetched above but we can't continue without being able to load the installation info
-                if (!File.Exists(InstallationInfoPath)) {
-                    throw new FileNotFoundException(InstallationInfoPath);
-                }
-
-                using var _ = new PerfCounter("InstallationInfo::ctor`string");
-                InstallationInfo = new InstallationInfo(InstallationInfoPath!, ProductCode!);
+                InstallationInfo = new InstallationInfo(InstallationInfoFile!.Values, ProductCode!);
             } else {
                 using var _ = new PerfCounter("InstallationInfo::ctor`INetworkHandler");
                 InstallationInfo = new InstallationInfo(NetHandle!, createArgs.OnlineRegion);
