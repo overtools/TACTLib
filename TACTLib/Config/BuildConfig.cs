@@ -55,7 +55,7 @@ namespace TACTLib.Config {
             }
 
             if (vals.Count > 1) {
-                record.EncodingKey = CKey.FromString(vals[1]);
+                record.EncodingKey = FullEKey.FromString(vals[1]);
             }
             
             return record;
@@ -63,7 +63,7 @@ namespace TACTLib.Config {
 
         public class FileRecord {
             public CKey ContentKey;
-            public CKey EncodingKey;
+            public FullEKey EncodingKey;
         }
 
         public class SizeRecord {

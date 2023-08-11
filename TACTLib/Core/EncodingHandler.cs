@@ -12,7 +12,7 @@ namespace TACTLib.Core {
         private readonly CKey[] CKeyEKeyHeaderKeys;
         private readonly CKeyEKeyEntry[][] CKeyEKeyPages;
 
-        private readonly CKey[] EKeyESpecHeaderKeys;
+        private readonly FullEKey[] EKeyESpecHeaderKeys;
         private readonly byte[][] EKeyESpecPages;
 
         public EncodingHandler(ClientHandler client) : this(client,
@@ -20,8 +20,8 @@ namespace TACTLib.Core {
         {
         }
 
-        public EncodingHandler(ClientHandler client, CKey key, int eSize) {
-            using var stream = client.CreateArgs.VersionSource > ClientCreateArgs.InstallMode.Local ? client.OpenCKey(key)! : client.OpenEKey(key, eSize)!; // todo: why..
+        public EncodingHandler(ClientHandler client, FullKey eKey, int eSize) {
+            using var stream = client.CreateArgs.VersionSource > ClientCreateArgs.InstallMode.Local ? client.OpenCKey(eKey)! : client.OpenEKey(eKey, eSize)!; // todo: why..
             using var reader = new BinaryReader(stream);
             /*using (var outFile = File.OpenWrite("steam_encoding.bin")) {
                 stream.CopyTo(outFile);
@@ -115,7 +115,7 @@ namespace TACTLib.Core {
             return false;
         }
 
-        public int GetEncodedSize(CKey ekey) {
+        public int GetEncodedSize(FullEKey ekey) {
             var searchResult = Array.BinarySearch(EKeyESpecHeaderKeys, ekey, FullKeyOrderComparer.Instance);
 
             int pageIndex;
@@ -142,17 +142,10 @@ namespace TACTLib.Core {
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public struct Header {
-            /// <summary>Encoding signature, "EN"</summary>
-            public short Signature;
-
-            /// <summary>Version number</summary>
-            public byte Version;
-
-            /// <summary>Number of bytes in a CKey</summary>
-            public byte CKeySize;
-
-            /// <summary>Number of bytes in a EKey</summary>
-            public byte EKeySize;
+            public ushort Signature; // Encoding signature, "EN"
+            public byte Version; // Version number
+            public byte CKeySize; // Number of bytes in a CKey
+            public byte EKeySize; // Number of bytes in a EKey
 
             public UInt16BE m_ckeyEKeyPageSize;  // in kilo bytes. e.g. 4 in here → 4096 byte pages (default)
             public UInt16BE m_eKeyESpecPageSize; // same
@@ -167,33 +160,23 @@ namespace TACTLib.Core {
 
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
         public struct PageHeader {
-            /// <summary>First key in the page</summary>
-            public CKey FirstKey;
-
-            /// <summary>MD5 of the page</summary>
-            public CKey PageHash;
+            public FullKey FirstKey; // First key in the page
+            public MD5Key PageHash; // MD5 of the page
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public struct EKeyESpecEntry {
-            public CKey EKey;
+            public FullEKey EKey;
             public UInt32BE ESpecIndex;
             public UInt40BE FileSize;
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public struct CKeyEKeyEntry {
-            /// <summary>Number of EKeys</summary>
-            public ushort EKeyCount;
-
-            /// <summary>Content file size (big endian)</summary>
-            public UInt32BE ContentSize;
-
-            /// <summary>Content Key. MD5 of the file content.</summary>
-            public CKey CKey;  // Content key. This is MD5 of the file content
-
-            /// <summary>Encoding Key. This is (trimmed) MD5 hash of the file header, containing MD5 hashes of all the logical blocks of the file</summary>
-            public CKey EKey; // :kyaah:
+            public ushort EKeyCount; // number of EKeys
+            public UInt32BE ContentSize; // decoded size
+            public FullKey CKey; // decoded key
+            public FullEKey EKey; // encoded key
 
             /// <summary>Get content size</summary>
             /// <returns>Content size</returns>

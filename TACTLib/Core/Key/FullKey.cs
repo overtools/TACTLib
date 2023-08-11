@@ -48,7 +48,7 @@ namespace TACTLib.Core.Key {
             return MemoryMarshal.Read<FullKey>(array);
         }
 
-        public EKey AsEKey() {
+        public EKey AsTruncated() {
             return Unsafe.As<FullKey, EKey>(ref this);
         }
     }

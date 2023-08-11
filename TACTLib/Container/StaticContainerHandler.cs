@@ -41,7 +41,7 @@ namespace TACTLib.Container {
             }
         }
 
-        public ArraySegment<byte>? OpenEKey(CKey ekey, int eSize) {
+        public ArraySegment<byte>? OpenEKey(FullEKey ekey, int eSize) {
             //var chunk = 0ul;
             //var archive = 0ul;
             //var offset = 0ul;
@@ -49,7 +49,7 @@ namespace TACTLib.Container {
 
             ulong ekeyHiUl;
             unsafe {
-                var ekeySpan = new ReadOnlySpan<byte>(ekey.Value, sizeof(CKey));
+                var ekeySpan = new ReadOnlySpan<byte>(ekey.Value, sizeof(FullEKey));
                 ekeyHiUl = BinaryPrimitives.ReadUInt64BigEndian(ekeySpan.Slice(8));
             }
             //Console.Out.WriteLine($"{ekeyHiUl}");

@@ -144,7 +144,7 @@ namespace TACTLib.Container {
         /// </summary>
         /// <param name="key">The Encoding Key</param>
         /// <returns>Loaded file</returns>
-        internal ArraySegment<byte>? OpenEKey(EKey key) {
+        private ArraySegment<byte>? OpenEKey(TruncatedKey key) {
             if (!IndexEntries.TryGetValue(key, out var indexEntry)) {
                 Debugger.Log(0, "ContainerHandler", $"Missing local index {key.ToHexString()}\n");
                 return null;
@@ -152,8 +152,8 @@ namespace TACTLib.Container {
             return OpenIndexEntry(indexEntry);
         }
 
-        public ArraySegment<byte>? OpenEKey(CKey ekey, int eSize) {
-            return OpenEKey(ekey.AsEKey());
+        public ArraySegment<byte>? OpenEKey(FullEKey ekey, int eSize) {
+            return OpenEKey(ekey.AsTruncated());
         }
 
         private IEnumerable<(int Index, string Path)> GetDataFilePaths() {
@@ -297,7 +297,7 @@ namespace TACTLib.Container {
         [StructLayout(LayoutKind.Sequential, Size = 30)]
         public struct DataHeader
         {
-            public CKey m_md5;
+            public MD5Key m_md5;
             public uint m_size;
         }
 

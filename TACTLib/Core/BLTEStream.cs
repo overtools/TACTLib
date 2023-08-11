@@ -12,7 +12,7 @@ namespace TACTLib.Core {
     public struct DataBlock {
         public int m_encodedSize;
         public int m_decodedSize;
-        public CKey m_md5;
+        public MD5Key m_md5;
     }
 
     /// <summary>BLTE encoded stream</summary>
@@ -124,7 +124,7 @@ namespace TACTLib.Core {
                 {
                     block.m_encodedSize = _reader.ReadInt32BE();
                     block.m_decodedSize = _reader.ReadInt32BE();
-                    block.m_md5 = _reader.Read<CKey>();
+                    block.m_md5 = _reader.Read<MD5Key>();
                 } else
                 {
                     block.m_encodedSize = size - 8;

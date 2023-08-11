@@ -4,13 +4,13 @@ using System.Runtime.InteropServices;
 using CommunityToolkit.HighPerformance;
 
 namespace TACTLib.Core.Key {
-    public class FullKeyOrderComparer : IComparer<CKey>,
+    public class FullKeyOrderComparer : IComparer<FullKey>,
                                      IComparer<EncodingHandler.EKeyESpecEntry>,
                                      IComparer<EncodingHandler.CKeyEKeyEntry> {
         public static readonly FullKeyOrderComparer Instance = new FullKeyOrderComparer();
 
-        public int Compare(CKey x, CKey y) {
-            return CKeyCompare(y, x);
+        public int Compare(FullKey x, FullKey y) {
+            return FullKeyCompare(y, x);
         }
 
         public int Compare(EncodingHandler.EKeyESpecEntry x, EncodingHandler.EKeyESpecEntry y) {
@@ -21,7 +21,7 @@ namespace TACTLib.Core.Key {
             return Compare(x.CKey, y.CKey);
         }
 
-        public static int CKeyCompare(CKey left, CKey right)
+        public static int FullKeyCompare(FullKey left, FullKey right)
         {
             var leftSpan = MemoryMarshal.CreateReadOnlySpan(ref left, 1).AsBytes();
             var rightSpan = MemoryMarshal.CreateReadOnlySpan(ref right, 1).AsBytes();

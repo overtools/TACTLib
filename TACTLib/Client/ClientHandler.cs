@@ -310,39 +310,39 @@ namespace TACTLib.Client {
         /// <summary>
         /// Open a file from Encoding Key
         /// </summary>
-        /// <param name="key">The Encoding Key</param>
+        /// <param name="fullEKey">The Encoding Key</param>
         /// <returns>Loaded file</returns>
-        private Stream? OpenEKeyFromContainer(CKey key, int eSize) {  // ekey = value of ckey in encoding table
-            var stream = ContainerHandler?.OpenEKey(key, eSize);
+        private Stream? OpenEKeyFromContainer(FullEKey fullEKey, int eSize) {  // ekey = value of ckey in encoding table
+            var stream = ContainerHandler?.OpenEKey(fullEKey, eSize);
             return stream == null ? null : new MemoryStream(BLTEDecoder.Decode(this, stream.Value.AsSpan()));
         }
 
         /// <summary>
         /// Open a file from Encoding Key
         /// </summary>
-        /// <param name="key">The Long Encoding Key</param>
+        /// <param name="fullEKey">The Long Encoding Key</param>
         /// <returns>Loaded file</returns>
-        public Stream? OpenEKey(CKey key, int eSize) {  // ekey = value of ckey in encoding table
+        public Stream? OpenEKey(FullEKey fullEKey, int eSize) {  // ekey = value of ckey in encoding table
             if (ContainerHandler != null) {
                 try {
-                    var cascBlte = OpenEKeyFromContainer(key, eSize);
+                    var cascBlte = OpenEKeyFromContainer(fullEKey, eSize);
                     if (cascBlte != null) return cascBlte;
                 } catch (Exception e) {
                     if (!CreateArgs.Online) throw;
                     if (e is BLTEKeyException) throw;
-                    Logger.Warn("CASC", $"Unable to open {key.ToHexString()} from CASC. Will try to download. Exception: {e}");
+                    Logger.Warn("CASC", $"Unable to open {fullEKey.ToHexString()} from CASC. Will try to download. Exception: {e}");
                 }
             }
 
             if (!CreateArgs.Online) return null;
 
             byte[]? netMemStream = null;
-            if (m_cdnIdx!.CDNIndexData.TryGetValue(key, out var cdnIdx)) {
+            if (m_cdnIdx!.CDNIndexData.TryGetValue(fullEKey, out var cdnIdx)) {
                 netMemStream = m_cdnIdx.OpenDataFile(cdnIdx);
             }
 
             if (netMemStream == null) {
-                netMemStream = NetHandle!.OpenData(key);
+                netMemStream = NetHandle!.OpenData(fullEKey);
             }
 
             if (netMemStream == null) return null;
