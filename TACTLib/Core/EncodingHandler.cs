@@ -99,7 +99,7 @@ namespace TACTLib.Core {
         }
 
         public bool TryGetEncodingEntry(CKey cKey, out CKeyEKeyEntry entry) {
-            var searchResult = Array.BinarySearch(CKeyEKeyHeaderKeys, cKey, FullKeyOrderComparer.Instance);
+            var searchResult = Array.BinarySearch(CKeyEKeyHeaderKeys, cKey);
 
             int pageIndex;
             if (searchResult > 0) {
@@ -113,7 +113,7 @@ namespace TACTLib.Core {
                 CKey = cKey
             };
             var entries = CKeyEKeyPages[pageIndex];
-            var foundIndex = Array.BinarySearch(entries, speculativeEntry, FullKeyOrderComparer.Instance);
+            var foundIndex = Array.BinarySearch(entries, speculativeEntry);
 
             if (foundIndex >= 0) {
                 entry = entries[foundIndex];
@@ -126,7 +126,7 @@ namespace TACTLib.Core {
         }
 
         public int GetEncodedSize(FullEKey ekey) {
-            var searchResult = Array.BinarySearch(EKeyESpecHeaderKeys, ekey, FullKeyOrderComparer.Instance);
+            var searchResult = Array.BinarySearch(EKeyESpecHeaderKeys, ekey);
 
             int pageIndex;
             if (searchResult >= 0) {
@@ -140,7 +140,7 @@ namespace TACTLib.Core {
                 EKey = ekey
             };
             var entries = EKeyESpecPages[pageIndex];
-            var foundIndex = Array.BinarySearch(entries, speculativeEntry, FullKeyOrderComparer.Instance);
+            var foundIndex = Array.BinarySearch(entries, speculativeEntry);
 
             if (foundIndex >= 0) {
                 return (int)entries[foundIndex].FileSize.ToInt();
@@ -183,14 +183,18 @@ namespace TACTLib.Core {
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct EKeyESpecEntry {
+        public struct EKeyESpecEntry : IComparable<EKeyESpecEntry> {
             public FullEKey EKey;
             public UInt32BE ESpecIndex;
             public UInt40BE FileSize;
+
+            public int CompareTo(EKeyESpecEntry other) {
+                return EKey.CompareTo(other.EKey);
+            }
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct CKeyEKeyEntry {
+        public struct CKeyEKeyEntry : IComparable<CKeyEKeyEntry> {
             public ushort EKeyCount; // number of EKeys
             public UInt32BE ContentSize; // decoded size
             public FullKey CKey; // decoded key
@@ -200,6 +204,10 @@ namespace TACTLib.Core {
             /// <returns>Content size</returns>
             public int GetSize() {
                 return (int)ContentSize.ToInt();
+            }
+
+            public int CompareTo(CKeyEKeyEntry other) {
+                return CKey.CompareTo(other.CKey);
             }
         }
     }

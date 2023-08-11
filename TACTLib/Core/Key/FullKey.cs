@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using CommunityToolkit.HighPerformance;
 using TACTLib.Helpers;
 using static TACTLib.Utils;
 
@@ -9,7 +11,7 @@ namespace TACTLib.Core.Key {
     /// Content Key
     /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct FullKey {
+    public unsafe struct FullKey : IComparable<FullKey> {
         // ReSharper disable once InconsistentNaming
         /// <summary>Content Key size, in bytes</summary>
         public const int CASC_FULL_KEY_SIZE = 16;
@@ -50,6 +52,26 @@ namespace TACTLib.Core.Key {
 
         public EKey AsTruncated() {
             return Unsafe.As<FullKey, EKey>(ref this);
+        }
+
+        public int CompareTo(FullKey other) {
+            return -FullKeyCompare(this, other);
+        }
+
+        public static int FullKeyCompare(FullKey left, FullKey right)
+        {
+            var leftSpan = MemoryMarshal.CreateReadOnlySpan(ref left, 1).AsBytes();
+            var rightSpan = MemoryMarshal.CreateReadOnlySpan(ref right, 1).AsBytes();
+
+            var leftU0 = BinaryPrimitives.ReadUInt64BigEndian(leftSpan);
+            var rightU0 = BinaryPrimitives.ReadUInt64BigEndian(rightSpan);
+
+            var compareA = rightU0.CompareTo(leftU0);
+            if (compareA != 0) return compareA;
+
+            var leftU1 = BinaryPrimitives.ReadUInt64BigEndian(leftSpan);
+            var rightU1 = BinaryPrimitives.ReadUInt64BigEndian(rightSpan);
+            return rightU1.CompareTo(leftU1);
         }
     }
 }
