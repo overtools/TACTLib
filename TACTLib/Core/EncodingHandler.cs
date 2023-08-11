@@ -21,7 +21,7 @@ namespace TACTLib.Core {
         }
 
         public EncodingHandler(ClientHandler client, FullKey eKey, int eSize) {
-            using var stream = client.CreateArgs.VersionSource > ClientCreateArgs.InstallMode.Local ? client.OpenCKey(eKey)! : client.OpenEKey(eKey, eSize)!; // todo: why..
+            using var stream = client.OpenEKey(eKey, eSize)!;
             using var reader = new BinaryReader(stream);
             /*using (var outFile = File.OpenWrite("steam_encoding.bin")) {
                 stream.CopyTo(outFile);
