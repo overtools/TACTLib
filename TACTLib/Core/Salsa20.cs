@@ -62,8 +62,8 @@ namespace TACTLib.Core
                 output = output.Slice(blockSize);
             }
         }
-        
-        private void Hash(Span<byte> output, ReadOnlySpan<uint> existingState) {
+
+        private static void Hash(Span<byte> output, ReadOnlySpan<uint> existingState) {
             Debug.Assert(existingState.Length == 16); // should be the existing state buffer
             Span<uint> state = stackalloc uint[existingState.Length];
             existingState.CopyTo(state);
