@@ -102,7 +102,7 @@ namespace TACTLib.Core {
             var searchResult = Array.BinarySearch(CKeyEKeyHeaderKeys, cKey);
 
             int pageIndex;
-            if (searchResult > 0) {
+            if (searchResult >= 0) {
                 pageIndex = searchResult;
             } else {
                 var firstElementLarger = ~searchResult;
