@@ -107,6 +107,7 @@ namespace TACTLib.Core {
             } else {
                 var firstElementLarger = ~searchResult;
                 pageIndex = firstElementLarger - 1;
+                if (pageIndex < 0) goto NOT_FOUND;
             }
 
             var speculativeEntry = new CKeyEKeyEntry {
@@ -120,6 +121,7 @@ namespace TACTLib.Core {
                 return true;
             }
 
+            NOT_FOUND:
             entry = new CKeyEKeyEntry();
             Console.Out.WriteLine($"cant get ekey for {cKey.ToHexString()}. a o");
             return false;
@@ -134,6 +136,7 @@ namespace TACTLib.Core {
             } else {
                 var firstElementLarger = ~searchResult;
                 pageIndex = firstElementLarger - 1;
+                if (pageIndex < 0) goto NOT_FOUND;
             }
 
             var speculativeEntry = new EKeyESpecEntry {
@@ -146,6 +149,7 @@ namespace TACTLib.Core {
                 return (int)entries[foundIndex].FileSize.ToInt();
             }
 
+            NOT_FOUND:
             Console.Out.WriteLine($"cant get size for {ekey.ToHexString()}. a o");
             return 0;
         }
