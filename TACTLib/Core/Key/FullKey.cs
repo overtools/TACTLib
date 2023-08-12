@@ -55,7 +55,7 @@ namespace TACTLib.Core.Key {
         }
 
         public int CompareTo(FullKey other) {
-            return -FullKeyCompare(this, other);
+            return FullKeyCompare(this, other);
         }
 
         public static int FullKeyCompare(FullKey left, FullKey right)
@@ -66,12 +66,12 @@ namespace TACTLib.Core.Key {
             var leftU0 = BinaryPrimitives.ReadUInt64BigEndian(leftSpan);
             var rightU0 = BinaryPrimitives.ReadUInt64BigEndian(rightSpan);
 
-            var compareA = rightU0.CompareTo(leftU0);
+            var compareA = leftU0.CompareTo(rightU0);
             if (compareA != 0) return compareA;
 
-            var leftU1 = BinaryPrimitives.ReadUInt64BigEndian(leftSpan);
-            var rightU1 = BinaryPrimitives.ReadUInt64BigEndian(rightSpan);
-            return rightU1.CompareTo(leftU1);
+            var leftU1 = BinaryPrimitives.ReadUInt64BigEndian(leftSpan.Slice(8));
+            var rightU1 = BinaryPrimitives.ReadUInt64BigEndian(rightSpan.Slice(8));
+            return leftU1.CompareTo(rightU1);
         }
     }
 }
