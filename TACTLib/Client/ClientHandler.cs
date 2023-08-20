@@ -103,14 +103,16 @@ namespace TACTLib.Client {
                 
                 ProductCode ??= ProductHelpers.TryGetUIDFromProduct(ProductHelpers.TryGetProductFromLocalInstall(BasePath));
             }
+
+            if (Product == TACTProduct.Unknown) {
+                throw new Exception($"Failed to determine TACT Product at `{BasePath}`");
+            }
             
             var staticBuildConfigPath = Path.Combine(BasePath, "data", ".build.config"); // todo: um
             var isStaticContainer = File.Exists(staticBuildConfigPath);
             if (isStaticContainer) {
                 if (createArgs.VersionSource != ClientCreateArgs.InstallMode.Local) throw new Exception("only local version sources are supported for static containers (steam)");
                 createArgs.Online = false;
-
-                if (Product == TACTProduct.Unknown && createArgs.LoadSupportKeyring) throw new Exception("product must be set for static containers when a keyring is expected to be loaded");
                 
                 using var buildConfigStream = File.OpenRead(staticBuildConfigPath);
                 var buildConfig = new Config.BuildConfig(buildConfigStream);
@@ -123,10 +125,6 @@ namespace TACTLib.Client {
                 }
                 
                 InstallationInfoFile = new InstallationInfoFile(InstallationInfoPath);
-            }
-
-            if (Product == TACTProduct.Unknown) {
-                throw new Exception($"Failed to determine TACT Product at `{BasePath}`");
             }
 
             if (createArgs.Online) {
@@ -218,7 +216,7 @@ namespace TACTLib.Client {
         }
 
         private bool CanShareCDNData([NotNullWhen(true)] ClientHandler? other) {
-            if (other == null) return false;
+            if (other?.m_cdnIdx == null) return false;
 
             var cdnConfig = ConfigHandler.CDNConfig;
             var otherCDNConfig = other.ConfigHandler.CDNConfig;
