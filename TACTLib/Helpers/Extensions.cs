@@ -2,6 +2,7 @@ using System;
 using System.Buffers.Binary;
 using System.IO;
 using System.Runtime.InteropServices;
+using CommunityToolkit.HighPerformance;
 
 namespace TACTLib.Helpers {
     public static class Extensions {
@@ -43,6 +44,8 @@ namespace TACTLib.Helpers {
         /// <returns>Array of read structs</returns>
         public static T[] ReadArray<T>(this BinaryReader reader) where T : unmanaged
         {
+            // todo: why is this here? this is extremely specific
+            
             var numBytes = (int)reader.ReadInt64();
             if (numBytes == 0)
             {
@@ -52,7 +55,7 @@ namespace TACTLib.Helpers {
             var result = reader.ReadBytes(numBytes);
 
             reader.BaseStream.Position += (0 - numBytes) & 0x07;
-            return FastStruct<T>.ReadArray(result);
+            return MemoryMarshal.Cast<byte, T>(result).ToArray();
         }
         
         /// <summary>
@@ -64,11 +67,8 @@ namespace TACTLib.Helpers {
         /// <returns>Stuct array</returns>
         public static T[] ReadArray<T>(this BinaryReader reader, int count) where T : unmanaged
         {
-            if (count == 0)
-            {
-                return Array.Empty<T>();
-            }
-
+            if (count == 0) return Array.Empty<T>();
+            
             var result = new T[count];
             reader.DefinitelyRead(MemoryMarshal.Cast<T, byte>(result));
             return result;
@@ -82,7 +82,8 @@ namespace TACTLib.Helpers {
         /// <typeparam name="T">Struct type</typeparam>
         public static void Write<T>(this BinaryWriter writer, T @struct) where T : unmanaged
         {
-            writer.Write(FastStruct<T>.StructureToArray(@struct));
+            var bytes = MemoryMarshal.CreateReadOnlySpan(ref @struct, 1).AsBytes();
+            writer.Write(bytes);
         }
         
         /// <summary>
@@ -93,7 +94,8 @@ namespace TACTLib.Helpers {
         /// <typeparam name="T">Struct type</typeparam>
         public static void WriteStructArray<T>(this BinaryWriter writer, T[] @struct) where T : unmanaged
         {
-            writer.Write(FastStruct<T>.WriteArray(@struct));
+            var bytes = @struct.AsSpan().AsBytes();
+            writer.Write(bytes);
         }
         
         /// <summary>Read a big endian 32-bit int</summary>
