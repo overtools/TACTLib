@@ -123,7 +123,8 @@ namespace TACTLib.Core {
 
             NOT_FOUND:
             entry = new CKeyEKeyEntry();
-            Console.Out.WriteLine($"cant get ekey for {cKey.ToHexString()}. a o");
+            Logger.Debug(nameof(EncodingHandler), $"Unable to get EKey for {cKey.ToHexString()} (This is okay, can be due to bundle encryption)");
+            //Console.Out.WriteLine($"cant get ekey for {cKey.ToHexString()}. a o");
             return false;
         }
 
@@ -150,7 +151,8 @@ namespace TACTLib.Core {
             }
 
             NOT_FOUND:
-            Console.Out.WriteLine($"cant get size for {ekey.ToHexString()}. a o");
+            Logger.Warn(nameof(EncodingHandler), $"Unable to get ESize for {ekey.ToHexString()}. This should not happen (and will crash static containers)");
+            //Console.Out.WriteLine($"cant get size for {ekey.ToHexString()}. a o");
             return 0;
         }
 
