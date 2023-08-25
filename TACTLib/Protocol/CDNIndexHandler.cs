@@ -87,13 +87,12 @@ namespace TACTLib.Protocol
             var pageSize = footer.m_blockSizeKB * 1024;
             var totalSizeForPage = pageSize + footer.m_keyBytes + footer.m_checksumSize; // every page will have lastekey + hash
             var pageCount = ((int)br.BaseStream.Length - fullFooterSize) / (totalSizeForPage);
-            var pages = new byte[pageCount][];
 
+            var page = new byte[pageSize];
             for (int pageIndex = 0; pageIndex < pageCount; pageIndex++) {
-                pages[pageIndex] = new byte[pageSize];
-                br.DefinitelyRead(pages[pageIndex]);
+                br.DefinitelyRead(page);
 
-                var pageSpan = pages[pageIndex].AsSpan();
+                var pageSpan = page.AsSpan();
                 while (pageSpan.Length >= 16) {
                     var key = SpanHelper.ReadStruct<FullKey>(ref pageSpan);
                     if (key.CompareTo(default) == 0) break;
