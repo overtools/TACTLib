@@ -52,42 +52,56 @@ namespace TACTLib.Protocol
             var handler = new CDNIndexHandler(clientHandler);
             return handler;
         }
-
-        private void ParseIndex(Stream stream, int archiveIndex)
-        {
-            using var br = new BinaryReader(stream);
-
+        
+        private static FixedFooter ReadFooter(BinaryReader br) {
             var footerHashSize = 16;
-            FixedFooter footer;
-            
+
             while (true) {
                 if (footerHashSize < 8) throw new Exception("unable to determine footer hash size");
 
-                unsafe {
-                    br.BaseStream.Position = br.BaseStream.Length - footerHashSize - sizeof(FixedFooter);
-                }
-                footer = br.Read<FixedFooter>();
+                br.BaseStream.Position = br.BaseStream.Length - footerHashSize - FixedFooter.SIZE;
+                var footer = br.Read<FixedFooter>();
                 if (footer.m_version != 1) goto NEXT;
+                if (footer.m_unk0x11 != 0) goto NEXT;
+                if (footer.m_unk0x12 != 0) goto NEXT;
                 if (footer.m_checksumSize != footerHashSize) goto NEXT;
                 // todo: more validation.. whar is hash
                 
                 //Console.Out.WriteLine($"he's {footerHashSize} ?");
-                break;
+                return footer;
                     
                 NEXT:
                 footerHashSize--;
             }
+        }
+
+        private static void GetTableParameters(FixedFooter footer, int length, out int pageSize, out int pageCount) {
+            pageSize = footer.m_blockSizeKB * 1024;
+            var totalSizeForPage = pageSize + footer.m_keyBytes + footer.m_checksumSize; // every page will have lastEKey + hash
+            pageCount = (length - footer.DynamicSize) / totalSizeForPage;
             
-            br.BaseStream.Position = 0;
             if (footer.m_keyBytes != 16) throw new Exception($"invalid key size: {footer.m_keyBytes}");
 
+            var calculatedSize = 0;
+            calculatedSize += pageCount * pageSize;
+            calculatedSize += pageCount * footer.m_keyBytes;
+            calculatedSize += pageCount * footer.m_checksumSize;
+            calculatedSize += footer.DynamicSize;
+
+            if (calculatedSize != length) {
+                throw new Exception("index file size mismatch");
+            }
+        }
+        
+        private void ParseIndex(Stream stream, int archiveIndex)
+        {
+            using var br = new BinaryReader(stream);
+            var footer = ReadFooter(br);
+            
+            GetTableParameters(footer, (int)br.BaseStream.Length, out var pageSize, out var pageCount);
             if (archiveIndex == ARCHIVE_ID_GROUP) footer.m_offsetBytes -= 2; // archive index is part of offset
 
-            var fullFooterSize = FixedFooter.SIZE + footerHashSize * 2;
-            var pageSize = footer.m_blockSizeKB * 1024;
-            var totalSizeForPage = pageSize + footer.m_keyBytes + footer.m_checksumSize; // every page will have lastekey + hash
-            var pageCount = ((int)br.BaseStream.Length - fullFooterSize) / (totalSizeForPage);
-
+            br.BaseStream.Position = 0;
             var page = new byte[pageSize];
             for (int pageIndex = 0; pageIndex < pageCount; pageIndex++) {
                 br.DefinitelyRead(page);
@@ -120,13 +134,14 @@ namespace TACTLib.Protocol
                 }
             }
 
-            var lastEKeys = br.ReadArray<FullEKey>(pageCount);
+            br.BaseStream.Position += pageCount * footer.m_keyBytes;
             br.BaseStream.Position += pageCount * footer.m_checksumSize;
-            br.BaseStream.Position += fullFooterSize;
+            br.BaseStream.Position += footer.DynamicSize;
             if (br.BaseStream.Position != br.BaseStream.Length) {
                 throw new Exception($"didnt wrong length data read from index. pos: {br.BaseStream.Position}. len: {br.BaseStream.Length}");
             }
             
+            //var lastEKeys = br.ReadArray<FullEKey>(pageCount);
             //var test = lastEKeys.Select(x => x.ToHexString()).ToArray();
             //Console.Out.WriteLine(test);
         }
@@ -202,6 +217,8 @@ namespace TACTLib.Protocol
             public byte m_keyBytes;
             public byte m_checksumSize;
             public uint m_numElements;
+
+            public int DynamicSize => SIZE + m_checksumSize * 2;
 
             public static unsafe int SIZE => sizeof(FixedFooter);
         }

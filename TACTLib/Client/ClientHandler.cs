@@ -209,6 +209,7 @@ namespace TACTLib.Client {
                 if (CanShareCDNData(CreateArgs.TryShareCDNIndexWithHandler)) {
                     m_cdnIdx = CreateArgs.TryShareCDNIndexWithHandler.m_cdnIdx;
                 } else {
+                    using var _ = new PerfCounter("CDNIndexHandler::Initialize`ClientHandler");
                     m_cdnIdx = CDNIndexHandler.Initialize(this);
                 }
             }
