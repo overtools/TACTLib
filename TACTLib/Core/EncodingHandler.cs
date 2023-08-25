@@ -13,8 +13,8 @@ namespace TACTLib.Core {
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public class EncodingHandler {
         private readonly CKey[] CKeyEKeyHeaderKeys;
-        private readonly CKey[][] CKeyEKeyPagesA;
-        private readonly FullEKey[][][] CKeyEKeyPagesB;
+        private readonly LinearCKeyEntry[][] CKeyEKeyPages_CKeys;
+        private readonly FullEKey[][][] CKeyEKeyPages_EKeys;
 
         private readonly FullEKey[] EKeyESpecHeaderKeys;
         private readonly EKeyESpecEntry[][] EKeyESpecPages;
@@ -52,8 +52,8 @@ namespace TACTLib.Core {
 
             var cKeyEKeyHeaders = reader.ReadArray<PageHeader>((int)cKeyEKeyPageCount);
             CKeyEKeyHeaderKeys = cKeyEKeyHeaders.Select(x => x.FirstKey).ToArray();
-            CKeyEKeyPagesA = new CKey[cKeyEKeyHeaders.Length][];
-            CKeyEKeyPagesB = new FullEKey[cKeyEKeyHeaders.Length][][];
+            CKeyEKeyPages_CKeys = new LinearCKeyEntry[cKeyEKeyHeaders.Length][];
+            CKeyEKeyPages_EKeys = new FullEKey[cKeyEKeyHeaders.Length][][];
             
             for (var pageIdx = 0; pageIdx < cKeyEKeyHeaders.Length; pageIdx++) {
                 var page = new byte[cKeyEKeyPageSize * 1024];
@@ -65,8 +65,8 @@ namespace TACTLib.Core {
                 }
 
                 var pageEntryCount = page.Length / structSize; // (approx)
-                CKeyEKeyPagesA[pageIdx] = new FullKey[pageEntryCount];
-                CKeyEKeyPagesB[pageIdx] = new FullEKey[pageEntryCount][];
+                CKeyEKeyPages_CKeys[pageIdx] = new LinearCKeyEntry[pageEntryCount];
+                CKeyEKeyPages_EKeys[pageIdx] = new FullEKey[pageEntryCount][];
 
                 var arrOffset = 0;
                 var entryIdx = 0;
@@ -77,10 +77,13 @@ namespace TACTLib.Core {
                     if (foundEntry.EKeyCount == 0) break; // end
                     arrOffset += structSize;
                     
-                    CKeyEKeyPagesA[pageIdx][entryIdx] = foundEntry.CKey;
+                    CKeyEKeyPages_CKeys[pageIdx][entryIdx] = new LinearCKeyEntry {
+                        CKey = foundEntry.CKey,
+                        ContentSize = foundEntry.ContentSize
+                    };
 
                     var ekeyArray = new FullEKey[foundEntry.EKeyCount];
-                    CKeyEKeyPagesB[pageIdx][entryIdx] = ekeyArray;
+                    CKeyEKeyPages_EKeys[pageIdx][entryIdx] = ekeyArray;
 
                     for (int ekeyIdx = 0; ekeyIdx < foundEntry.EKeyCount; ekeyIdx++) {
                         if (ekeyIdx == 0) ekeyArray[ekeyIdx] = foundEntry.EKey;
@@ -91,7 +94,7 @@ namespace TACTLib.Core {
                     entryIdx++;
                 }
                 
-                CKeyEKeyPagesA[pageIdx] = CKeyEKeyPagesA[pageIdx].Take(entryIdx).ToArray();
+                CKeyEKeyPages_CKeys[pageIdx] = CKeyEKeyPages_CKeys[pageIdx].Take(entryIdx).ToArray();
             }
 
             var eKeyESpecHeaders = reader.ReadArray<PageHeader>((int)eKeyEspecPageCount);
@@ -113,10 +116,9 @@ namespace TACTLib.Core {
             }
         }
 
-        public bool TryGetEncodingEntry(CKey cKey, out ReadOnlySpan<FullEKey> entry) {
+        private bool FindCKey(CKey cKey, out int pageIndex, out int foundIndex) {
             var searchResult = Array.BinarySearch(CKeyEKeyHeaderKeys, cKey);
-
-            int pageIndex;
+            
             if (searchResult >= 0) {
                 pageIndex = searchResult;
             } else {
@@ -125,19 +127,42 @@ namespace TACTLib.Core {
                 if (pageIndex < 0) goto NOT_FOUND;
             }
             
-            var entries = CKeyEKeyPagesA[pageIndex];
-            var foundIndex = Array.BinarySearch(entries, cKey);
+            var speculativeEntry = new LinearCKeyEntry {
+                CKey = cKey
+            };
+            var entries = CKeyEKeyPages_CKeys[pageIndex];
+            foundIndex = Array.BinarySearch(entries, speculativeEntry);
 
             if (foundIndex >= 0) {
-                entry = CKeyEKeyPagesB[pageIndex][foundIndex];
                 return true;
             }
-
+            
             NOT_FOUND:
-            entry = Array.Empty<FullEKey>();
-            Logger.Debug(nameof(EncodingHandler), $"Unable to get EKey for {cKey.ToHexString()} (This is okay, can be due to bundle encryption)");
-            //Console.Out.WriteLine($"cant get ekey for {cKey.ToHexString()}. a o");
+            foundIndex = 0;
+            pageIndex = 0;
             return false;
+        }
+
+        public bool TryGetEncodingEntry(CKey cKey, out ReadOnlySpan<FullEKey> entry) {
+            if (!FindCKey(cKey, out var pageIndex, out var foundIndex)) {
+                entry = Array.Empty<FullEKey>();
+                Logger.Debug(nameof(EncodingHandler), $"Unable to get EKey for {cKey.ToHexString()} (This is okay, can be due to bundle encryption)");
+                //Console.Out.WriteLine($"cant get ekey for {cKey.ToHexString()}. a o");
+                return false;
+            }
+            
+            entry = CKeyEKeyPages_EKeys[pageIndex][foundIndex];
+            return true;
+        }
+
+        public bool TryGetContentSize(CKey cKey, out uint contentSize) {
+            if (!FindCKey(cKey, out var pageIndex, out var foundIndex)) {
+                contentSize = 0;
+                return false;
+            }
+
+            contentSize = CKeyEKeyPages_CKeys[pageIndex][foundIndex].ContentSize.ToInt();
+            return true;
         }
 
         public int GetEncodedSize(FullEKey ekey) {
@@ -169,15 +194,15 @@ namespace TACTLib.Core {
         }
 
         public IEnumerable<CKey> GetCKeys() {
-            foreach (var page in CKeyEKeyPagesA) {
+            foreach (var page in CKeyEKeyPages_CKeys) {
                 foreach (var entry in page) {
-                    yield return entry;
+                    yield return entry.CKey;
                 }
             }
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct Header {
+        private struct Header {
             public ushort Signature; // Encoding signature, "EN"
             public byte Version; // Version number
             public byte CKeySize; // Number of bytes in a CKey
@@ -195,13 +220,13 @@ namespace TACTLib.Core {
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
-        public struct PageHeader {
+        private struct PageHeader {
             public FullKey FirstKey; // First key in the page
             public MD5Key PageHash; // MD5 of the page
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct EKeyESpecEntry : IComparable<EKeyESpecEntry> {
+        private struct EKeyESpecEntry : IComparable<EKeyESpecEntry> {
             public FullEKey EKey;
             public UInt32BE ESpecIndex;
             public UInt40BE FileSize;
@@ -212,19 +237,22 @@ namespace TACTLib.Core {
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct CKeyEKeyEntry : IComparable<CKeyEKeyEntry> {
+        private struct CKeyEKeyEntry : IComparable<CKeyEKeyEntry> {
             public ushort EKeyCount; // number of EKeys
             public UInt32BE ContentSize; // decoded size
             public FullKey CKey; // decoded key
             public FullEKey EKey; // encoded key
 
-            /// <summary>Get content size</summary>
-            /// <returns>Content size</returns>
-            public int GetSize() {
-                return (int)ContentSize.ToInt();
-            }
-
             public int CompareTo(CKeyEKeyEntry other) {
+                return CKey.CompareTo(other.CKey);
+            }
+        }
+        
+        private struct LinearCKeyEntry : IComparable<LinearCKeyEntry> {
+            public CKey CKey;
+            public UInt32BE ContentSize;
+
+            public int CompareTo(LinearCKeyEntry other) {
                 return CKey.CompareTo(other.CKey);
             }
         }
