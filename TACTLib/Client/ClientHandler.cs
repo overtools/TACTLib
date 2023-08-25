@@ -87,7 +87,7 @@ namespace TACTLib.Client {
                 if (!Directory.Exists(BasePath)) {
                     throw new FileNotFoundException($"Invalid archive directory. Directory {BasePath} does not exist. Please specify a valid directory.");
                 }
-                
+
                 // if someone specified a flavor, try and see what flavor and fix the base path
                 var flavorInfoPath = Path.Combine(BasePath, ".flavor.info");
                 if (File.Exists(flavorInfoPath)) {
@@ -100,20 +100,20 @@ namespace TACTLib.Client {
                         Logger.Warn("Core", $"Failed reading .flavor.info file! {ex.Message}");
                     }
                 }
-                
+
                 ProductCode ??= ProductHelpers.TryGetUIDFromProduct(ProductHelpers.TryGetProductFromLocalInstall(BasePath));
             }
 
             if (Product == TACTProduct.Unknown) {
                 throw new Exception($"Failed to determine TACT Product at `{BasePath}`");
             }
-            
+
             var staticBuildConfigPath = Path.Combine(BasePath, "data", ".build.config"); // todo: um
             var isStaticContainer = File.Exists(staticBuildConfigPath);
             if (isStaticContainer) {
                 if (createArgs.VersionSource != ClientCreateArgs.InstallMode.Local) throw new Exception("only local version sources are supported for static containers (steam)");
                 createArgs.Online = false;
-                
+
                 using var buildConfigStream = File.OpenRead(staticBuildConfigPath);
                 var buildConfig = new Config.BuildConfig(buildConfigStream);
                 ConfigHandler = ConfigHandler.ForStaticContainer(this, buildConfig);
@@ -123,7 +123,7 @@ namespace TACTLib.Client {
                 if (!File.Exists(InstallationInfoPath)) {
                     throw new FileNotFoundException($"Invalid archive directory! {InstallationInfoPath} was not found. You must provide the path to a valid install.");
                 }
-                
+
                 InstallationInfoFile = new InstallationInfoFile(InstallationInfoPath);
             }
 
@@ -168,6 +168,18 @@ namespace TACTLib.Client {
                         CreateArgs.SpeechLanguage = AgentProduct.Settings.SelectedSpeechLanguage;
                     }
                 }
+            }
+
+            if (string.IsNullOrEmpty(createArgs.TextLanguage)) {
+                Logger.Error("Core", "Failed to detect text language! Defaulting to enUS");
+                createArgs.TextLanguage = "enUS";
+                CreateArgs.TextLanguage = "enUS";
+            }
+
+            if (string.IsNullOrEmpty(createArgs.SpeechLanguage)) {
+                Logger.Error("Core", "Failed to detect speech language! Defaulting to enUS");
+                createArgs.TextLanguage = "enUS";
+                CreateArgs.TextLanguage = "enUS";
             }
 
             Logger.Info("CASC", $"{Product} build {InstallationInfo.Values["Version"]}");
