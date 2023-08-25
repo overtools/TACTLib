@@ -1,7 +1,7 @@
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -13,8 +13,8 @@ using TACTLib.Core.Key;
 using TACTLib.Helpers;
 
 namespace TACTLib.Container {
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
     public class ContainerHandler : IContainerHandler {
-        // ReSharper disable once InconsistentNaming
         /// <summary>Number of index files</summary>
         public const int CASC_INDEX_COUNT = 0x10;
 
@@ -22,25 +22,15 @@ namespace TACTLib.Container {
         /// Container directory. Where the data, config, indices etc subdirectories are located.
         /// </summary>
         public readonly string ContainerDirectory;
-
-        /// <summary>Data directory name</summary>
+        
         public const string DataDirectory = "data";
-
-        /// <summary>Config directory name</summary>
         public const string ConfigDirectory = "config";
-
-        /// <summary>Indices directory name</summary>
         public const string CDNIndicesDirectory = "indices";
-
-        /// <summary>Patch directory name</summary>
         public const string PatchDirectory = "patch";
 
-        /// <summary>Local index map</summary>
-        public readonly Dictionary<EKey, IndexEntry> IndexEntries;
-
         private readonly ClientHandler _client;
-
         private readonly Dictionary<int, SafeFileHandle> m_dataFiles;
+        private readonly EKeyEntry[][] IndexEntryBuckets = new EKeyEntry[CASC_INDEX_COUNT][];
 
         private bool m_seenCorruptHeader;
         //private static unsafe ReadOnlySpan<byte> ZEROED_HEADER => new byte[sizeof(DataHeader)];
@@ -51,11 +41,12 @@ namespace TACTLib.Container {
             if (client.BasePath == null) throw new Exception("no 'BasePath' specified");
             ContainerDirectory = Path.Combine(client.BasePath, GetContainerDirectory(client.Product));
 
-            IndexEntries = new Dictionary<EKey, IndexEntry>(CASCKeyComparer.Instance);
+            for (int i = 0; i < CASC_INDEX_COUNT; i++) {
+                IndexEntryBuckets[i] = Array.Empty<EKeyEntry>();
+            }
             LoadIndexFiles();
 
             m_dataFiles = new Dictionary<int, SafeFileHandle>();
-
             foreach (var (i, path) in GetDataFilePaths()) {
                 //Logger.Debug("CASC", $"Opening data file {i} at {path}");
                 m_dataFiles.Add(i, File.OpenHandle(path, FileMode.Open, FileAccess.Read, FileShare.Read));
@@ -113,29 +104,43 @@ namespace TACTLib.Container {
             var entryCount = eKey1Block.BlockSize / sizeof(EKeyEntry);
 
             EKeyEntry[] entries = reader.ReadArray<EKeyEntry>(entryCount);
-            Dictionary<int, long> dataFileSizes = new Dictionary<int, long>();
-            for (var i = 0; i < entryCount; i++) {
-                var entry = entries[i];
-                if (IndexEntries.ContainsKey(entry.EKey)) {
-                    continue;
+            IndexEntryBuckets[header.BucketIndex] = entries;
+        }
+
+        private static byte EKeyToIndexNumber(TruncatedKey key) {
+            // https://wowdev.wiki/CASC#.IDX_Journals
+            unsafe {
+                var k = key.Value;
+                var i = (byte)(k[0] ^ k[1] ^ k[2] ^ k[3] ^ k[4] ^ k[5] ^ k[6] ^ k[7] ^ k[8]);
+                return (byte)((i & 0xf) ^ (i >> 4));
+            }
+        }
+
+        private bool TryFindIndexEntry(TruncatedKey key, out EKeyEntry entry) {
+            var bucketNumber = EKeyToIndexNumber(key);
+            var indexEntriesInBucket = IndexEntryBuckets[bucketNumber];
+
+            var speculativeEntry = new EKeyEntry {
+                EKey = key
+            };
+            var entryIndex = Array.BinarySearch(indexEntriesInBucket, speculativeEntry);
+            if (entryIndex < 0 || entryIndex >= indexEntriesInBucket.Length) {
+                entry = default;
+                return false;
+            }
+
+            entry = indexEntriesInBucket[entryIndex];
+            if (!CASCKeyComparer.Instance.Equals(entry.EKey, key)) {
+                throw new Exception("key failed Equals check"); // todo: temp
+            }
+            return true; 
+        }
+
+        public IEnumerable<KeyValuePair<EKey, IndexEntry>> GetIndexEntries() {
+            foreach (var bucket in IndexEntryBuckets) {
+                foreach (var entry in bucket) {
+                    yield return new KeyValuePair<TruncatedKey, IndexEntry>(entry.EKey, new IndexEntry(entry));
                 }
-
-                var indexEntry = new IndexEntry(entry);
-
-                if (!dataFileSizes.TryGetValue(indexEntry.Index, out var dataFileSize)) {
-                    var path = GetDataFilePath(indexEntry.Index);
-                    if (!File.Exists(path)) {
-                        continue;
-                    }
-                    dataFileSize = new FileInfo(path).Length;
-                    dataFileSizes[indexEntry.Index] = dataFileSize;
-                }
-
-                if (indexEntry.Offset >= dataFileSize) {
-                    continue;
-                }
-
-                IndexEntries[entry.EKey] = indexEntry;
             }
         }
 
@@ -145,11 +150,11 @@ namespace TACTLib.Container {
         /// <param name="key">The Encoding Key</param>
         /// <returns>Loaded file</returns>
         private ArraySegment<byte>? OpenEKey(TruncatedKey key) {
-            if (!IndexEntries.TryGetValue(key, out var indexEntry)) {
-                Debugger.Log(0, "ContainerHandler", $"Missing local index {key.ToHexString()}\n");
+            if (!TryFindIndexEntry(key, out var entry)) {
                 return null;
             }
-            return OpenIndexEntry(indexEntry);
+            var convertedEntry = new IndexEntry(entry);
+            return OpenIndexEntry(convertedEntry);
         }
 
         public ArraySegment<byte>? OpenEKey(FullEKey ekey, int eSize) {
@@ -157,7 +162,7 @@ namespace TACTLib.Container {
         }
 
         public bool CheckResidency(FullEKey ekey) {
-            return IndexEntries.ContainsKey(ekey.AsTruncated());
+            return TryFindIndexEntry(ekey.AsTruncated(), out _);
         }
 
         private IEnumerable<(int Index, string Path)> GetDataFilePaths() {
@@ -215,7 +220,7 @@ namespace TACTLib.Container {
                 var headerSpan = buffer.AsSpan(0, sizeof(DataHeader));
                 if (ALLOW_CORRUPT_HEADER && fourCC == BLTEStream.Magic) {
                     if (!m_seenCorruptHeader) {
-                        Logger.Error("CASC", "Corrupt install detected! To help us debug this issue, use the debug-install-issues mode in DataTool and upload the result to Discord.");
+                        Logger.Warn("CASC", "Corrupt install detected! To help us debug this issue, use the debug-install-issues mode in DataTool and upload the result to Discord.");
                         m_seenCorruptHeader = true;
                     }
                 } else {
@@ -333,7 +338,7 @@ namespace TACTLib.Container {
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct EKeyEntry {
+        public struct EKeyEntry : IComparable<EKeyEntry> {
             /// <summary>Encoding Key</summary>
             public EKey EKey;                   // The first 9 bytes of the encoded key
 
@@ -342,6 +347,10 @@ namespace TACTLib.Container {
 
             /// <summary>Size of the encoded file</summary>
             public uint EncodedSize;
+
+            public int CompareTo(EKeyEntry other) {
+                return EKey.CompareTo(other.EKey);
+            }
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]

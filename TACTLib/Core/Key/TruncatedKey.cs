@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Buffers.Binary;
 using System.Runtime.InteropServices;
+using CommunityToolkit.HighPerformance;
 using TACTLib.Helpers;
 using static TACTLib.Utils;
 
@@ -8,7 +10,7 @@ namespace TACTLib.Core.Key {
     /// Encoding Key
     /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct TruncatedKey {
+    public unsafe struct TruncatedKey : IComparable<TruncatedKey>  {
         // ReSharper disable once InconsistentNaming
         /// <summary>Encoding Key size, in bytes</summary>
         public const int CASC_TRUNCATED_KEY_SIZE = 9;
@@ -45,6 +47,26 @@ namespace TACTLib.Core.Key {
                 throw new ArgumentException($"array size < {CASC_TRUNCATED_KEY_SIZE}");
 
             return MemoryMarshal.Read<TruncatedKey>(array);
+        }
+        
+        public int CompareTo(TruncatedKey other) {
+            return TruncatedKeyCompare(this, other);
+        }
+
+        public static int TruncatedKeyCompare(TruncatedKey left, TruncatedKey right)
+        {
+            var leftSpan = MemoryMarshal.CreateReadOnlySpan(ref left, 1).AsBytes();
+            var rightSpan = MemoryMarshal.CreateReadOnlySpan(ref right, 1).AsBytes();
+
+            var leftU0 = BinaryPrimitives.ReadUInt64BigEndian(leftSpan);
+            var rightU0 = BinaryPrimitives.ReadUInt64BigEndian(rightSpan);
+
+            var compareA = leftU0.CompareTo(rightU0);
+            if (compareA != 0) return compareA;
+
+            var leftU1 = MemoryMarshal.Read<byte>(leftSpan.Slice(8));
+            var rightU1 = MemoryMarshal.Read<byte>(rightSpan.Slice(8));
+            return leftU1.CompareTo(rightU1);
         }
     }
 }
