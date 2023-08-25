@@ -62,8 +62,6 @@ namespace TACTLib.Client {
         /// <summary>The base path of the container. E.g where the game executables are.</summary>
         public readonly string BasePath;
 
-        private readonly string? InstallationInfoPath;
-
         public readonly ClientCreateArgs CreateArgs;
 
         public readonly CDNIndexHandler? m_cdnIdx;
@@ -81,9 +79,9 @@ namespace TACTLib.Client {
             }
 
             BasePath = basePath ?? ""; // should it be empty string? lol
-            ProductCode = createArgs.Product;
+            ProductCode = CreateArgs.Product;
 
-            if (createArgs.UseContainer) {
+            if (CreateArgs.UseContainer) {
                 if (!Directory.Exists(BasePath)) {
                     throw new FileNotFoundException($"Invalid archive directory. Directory {BasePath} does not exist. Please specify a valid directory.");
                 }
@@ -111,25 +109,25 @@ namespace TACTLib.Client {
             var staticBuildConfigPath = Path.Combine(BasePath, "data", ".build.config"); // todo: um
             var isStaticContainer = File.Exists(staticBuildConfigPath);
             if (isStaticContainer) {
-                if (createArgs.VersionSource != ClientCreateArgs.InstallMode.Local) throw new Exception("only local version sources are supported for static containers (steam)");
-                createArgs.Online = false;
+                if (CreateArgs.VersionSource != ClientCreateArgs.InstallMode.Local) throw new Exception("only local version sources are supported for static containers (steam)");
+                CreateArgs.Online = false;
 
                 using var buildConfigStream = File.OpenRead(staticBuildConfigPath);
                 var buildConfig = new Config.BuildConfig(buildConfigStream);
                 ConfigHandler = ConfigHandler.ForStaticContainer(this, buildConfig);
-            } else if (createArgs.VersionSource == ClientCreateArgs.InstallMode.Local) {
+            } else if (CreateArgs.VersionSource == ClientCreateArgs.InstallMode.Local) {
                 // ensure to see the .build.info file exists. if it doesn't then we can't continue
-                InstallationInfoPath = Path.Combine(BasePath, createArgs.InstallInfoFileName) + createArgs.ExtraFileEnding;
-                if (!File.Exists(InstallationInfoPath)) {
-                    throw new FileNotFoundException($"Invalid archive directory! {InstallationInfoPath} was not found. You must provide the path to a valid install.");
+                var installationInfoPath = Path.Combine(BasePath, CreateArgs.InstallInfoFileName) + CreateArgs.ExtraFileEnding;
+                if (!File.Exists(installationInfoPath)) {
+                    throw new FileNotFoundException($"Invalid archive directory! {installationInfoPath} was not found. You must provide the path to a valid install.");
                 }
 
-                InstallationInfoFile = new InstallationInfoFile(InstallationInfoPath);
+                InstallationInfoFile = new InstallationInfoFile(installationInfoPath);
             }
 
-            if (createArgs.Online) {
+            if (CreateArgs.Online) {
                 using var _ = new PerfCounter("INetworkHandler::ctor`ClientHandler");
-                if (createArgs.OnlineRootHost.StartsWith("ribbit:")) {
+                if (CreateArgs.OnlineRootHost.StartsWith("ribbit:")) {
                     NetHandle = new RibbitCDNClient(this);
                 } else {
                     NetHandle = new NGDPClient(this);
@@ -140,51 +138,49 @@ namespace TACTLib.Client {
                 InstallationInfo = new InstallationInfo(new Dictionary<string, string> {
                     {"Version", ConfigHandler!.BuildConfig.Values["build-name"][0]}
                 });
-            } else if (createArgs.VersionSource == ClientCreateArgs.InstallMode.Local) {
+            } else if (CreateArgs.VersionSource == ClientCreateArgs.InstallMode.Local) {
                 InstallationInfo = new InstallationInfo(InstallationInfoFile!.Values, ProductCode!);
             } else {
                 using var _ = new PerfCounter("InstallationInfo::ctor`INetworkHandler");
-                InstallationInfo = new InstallationInfo(NetHandle!, createArgs.OnlineRegion);
+                InstallationInfo = new InstallationInfo(NetHandle!, CreateArgs.OnlineRegion);
             }
 
-            if (createArgs.OverrideBuildConfig != null) {
-                InstallationInfo.Values["BuildKey"] = createArgs.OverrideBuildConfig;
+            if (CreateArgs.OverrideBuildConfig != null) {
+                InstallationInfo.Values["BuildKey"] = CreateArgs.OverrideBuildConfig;
             }
-            if (createArgs.OverrideVersionName != null) {
-                InstallationInfo.Values["Version"] = createArgs.OverrideVersionName;
+            if (CreateArgs.OverrideVersionName != null) {
+                InstallationInfo.Values["Version"] = CreateArgs.OverrideVersionName;
             }
 
             // try to load the agent database and use the selected language if we don't already have one specified
-            if (createArgs.UseContainer) {
+            if (CreateArgs.UseContainer) {
                 AgentProduct = TryGetAgentDatabase();
                 if (AgentProduct != null) {
-                    if (string.IsNullOrWhiteSpace(createArgs.TextLanguage)) {
-                        createArgs.TextLanguage = AgentProduct.Settings.SelectedTextLanguage;
+                    if (string.IsNullOrWhiteSpace(CreateArgs.TextLanguage)) {
                         CreateArgs.TextLanguage = AgentProduct.Settings.SelectedTextLanguage;
                     }
 
-                    if (string.IsNullOrWhiteSpace(createArgs.SpeechLanguage)) {
-                        createArgs.SpeechLanguage = AgentProduct.Settings.SelectedSpeechLanguage;
+                    if (string.IsNullOrWhiteSpace(CreateArgs.SpeechLanguage)) {
                         CreateArgs.SpeechLanguage = AgentProduct.Settings.SelectedSpeechLanguage;
                     }
                 }
             }
 
-            if (string.IsNullOrEmpty(createArgs.TextLanguage)) {
-                Logger.Error("Core", "Failed to detect text language! Defaulting to enUS");
-                createArgs.TextLanguage = "enUS";
+            if (string.IsNullOrEmpty(CreateArgs.TextLanguage) && string.IsNullOrEmpty(CreateArgs.SpeechLanguage)) {
+                Logger.Error("Core", "Failed to detect language! Defaulting to enUS");
                 CreateArgs.TextLanguage = "enUS";
-            }
-
-            if (string.IsNullOrEmpty(createArgs.SpeechLanguage)) {
+                CreateArgs.SpeechLanguage = "enUS";
+            } else if (string.IsNullOrEmpty(CreateArgs.TextLanguage)) {
+                Logger.Error("Core", "Failed to detect text language! Defaulting to enUS");
+                CreateArgs.TextLanguage = "enUS";
+            } else if (string.IsNullOrEmpty(CreateArgs.SpeechLanguage)) {
                 Logger.Error("Core", "Failed to detect speech language! Defaulting to enUS");
-                createArgs.SpeechLanguage = "enUS";
                 CreateArgs.SpeechLanguage = "enUS";
             }
 
             Logger.Info("CASC", $"{Product} build {InstallationInfo.Values["Version"]}");
 
-            if (createArgs.UseContainer) {
+            if (CreateArgs.UseContainer) {
                 Logger.Info("CASC", "Initializing...");
                 if (isStaticContainer) {
                     ContainerHandler = new StaticContainerHandler(this);
@@ -209,9 +205,9 @@ namespace TACTLib.Client {
                 VFS = new VFSFileTree(this, vfsStream);
             }
 
-            if (createArgs.Online) {
-                if (CanShareCDNData(createArgs.TryShareCDNIndexWithHandler)) {
-                    m_cdnIdx = createArgs.TryShareCDNIndexWithHandler.m_cdnIdx;
+            if (CreateArgs.Online) {
+                if (CanShareCDNData(CreateArgs.TryShareCDNIndexWithHandler)) {
+                    m_cdnIdx = CreateArgs.TryShareCDNIndexWithHandler.m_cdnIdx;
                 } else {
                     m_cdnIdx = CDNIndexHandler.Initialize(this);
                 }
@@ -331,7 +327,6 @@ namespace TACTLib.Client {
         /// <summary>
         /// Tries to load an agent database for the current product
         /// </summary>
-        /// <param name="createArgs"></param>
         public ProductInstall? TryGetAgentDatabase() {
             try {
                 var dbPath = Path.Combine(BasePath, CreateArgs.ProductDatabaseFilename);
