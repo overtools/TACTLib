@@ -325,16 +325,19 @@ namespace TACTLib.Client {
         }
 
         public Stream? OpenConfigKey(string key) {
-            if (ContainerHandler is not ContainerHandler dynamicContainer) {
-                throw new Exception("this method is only supported for dynamic containers");
-            }
-            var path = Path.Combine(dynamicContainer.ContainerDirectory, Container.ContainerHandler.ConfigDirectory, key.Substring(0, 2), key.Substring(2, 2), key);
-            if (File.Exists(path + CreateArgs.ExtraFileEnding)) {
-                return File.OpenRead(path + CreateArgs.ExtraFileEnding);
+            if (ContainerHandler is StaticContainerHandler) {
+                throw new Exception("this method is not supported for static containers");
             }
 
-            if (File.Exists(path)) {
-                return File.OpenRead(path);
+            if (ContainerHandler is ContainerHandler dynamicContainer) {
+                var path = Path.Combine(dynamicContainer.ContainerDirectory, Container.ContainerHandler.ConfigDirectory, key.Substring(0, 2), key.Substring(2, 2), key);
+                if (File.Exists(path + CreateArgs.ExtraFileEnding)) {
+                    return File.OpenRead(path + CreateArgs.ExtraFileEnding);
+                }
+
+                if (File.Exists(path)) {
+                    return File.OpenRead(path);
+                }
             }
 
             return CreateArgs.Online ? NetHandle!.OpenConfig(key) : null;
