@@ -178,8 +178,8 @@ namespace TACTLib.Client {
 
             if (string.IsNullOrEmpty(createArgs.SpeechLanguage)) {
                 Logger.Error("Core", "Failed to detect speech language! Defaulting to enUS");
-                createArgs.TextLanguage = "enUS";
-                CreateArgs.TextLanguage = "enUS";
+                createArgs.SpeechLanguage = "enUS";
+                CreateArgs.SpeechLanguage = "enUS";
             }
 
             Logger.Info("CASC", $"{Product} build {InstallationInfo.Values["Version"]}");
