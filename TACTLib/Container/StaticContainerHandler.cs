@@ -41,7 +41,7 @@ namespace TACTLib.Container {
             }
         }
 
-        public ArraySegment<byte>? OpenEKey(FullEKey ekey, int eSize) {
+        private void ExtractStorageLocation(FullEKey ekey, out ulong chunk, out ulong archive, out ulong offset) {
             //var chunk = 0ul;
             //var archive = 0ul;
             //var offset = 0ul;
@@ -61,25 +61,41 @@ namespace TACTLib.Container {
             
             var chunkBitCount = keyLayout.m_chunkBits;
             var chunkBitOffset = keyLayoutIndexBitOffset-chunkBitCount;
-            var chunk = BitHelper.ExtractRange(ekeyHiUl, (byte)chunkBitOffset, (byte)chunkBitCount);
+            chunk = BitHelper.ExtractRange(ekeyHiUl, (byte)chunkBitOffset, (byte)chunkBitCount);
 
             var archiveBitCount = keyLayout.m_archiveBits;
             var archiveBitOffset = chunkBitOffset-archiveBitCount;
-            var archive = BitHelper.ExtractRange(ekeyHiUl, (byte)archiveBitOffset, (byte)archiveBitCount);
+            archive = BitHelper.ExtractRange(ekeyHiUl, (byte)archiveBitOffset, (byte)archiveBitCount);
 
             var offsetBitCount = keyLayout.m_offsetBits;
             var offsetBitOffset = archiveBitOffset-offsetBitCount;
-            var offset = BitHelper.ExtractRange(ekeyHiUl, (byte)offsetBitOffset, (byte)offsetBitCount);
+            offset = BitHelper.ExtractRange(ekeyHiUl, (byte)offsetBitOffset, (byte)offsetBitCount);
+        }
 
-            var file = Path.Combine(m_containerDirectory, $"data.{chunk:D3}.{archive:D3}");
-            using var stream = File.OpenRead(file);
+        private static string GetFileName(ulong chunk, ulong archive) {
+            return $"data.{chunk:D3}.{archive:D3}";
+        }
+
+        private string GetFilePath(ulong chunk, ulong archive) {
+            return Path.Combine(m_containerDirectory, GetFileName(chunk, archive));
+        }
+
+        public ArraySegment<byte>? OpenEKey(FullEKey ekey, int eSize) {
+            ExtractStorageLocation(ekey, out var chunk, out var archive, out var offset);
+            
+            using var stream = File.OpenRead(GetFilePath(chunk, archive));
             stream.Position = (long)offset;
             var data = new byte[eSize];
             stream.DefinitelyRead(data);
 
             return data;
         }
-        
+
+        public bool CheckResidency(FullEKey ekey) {
+            ExtractStorageLocation(ekey, out var chunk, out var archive, out _);
+            return File.Exists(GetFilePath(chunk, archive));
+        }
+
         private static string GetContainerDirectory(TACTProduct product) {
             if (product == TACTProduct.Overwatch)
                 return Path.Combine("data");

@@ -156,6 +156,10 @@ namespace TACTLib.Container {
             return OpenEKey(ekey.AsTruncated());
         }
 
+        public bool CheckResidency(FullEKey ekey) {
+            return IndexEntries.ContainsKey(ekey.AsTruncated());
+        }
+
         private IEnumerable<(int Index, string Path)> GetDataFilePaths() {
             foreach (var path in Directory.EnumerateFiles(Path.Combine(ContainerDirectory, DataDirectory), $"data.*{_client.CreateArgs.ExtraFileEnding}")) {
                 var number = path[^(3 + (_client.CreateArgs.ExtraFileEnding?.Length ?? 0))..];

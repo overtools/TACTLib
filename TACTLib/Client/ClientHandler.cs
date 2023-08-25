@@ -244,16 +244,24 @@ namespace TACTLib.Client {
             }
             return archivesMatch;
         }
+        
+        public Stream? OpenEKey(FullEKey fullEKey, int eSize) {  // ekey = value of ckey in encoding table
+            var fromContainer = TryOpenEKeyFromContainer(fullEKey, eSize);
+            if (fromContainer != null) return fromContainer;
 
-        /// <summary>
-        /// Open a file from Content Key
-        /// </summary>
-        /// <param name="key">Content Key of the file</param>
-        /// <returns>Loaded file</returns>
+            return TryOpenEKeyFromRemote(fullEKey, eSize);
+        }
+        
         public Stream? OpenCKey(CKey key) {
             // todo: EncodingHandler can't be null after constructor has finished, but can be during init
-            if (EncodingHandler != null && EncodingHandler.TryGetEncodingEntry(key, out var entry)) {
-                return OpenEKey(entry.EKey, EncodingHandler.GetEncodedSize(entry.EKey));
+            if (EncodingHandler != null && EncodingHandler.TryGetEncodingEntry(key, out var eKeys) && eKeys.Length > 0) {
+                var fromContainer = TryOpenEKeyListFromContainer(eKeys);
+                if (fromContainer != null) return fromContainer;
+                   
+                // oopsie. it aint resident in local apparently. lets just try first from other sources
+                var first = eKeys[0];
+                Logger.Debug("ClientHandler", $"fallback for {key.ToHexString()}: {first.ToHexString()}");
+                return TryOpenEKeyFromRemote(first, EncodingHandler.GetEncodedSize(first));
             }
 
             if (CreateArgs.Online) {
@@ -263,34 +271,43 @@ namespace TACTLib.Client {
             Debugger.Log(0, "ContainerHandler", $"Missing encoding entry for CKey {key.ToHexString()}\n");
             return null;
         }
+        
+        private Stream? TryOpenEKeyListFromContainer(ReadOnlySpan<FullEKey> eKeys) {
+            if (ContainerHandler == null) return null;
+            if (EncodingHandler == null) return null; // cant get here but okay
 
-        /// <summary>
-        /// Open a file from Encoding Key
-        /// </summary>
-        /// <param name="fullEKey">The Encoding Key</param>
-        /// <returns>Loaded file</returns>
+            foreach (var ekey in eKeys) {
+                if (!ContainerHandler.CheckResidency(ekey)) {
+                    //Logger.Debug("ClientHandler", $"skipping ekey {ekey.ToHexString()} as it is not resident locally");
+                    continue;
+                }
+
+                var fromContainer = TryOpenEKeyFromContainer(ekey, EncodingHandler.GetEncodedSize(ekey));
+                if (fromContainer != null) return fromContainer;
+            }
+            return null;
+        }
+
+        private Stream? TryOpenEKeyFromContainer(FullEKey fullEKey, int eSize) {
+            if (ContainerHandler == null) return null;
+            try {
+                var cascBlte = OpenEKeyFromContainer(fullEKey, eSize);
+                if (cascBlte != null) return cascBlte;
+            } catch (Exception e) {
+                if (!CreateArgs.Online) throw;
+                if (e is BLTEKeyException) throw;
+                Logger.Warn("CASC", $"Unable to open {fullEKey.ToHexString()} from CASC. Will try to download. Exception: {e}");
+            }
+            return null;
+        }
+        
         private Stream? OpenEKeyFromContainer(FullEKey fullEKey, int eSize) {  // ekey = value of ckey in encoding table
-            var stream = ContainerHandler?.OpenEKey(fullEKey, eSize);
+            if (ContainerHandler == null) return null;
+            var stream = ContainerHandler.OpenEKey(fullEKey, eSize);
             return stream == null ? null : new MemoryStream(BLTEDecoder.Decode(this, stream.Value.AsSpan()));
         }
 
-        /// <summary>
-        /// Open a file from Encoding Key
-        /// </summary>
-        /// <param name="fullEKey">The Long Encoding Key</param>
-        /// <returns>Loaded file</returns>
-        public Stream? OpenEKey(FullEKey fullEKey, int eSize) {  // ekey = value of ckey in encoding table
-            if (ContainerHandler != null) {
-                try {
-                    var cascBlte = OpenEKeyFromContainer(fullEKey, eSize);
-                    if (cascBlte != null) return cascBlte;
-                } catch (Exception e) {
-                    if (!CreateArgs.Online) throw;
-                    if (e is BLTEKeyException) throw;
-                    Logger.Warn("CASC", $"Unable to open {fullEKey.ToHexString()} from CASC. Will try to download. Exception: {e}");
-                }
-            }
-
+        private Stream? TryOpenEKeyFromRemote(FullEKey fullEKey, int eSize) {
             if (!CreateArgs.Online) return null;
 
             byte[]? netMemStream = null;

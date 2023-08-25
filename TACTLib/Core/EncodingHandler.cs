@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -9,9 +10,11 @@ using TACTLib.Core.Key;
 using TACTLib.Helpers;
 
 namespace TACTLib.Core {
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
     public class EncodingHandler {
         private readonly CKey[] CKeyEKeyHeaderKeys;
-        private readonly CKeyEKeyEntry[][] CKeyEKeyPages;
+        private readonly CKey[][] CKeyEKeyPagesA;
+        private readonly FullEKey[][][] CKeyEKeyPagesB;
 
         private readonly FullEKey[] EKeyESpecHeaderKeys;
         private readonly EKeyESpecEntry[][] EKeyESpecPages;
@@ -21,7 +24,7 @@ namespace TACTLib.Core {
         {
         }
 
-        public EncodingHandler(ClientHandler client, FullKey eKey, int eSize) {
+        public EncodingHandler(ClientHandler client, FullEKey eKey, int eSize) {
             using var stream = client.OpenEKey(eKey, eSize)!;
             using var reader = new BinaryReader(stream);
             /*using (var outFile = File.OpenWrite("steam_encoding.bin")) {
@@ -47,10 +50,12 @@ namespace TACTLib.Core {
             //string[] strings = Encoding.ASCII.GetString(reader.ReadBytes(especBlockSize)).Split(new[] { '\0' }, StringSplitOptions.RemoveEmptyEntries);
             stream.Position += header.m_especBlockSize.ToInt();
 
-            var CKeyEKeyHeaders = reader.ReadArray<PageHeader>((int)cKeyEKeyPageCount);
-            CKeyEKeyHeaderKeys = CKeyEKeyHeaders.Select(x => x.FirstKey).ToArray();
-            CKeyEKeyPages = new CKeyEKeyEntry[CKeyEKeyHeaders.Length][];
-            for (var i = 0; i < CKeyEKeyHeaders.Length; i++) {
+            var cKeyEKeyHeaders = reader.ReadArray<PageHeader>((int)cKeyEKeyPageCount);
+            CKeyEKeyHeaderKeys = cKeyEKeyHeaders.Select(x => x.FirstKey).ToArray();
+            CKeyEKeyPagesA = new CKey[cKeyEKeyHeaders.Length][];
+            CKeyEKeyPagesB = new FullEKey[cKeyEKeyHeaders.Length][][];
+            
+            for (var pageIdx = 0; pageIdx < cKeyEKeyHeaders.Length; pageIdx++) {
                 var page = new byte[cKeyEKeyPageSize * 1024];
                 stream.DefinitelyRead(page);
 
@@ -58,47 +63,57 @@ namespace TACTLib.Core {
                 unsafe {
                     structSize = sizeof(CKeyEKeyEntry);
                 }
-                var newPage = new CKeyEKeyEntry[page.Length / structSize];
-                // for quick searching, we have to stop the page from being dynamic size
-                // only 1 ekey allowed
+
+                var pageEntryCount = page.Length / structSize; // (approx)
+                CKeyEKeyPagesA[pageIdx] = new FullKey[pageEntryCount];
+                CKeyEKeyPagesB[pageIdx] = new FullEKey[pageEntryCount][];
 
                 var arrOffset = 0;
-                var insertIndex = 0;
+                var entryIdx = 0;
                 while (true) {
                     var foundEntrySpan = page.AsSpan(arrOffset);
                     if (foundEntrySpan.Length < structSize) break;
                     var foundEntry = MemoryMarshal.Read<CKeyEKeyEntry>(foundEntrySpan);
                     if (foundEntry.EKeyCount == 0) break; // end
                     arrOffset += structSize;
+                    
+                    CKeyEKeyPagesA[pageIdx][entryIdx] = foundEntry.CKey;
+
+                    var ekeyArray = new FullEKey[foundEntry.EKeyCount];
+                    CKeyEKeyPagesB[pageIdx][entryIdx] = ekeyArray;
+
+                    for (int ekeyIdx = 0; ekeyIdx < foundEntry.EKeyCount; ekeyIdx++) {
+                        if (ekeyIdx == 0) ekeyArray[ekeyIdx] = foundEntry.EKey;
+                        else ekeyArray[ekeyIdx] = MemoryMarshal.Read<FullEKey>(page.AsSpan(arrOffset + 16 * (ekeyIdx - 1), 16));
+                    }
+                    
                     arrOffset += (foundEntry.EKeyCount - 1) * 16;
-
-                    newPage[insertIndex++] = foundEntry;
+                    entryIdx++;
                 }
-
-                // BinarySearch breaks on the empty elements.. does that also happen for EKeyESpec?
-                CKeyEKeyPages[i] = newPage.Take(insertIndex).ToArray();
+                
+                CKeyEKeyPagesA[pageIdx] = CKeyEKeyPagesA[pageIdx].Take(entryIdx).ToArray();
             }
 
-            var EKeyESpecHeaders = reader.ReadArray<PageHeader>((int)eKeyEspecPageCount);
-            EKeyESpecHeaderKeys = EKeyESpecHeaders.Select(x => x.FirstKey).ToArray();
-            EKeyESpecPages = new EKeyESpecEntry[EKeyESpecHeaders.Length][];
-            for (var i = 0; i < EKeyESpecHeaders.Length; i++) {
+            var eKeyESpecHeaders = reader.ReadArray<PageHeader>((int)eKeyEspecPageCount);
+            EKeyESpecHeaderKeys = eKeyESpecHeaders.Select(x => x.FirstKey).ToArray();
+            EKeyESpecPages = new EKeyESpecEntry[eKeyESpecHeaders.Length][];
+            for (var pageIdx = 0; pageIdx < eKeyESpecHeaders.Length; pageIdx++) {
                 var page = new byte[eKeyESpecPageSize * 1024];
                 stream.DefinitelyRead(page);
                 
                 var entries = MemoryMarshal.Cast<byte, EKeyESpecEntry>(page);
-                for (var j = 0; j < entries.Length; j++)
+                for (var entryIdx = 0; entryIdx < entries.Length; entryIdx++)
                 {
-                    if (entries[j].ESpecIndex.ToInt() != uint.MaxValue) continue;
+                    if (entries[entryIdx].ESpecIndex.ToInt() != uint.MaxValue) continue;
                     // FFFFF.. = terminator
-                    entries = entries.Slice(0, j);
+                    entries = entries.Slice(0, entryIdx);
                     break;
                 }
-                EKeyESpecPages[i] = entries.ToArray();
+                EKeyESpecPages[pageIdx] = entries.ToArray();
             }
         }
 
-        public bool TryGetEncodingEntry(CKey cKey, out CKeyEKeyEntry entry) {
+        public bool TryGetEncodingEntry(CKey cKey, out ReadOnlySpan<FullEKey> entry) {
             var searchResult = Array.BinarySearch(CKeyEKeyHeaderKeys, cKey);
 
             int pageIndex;
@@ -109,20 +124,17 @@ namespace TACTLib.Core {
                 pageIndex = firstElementLarger - 1;
                 if (pageIndex < 0) goto NOT_FOUND;
             }
-
-            var speculativeEntry = new CKeyEKeyEntry {
-                CKey = cKey
-            };
-            var entries = CKeyEKeyPages[pageIndex];
-            var foundIndex = Array.BinarySearch(entries, speculativeEntry);
+            
+            var entries = CKeyEKeyPagesA[pageIndex];
+            var foundIndex = Array.BinarySearch(entries, cKey);
 
             if (foundIndex >= 0) {
-                entry = entries[foundIndex];
+                entry = CKeyEKeyPagesB[pageIndex][foundIndex];
                 return true;
             }
 
             NOT_FOUND:
-            entry = new CKeyEKeyEntry();
+            entry = Array.Empty<FullEKey>();
             Logger.Debug(nameof(EncodingHandler), $"Unable to get EKey for {cKey.ToHexString()} (This is okay, can be due to bundle encryption)");
             //Console.Out.WriteLine($"cant get ekey for {cKey.ToHexString()}. a o");
             return false;
@@ -157,9 +169,9 @@ namespace TACTLib.Core {
         }
 
         public IEnumerable<CKey> GetCKeys() {
-            foreach (var page in CKeyEKeyPages) {
+            foreach (var page in CKeyEKeyPagesA) {
                 foreach (var entry in page) {
-                    yield return entry.CKey;
+                    yield return entry;
                 }
             }
         }
