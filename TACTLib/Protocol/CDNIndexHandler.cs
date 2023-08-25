@@ -10,76 +10,126 @@ namespace TACTLib.Protocol
 {
     public struct IndexEntry
     {
-        public int Index;
-        public int Offset;
-        public int Size;
+        public ushort Index;
+        public uint Offset;
+        public uint Size;
     }
 
     public class CDNIndexHandler
     {
-        public Dictionary<CKey, IndexEntry> CDNIndexData = new Dictionary<CKey, IndexEntry>(CASCKeyComparer.Instance);
-        public int Count => CDNIndexData.Count; // todo: why does this exist lol
+        private readonly ClientHandler m_client;
+        private readonly Dictionary<FullKey, IndexEntry> CDNIndexData = new Dictionary<FullKey, IndexEntry>(CASCKeyComparer.Instance);
 
-        public readonly ClientHandler m_client;
+        //private byte[][] ArchiveGroupPages = Array.Empty<byte[]>();
+        //private FullKey[] ArchiveGroupPageLastEKeys = Array.Empty<FullKey>();
+        // todo: paging
 
+        private const int ARCHIVE_ID_GROUP = -1;
+        
         private CDNIndexHandler(ClientHandler client)
         {
             m_client = client;
+
+            var archiveGroupHash = client.ConfigHandler.CDNConfig.Values["archive-group"][0];
+            if (m_client.ContainerHandler != null && OpenIndexFile(archiveGroupHash, ARCHIVE_ID_GROUP)) {
+                // no need to load individual indices
+                return;
+            }
+            
+            for (var i = 0; i < client.ConfigHandler.CDNConfig.Archives.Count; i++)
+            {
+                string archive = client.ConfigHandler.CDNConfig.Archives[i];
+
+                if (m_client.ContainerHandler != null)
+                    OpenOrDownloadIndexFile(archive, i);
+                else
+                    DownloadIndexFile(archive, i);
+            }
         }
 
         public static CDNIndexHandler Initialize(ClientHandler clientHandler)
         {
             var handler = new CDNIndexHandler(clientHandler);
-
-            for (var i = 0; i < clientHandler.ConfigHandler.CDNConfig.Archives.Count; i++)
-            {
-                string archive = clientHandler.ConfigHandler.CDNConfig.Archives[i];
-
-                if (handler.m_client.ContainerHandler != null)
-                    handler.OpenOrDownloadIndexFile(archive, i);
-                else
-                    handler.DownloadIndexFile(archive, i);
-            }
             return handler;
         }
 
-        private void ParseIndex(Stream stream, int i)
+        private void ParseIndex(Stream stream, int archiveIndex)
         {
-            const int pageLength = 4 << 10;
-            const int MD5_HASH_SIZE = CKey.CASC_FULL_KEY_SIZE;
+            using var br = new BinaryReader(stream);
+
+            var footerHashSize = 16;
+            FixedFooter footer;
             
-            using (var br = new BinaryReader(stream))
-            {
-                stream.Seek(-12, SeekOrigin.End);
-                var count = br.ReadInt32();
-                stream.Seek(0, SeekOrigin.Begin);
+            while (true) {
+                if (footerHashSize < 8) throw new Exception("unable to determine footer hash size");
 
-                var cbIndexFile = stream.Length - 0x14;
-                var nPageCount = cbIndexFile / (pageLength + MD5_HASH_SIZE);
-                var length = nPageCount * pageLength;
+                unsafe {
+                    br.BaseStream.Position = br.BaseStream.Length - footerHashSize - sizeof(FixedFooter);
+                }
+                footer = br.Read<FixedFooter>();
+                if (footer.m_version != 1) goto NEXT;
+                if (footer.m_checksumSize != footerHashSize) goto NEXT;
+                // todo: more validation.. whar is hash
                 
-                var zeroKey = new CKey();
-                var zeroHash = CASCKeyComparer.Instance.GetHashCode(zeroKey);
+                //Console.Out.WriteLine($"he's {footerHashSize} ?");
+                break;
+                    
+                NEXT:
+                footerHashSize--;
+            }
+            
+            br.BaseStream.Position = 0;
+            if (footer.m_keyBytes != 16) throw new Exception($"invalid key size: {footer.m_keyBytes}");
 
-                long pageStart = 0;
-                while (stream.Position < length)
-                {
-                    var key = br.Read<CKey>();
-                    if (CASCKeyComparer.Instance.GetHashCode(key) == zeroHash)
-                    {
-                        stream.Position = pageStart + pageLength;
-                        pageStart = stream.Position;
-                        continue;
+            if (archiveIndex == ARCHIVE_ID_GROUP) footer.m_offsetBytes -= 2; // archive index is part of offset
+
+            var fullFooterSize = FixedFooter.SIZE + footerHashSize * 2;
+            var pageSize = footer.m_blockSizeKB * 1024;
+            var totalSizeForPage = pageSize + footer.m_keyBytes + footer.m_checksumSize; // every page will have lastekey + hash
+            var pageCount = ((int)br.BaseStream.Length - fullFooterSize) / (totalSizeForPage);
+            var pages = new byte[pageCount][];
+
+            for (int pageIndex = 0; pageIndex < pageCount; pageIndex++) {
+                pages[pageIndex] = new byte[pageSize];
+                br.DefinitelyRead(pages[pageIndex]);
+
+                var pageSpan = pages[pageIndex].AsSpan();
+                while (pageSpan.Length >= 16) {
+                    var key = SpanHelper.ReadStruct<FullKey>(ref pageSpan);
+                    if (key.CompareTo(default) == 0) break;
+
+                    uint size;
+                    if (footer.m_sizeBytes == 4) size = SpanHelper.ReadStruct<UInt32BE>(ref pageSpan).ToInt();
+                    else throw new Exception($"unhanled `size` size: {footer.m_sizeBytes}");
+
+                    ushort entryArchiveIndex = (ushort)archiveIndex;
+                    if (archiveIndex == ARCHIVE_ID_GROUP) {
+                        entryArchiveIndex = SpanHelper.ReadStruct<UInt16BE>(ref pageSpan).ToInt();
                     }
-                    var entry = new IndexEntry()
+                    
+                    uint offset;
+                    if (footer.m_offsetBytes == 4) offset = SpanHelper.ReadStruct<UInt32BE>(ref pageSpan).ToInt();
+                    else throw new Exception($"unhanled `offset` size: {footer.m_offsetBytes}");
+                    
+                    var entry = new IndexEntry
                     {
-                        Index = i,
-                        Size = br.ReadInt32BE(),
-                        Offset = br.ReadInt32BE()
+                        Index = entryArchiveIndex,
+                        Size = size,
+                        Offset = offset
                     };
                     CDNIndexData[key] = entry;
                 }
             }
+
+            var lastEKeys = br.ReadArray<FullEKey>(pageCount);
+            br.BaseStream.Position += pageCount * footer.m_checksumSize;
+            br.BaseStream.Position += fullFooterSize;
+            if (br.BaseStream.Position != br.BaseStream.Length) {
+                throw new Exception($"didnt wrong length data read from index. pos: {br.BaseStream.Position}. len: {br.BaseStream.Length}");
+            }
+            
+            //var test = lastEKeys.Select(x => x.ToHexString()).ToArray();
+            //Console.Out.WriteLine(test);
         }
 
         private void DownloadIndexFile(string archive, int i)
@@ -88,7 +138,8 @@ namespace TACTLib.Protocol
             {
                 var cdn = (CDNClient) m_client.NetHandle!;
                 var indexData = cdn.FetchCDN("data", archive, null, ".index");
-                var indexDataStream = new MemoryStream(indexData);
+                if (indexData == null) throw new Exception($"failed to fetch archive index data for {archive} (index {i})");
+                using var indexDataStream = new MemoryStream(indexData);
                 ParseIndex(indexDataStream, i);
             }
             catch (Exception exc)
@@ -97,27 +148,40 @@ namespace TACTLib.Protocol
             }
         }
 
-        private void OpenOrDownloadIndexFile(string archive, int i)
+        private string GetArchiveIndexPath(string archive) {
+            var dir = ((ContainerHandler)m_client.ContainerHandler!).ContainerDirectory;
+            var path = Path.Combine(dir, ContainerHandler.CDNIndicesDirectory, archive + ".index");
+            return path;
+        }
+
+        private bool OpenIndexFile(string archive, int archiveIndex) {
+            var path = GetArchiveIndexPath(archive);
+            if (!File.Exists(path)) return false;
+            
+            using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+            ParseIndex(fs, archiveIndex);
+            return true;
+        }
+
+        private void OpenOrDownloadIndexFile(string archive, int archiveIndex)
         {
-            try
-            {
-                var dir = ((ContainerHandler)m_client.ContainerHandler!).ContainerDirectory;
-                var path = Path.Combine(dir, ContainerHandler.CDNIndicesDirectory, archive + ".index");
-                if (File.Exists(path))
-                {
-                    using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-                    ParseIndex(fs, i);
-                }
-                else
-                {
-                    // todo: save to disk. issue is that we don't know when to remove
-                    DownloadIndexFile(archive, i);
-                }
+            try {
+                var localResult = OpenIndexFile(archive, archiveIndex);
+                if (localResult) return;
+                
+                DownloadIndexFile(archive, archiveIndex);
             }
             catch (Exception exc)
             {
-                throw new Exception($"OpenFile failed: {archive} - {exc}");
+                throw new Exception($"OpenOrDownloadIndexFile failed: {archive} - {exc}");
             }
+        }
+
+        public bool TryGetIndexEntry(FullKey ckey, out IndexEntry indexEntry) {
+            return CDNIndexData.TryGetValue(ckey, out indexEntry);
+            
+            //indexEntry = default;
+            //return false;
         }
 
         public byte[]? OpenDataFile(IndexEntry entry)
@@ -125,8 +189,22 @@ namespace TACTLib.Protocol
             var archive = m_client.ConfigHandler.CDNConfig.Archives[entry.Index];
 
             var cdn = (CDNClient) m_client.NetHandle!;
-            var stream = cdn.FetchCDN("data", archive, (entry.Offset, entry.Offset + entry.Size - 1));
+            var stream = cdn.FetchCDN("data", archive, ((int)entry.Offset, (int)entry.Offset + (int)entry.Size - 1));
             return stream;
+        }
+
+        private struct FixedFooter {
+            public byte m_version;
+            public byte m_unk0x11;
+            public byte m_unk0x12;
+            public byte m_blockSizeKB;
+            public byte m_offsetBytes;
+            public byte m_sizeBytes;
+            public byte m_keyBytes;
+            public byte m_checksumSize;
+            public uint m_numElements;
+
+            public static unsafe int SIZE => sizeof(FixedFooter);
         }
     }
 }

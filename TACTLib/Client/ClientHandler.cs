@@ -311,7 +311,7 @@ namespace TACTLib.Client {
             if (!CreateArgs.Online) return null;
 
             byte[]? netMemStream = null;
-            if (m_cdnIdx != null && m_cdnIdx.CDNIndexData.TryGetValue(fullEKey, out var cdnIdx)) {
+            if (m_cdnIdx != null && m_cdnIdx.TryGetIndexEntry(fullEKey, out var cdnIdx)) {
                 netMemStream = m_cdnIdx.OpenDataFile(cdnIdx);
             }
 
