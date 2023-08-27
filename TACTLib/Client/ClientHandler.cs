@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -196,15 +195,6 @@ namespace TACTLib.Client {
                     ConfigHandler = ConfigHandler.ForDynamicContainer(this);
             }
 
-            using (var _ = new PerfCounter("EncodingHandler::ctor`ClientHandler"))
-                EncodingHandler = new EncodingHandler(this);
-
-            if (ConfigHandler.BuildConfig.VFSRoot != null) {
-                using var _ = new PerfCounter("VFSFileTree::ctor`ClientHandler");
-                using var vfsStream = OpenCKey(ConfigHandler.BuildConfig.VFSRoot!.ContentKey)!;
-                VFS = new VFSFileTree(this, vfsStream);
-            }
-
             if (CreateArgs.Online) {
                 if (CanShareCDNData(CreateArgs.TryShareCDNIndexWithHandler)) {
                     m_cdnIdx = CreateArgs.TryShareCDNIndexWithHandler.m_cdnIdx;
@@ -212,6 +202,18 @@ namespace TACTLib.Client {
                     using var _ = new PerfCounter("CDNIndexHandler::Initialize`ClientHandler");
                     m_cdnIdx = CDNIndexHandler.Initialize(this);
                 }
+            }
+            
+            // for testing local cdn index init but remote data:
+            //ContainerHandler = null;
+
+            using (var _ = new PerfCounter("EncodingHandler::ctor`ClientHandler"))
+                EncodingHandler = new EncodingHandler(this);
+
+            if (ConfigHandler.BuildConfig.VFSRoot != null) {
+                using var _ = new PerfCounter("VFSFileTree::ctor`ClientHandler");
+                using var vfsStream = OpenCKey(ConfigHandler.BuildConfig.VFSRoot!.ContentKey)!;
+                VFS = new VFSFileTree(this, vfsStream);
             }
 
             ProductHandler = CreateProductHandler();
@@ -261,16 +263,10 @@ namespace TACTLib.Client {
                    
                 // oopsie. it aint resident in local apparently. lets just try first from other sources
                 var first = eKeys[0];
-                Logger.Debug("ClientHandler", $"fallback for {key.ToHexString()}: {first.ToHexString()}");
                 return TryOpenEKeyFromRemote(first, EncodingHandler.GetEncodedSize(first));
             }
-
-            if (CreateArgs.Online) {
-                return new MemoryStream(BLTEDecoder.Decode(this, NetHandle!.OpenData(key)));
-            }
-
-            Debugger.Log(0, "ContainerHandler", $"Missing encoding entry for CKey {key.ToHexString()}\n");
-            return null;
+            
+            return TryOpenRemoteLooseFile(key);
         }
         
         private Stream? TryOpenEKeyListFromContainer(ReadOnlySpan<FullEKey> eKeys) {
@@ -304,24 +300,41 @@ namespace TACTLib.Client {
         
         private Stream? OpenEKeyFromContainer(FullEKey fullEKey, int eSize) {  // ekey = value of ckey in encoding table
             if (ContainerHandler == null) return null;
-            var stream = ContainerHandler.OpenEKey(fullEKey, eSize);
-            return stream == null ? null : new MemoryStream(BLTEDecoder.Decode(this, stream.Value.AsSpan()));
+            var fromContainer = ContainerHandler.OpenEKey(fullEKey, eSize);
+            if (fromContainer == null) throw new Exception($"failed to load local file {fullEKey.ToHexString()} (it was marked resident)");
+            return TryDecode(fromContainer);
         }
 
         private Stream? TryOpenEKeyFromRemote(FullEKey fullEKey, int eSize) {
             if (!CreateArgs.Online) return null;
+            
+            var archiveResult = TryOpenRemoteArchivedFile(fullEKey);
+            if (archiveResult != null) return archiveResult;
 
-            byte[]? netMemStream = null;
-            if (m_cdnIdx != null && m_cdnIdx.TryGetIndexEntry(fullEKey, out var cdnIdx)) {
-                netMemStream = m_cdnIdx.OpenDataFile(cdnIdx);
-            }
+            var looseResult = TryOpenRemoteLooseFile(fullEKey);
+            if (looseResult != null) return looseResult;
 
-            if (netMemStream == null) {
-                netMemStream = NetHandle!.OpenData(fullEKey);
-            }
+            // doesnt exist
+            return null;
+        }
 
-            if (netMemStream == null) return null;
-            return new MemoryStream(BLTEDecoder.Decode(this, netMemStream.AsSpan()));
+        private Stream? TryOpenRemoteArchivedFile(FullEKey fullEKey) {
+            if (!m_cdnIdx!.TryGetIndexEntry(fullEKey, out var cdnIdx)) return null;
+            var encodedData = m_cdnIdx.OpenIndexEntry(cdnIdx);
+            if (encodedData == null) throw new Exception($"failed to fetch archived cdn file {fullEKey.ToHexString()}");
+            return TryDecode(encodedData);
+        }
+
+        private Stream? TryOpenRemoteLooseFile(FullEKey fullKey) {
+            if (!m_cdnIdx!.IsLooseFile(fullKey)) return null;
+            var encodedData = NetHandle!.OpenData(fullKey);
+            if (encodedData == null) throw new Exception($"failed to fetch loose cdn file {fullKey.ToHexString()}");
+            return TryDecode(encodedData);
+        }
+
+        private MemoryStream? TryDecode(ArraySegment<byte>? data) {
+            if (data == null) return null;
+            return new MemoryStream(BLTEDecoder.Decode(this, data.Value.AsSpan()));
         }
 
         public Stream? OpenConfigKey(string key) {

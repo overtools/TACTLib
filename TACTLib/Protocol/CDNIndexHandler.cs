@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using CommunityToolkit.HighPerformance;
 using Microsoft.Win32.SafeHandles;
@@ -28,8 +29,12 @@ namespace TACTLib.Protocol
         private FixedFooter ArchiveGroupFooter;
         private SafeFileHandle ArchiveGroupFileHandle = new SafeFileHandle();
         private FullKey[] ArchiveGroupPageLastEKeys = Array.Empty<FullKey>();
+        
+        private byte[][] LooseFilesPages = Array.Empty<byte[]>();
+        private FullKey[] LooseFilesLastEKeys = Array.Empty<FullKey>();
 
         private const int ARCHIVE_ID_GROUP = -1;
+        private const int ARCHIVE_ID_LOOSE = -2;
 
         public static CDNIndexHandler Initialize(ClientHandler clientHandler)
         {
@@ -40,6 +45,9 @@ namespace TACTLib.Protocol
         private CDNIndexHandler(ClientHandler client)
         {
             Client = client;
+            
+            // load loose files index so we dont have to hit the cdn just to get 404'd
+            OpenOrDownloadIndexFile(client.ConfigHandler.CDNConfig.Values["file-index"][0], ARCHIVE_ID_LOOSE);
 
             var archiveGroupHash = client.ConfigHandler.CDNConfig.Values["archive-group"][0];
             if (LoadGroupIndexFile(archiveGroupHash)) {
@@ -136,11 +144,19 @@ namespace TACTLib.Protocol
             
             GetTableParameters(footer, (int)br.BaseStream.Length, out var pageSize, out var pageCount);
             if (archiveIndex == ARCHIVE_ID_GROUP) footer.m_offsetBytes -= 2; // archive index is part of offset
+            if (archiveIndex == ARCHIVE_ID_LOOSE) {
+                LooseFilesPages = new byte[pageCount][];
+            }
 
             br.BaseStream.Position = 0;
             var page = new byte[pageSize];
             for (int pageIndex = 0; pageIndex < pageCount; pageIndex++) {
                 br.DefinitelyRead(page);
+
+                if (archiveIndex == ARCHIVE_ID_LOOSE) {
+                    LooseFilesPages[pageIndex] = page.ToArray(); // dont store same array multiple times
+                    continue;
+                }
 
                 var pageSpan = page.AsSpan();
                 while (pageSpan.Length >= 16) {
@@ -170,7 +186,11 @@ namespace TACTLib.Protocol
                 }
             }
 
-            br.BaseStream.Position += pageCount * footer.m_keyBytes;
+            if (archiveIndex == ARCHIVE_ID_LOOSE) {
+                LooseFilesLastEKeys = br.ReadArray<FullEKey>(pageCount);
+            } else {
+                br.BaseStream.Position += pageCount * footer.m_keyBytes;
+            }
             br.BaseStream.Position += pageCount * footer.m_checksumSize;
             br.BaseStream.Position += footer.DynamicSize;
             if (br.BaseStream.Position != br.BaseStream.Length) {
@@ -228,21 +248,27 @@ namespace TACTLib.Protocol
             }
         }
 
-        private bool TryGetIndexEntryFromGroup(FullEKey eKey, out IndexEntry indexEntry) {
-            //if (ArchiveGroupFileHandle.IsInvalid) {
-            //    indexEntry = default;
-            //    return false;
-            //}
-            
-            var binarySearchResult = Array.BinarySearch(ArchiveGroupPageLastEKeys, eKey);
-            int pageIndex;
+        private static bool SearchLastKeys(FullEKey key, FullEKey[] lastKeysArray, out int pageIndex) {
+            var binarySearchResult = Array.BinarySearch(lastKeysArray, key);
             if (binarySearchResult >= 0) {
                 pageIndex = binarySearchResult;
             } else {
                 var firstElementLarger = ~binarySearchResult;
                 pageIndex = firstElementLarger;
             }
-            if (pageIndex >= ArchiveGroupPageLastEKeys.Length) goto NOT_FOUND;
+            if (pageIndex >= lastKeysArray.Length) return false;
+            return true;
+        }
+
+        private bool TryGetIndexEntryFromGroup(FullEKey eKey, out IndexEntry indexEntry) {
+            //if (ArchiveGroupFileHandle.IsInvalid) {
+            //    indexEntry = default;
+            //    return false;
+            //}
+
+            if (!SearchLastKeys(eKey, ArchiveGroupPageLastEKeys, out var pageIndex)) {
+                goto NOT_FOUND;
+            }
             
             Span<byte> pageData = stackalloc byte[ArchiveGroupFooter.PageSizeBytes];
             var pageOffset = ArchiveGroupFooter.PageSizeBytes * pageIndex;
@@ -278,13 +304,36 @@ namespace TACTLib.Protocol
             return CDNIndexData.TryGetValue(eKey, out indexEntry);
         }
 
-        public byte[]? OpenDataFile(IndexEntry entry)
+        public bool IsLooseFile(FullKey key) {
+            if (!SearchLastKeys(key, LooseFilesLastEKeys, out var pageIndex)) {
+                return false;
+            }
+            
+            ReadOnlySpan<LooseFileEntry> pageEntries = MemoryMarshal.Cast<byte, LooseFileEntry>(LooseFilesPages[pageIndex]);
+            var speculativeEntry = new LooseFileEntry {
+                m_eKey = key
+            };
+            var finalSearchResult = pageEntries.BinarySearch(speculativeEntry);
+            return finalSearchResult >= 0;
+        }
+
+        public byte[]? OpenIndexEntry(IndexEntry entry)
         {
             var archive = Client.ConfigHandler.CDNConfig.Archives[entry.Index];
 
             var cdn = (CDNClient) Client.NetHandle!;
             var stream = cdn.FetchCDN("data", archive, ((int)entry.Offset, (int)entry.Offset + (int)entry.Size - 1));
             return stream;
+        }
+        
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        private struct LooseFileEntry : IComparable<LooseFileEntry> {
+            public FullEKey m_eKey;
+            public UInt32BE m_size;
+
+            public int CompareTo(LooseFileEntry other) {
+                return m_eKey.CompareTo(other.m_eKey);
+            }
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
