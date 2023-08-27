@@ -209,7 +209,7 @@ namespace TACTLib.Core.Product.Tank {
                     continue;
                 }
 
-                if (bundle.Entries == null) {
+                if (bundle.Header.OffsetSize == 0) {
                     // Logger.Debug("TRG", $"can't load bundle {asset.Key:X16} everything is fucked.");
                     throw new TankException("Bundle is fragmented: run, repair, or reinstall the game");
                 }
