@@ -14,12 +14,14 @@ namespace TACTLib.Core
         private const byte EncryptionSalsa20 = (byte)'S';
         private const byte EncryptionArc4 = (byte)'A';
 
+        [StructLayout(LayoutKind.Sequential)]
         private struct Header
         {
             public uint m_magic;
             public int m_frameHeaderSize;
         }
 
+        [StructLayout(LayoutKind.Sequential)]
         private struct FrameHeader
         {
             public byte m_format;
@@ -36,6 +38,7 @@ namespace TACTLib.Core
 
             if (header.m_magic != BLTEStream.Magic) throw new BLTEDecoderException(null, $"frame header mismatch (bad BLTE file) {header.m_magic:X}");
 
+            // ReSharper disable once RedundantAssignment
             ReadOnlySpan<DataBlock> blocks = stackalloc DataBlock[0]; // assign to convince compile we aren't escaping the ref
             if (header.m_frameHeaderSize > 0)
             {
@@ -46,6 +49,7 @@ namespace TACTLib.Core
                 if (frameHeader.m_format != 0x0F || numBlocks == 0)
                     throw new BLTEDecoderException(null, "bad table format 0x{0:x2}, numBlocks {1}", frameHeader.m_format, numBlocks);
 
+                // ReSharper disable once InconsistentNaming
                 var blocksRW = MemoryMarshal.Cast<byte, DataBlock>(frameHeaderSpan);
                 if (BitConverter.IsLittleEndian)
                 {
@@ -58,6 +62,7 @@ namespace TACTLib.Core
                 blocks = blocksRW;
             } else
             {
+                // ReSharper disable once InconsistentNaming
                 Span<DataBlock> blocksRW = stackalloc DataBlock[1];
                 blocksRW[0] = new DataBlock
                 {
@@ -152,12 +157,9 @@ namespace TACTLib.Core
         private static unsafe void Decompress(ReadOnlySpan<byte> input, Span<byte> output)
         {
             fixed (byte* pBuffer = &input[0]) {
-                using (var unmanagedInputStream = new UnmanagedMemoryStream(pBuffer, input.Length))
-                using (var deflateStream = new ZLibStream(unmanagedInputStream, CompressionMode.Decompress)) {
-                    int count;
-                    while ((count = deflateStream.Read(output)) != 0)
-                        output = output.Slice(count);
-                }
+                using var unmanagedInputStream = new UnmanagedMemoryStream(pBuffer, input.Length);
+                using var deflateStream = new ZLibStream(unmanagedInputStream, CompressionMode.Decompress);
+                deflateStream.DefinitelyRead(output);
             }
         }
     }

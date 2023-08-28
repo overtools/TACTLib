@@ -63,7 +63,7 @@ namespace TACTLib.Client {
 
         public readonly ClientCreateArgs CreateArgs;
 
-        public readonly CDNIndexHandler? m_cdnIdx;
+        public readonly CDNIndexHandler? CDNIndex;
 
         public ClientHandler(string? basePath, ClientCreateArgs createArgs) {
             CreateArgs = createArgs;
@@ -197,10 +197,10 @@ namespace TACTLib.Client {
 
             if (CreateArgs.Online) {
                 if (CanShareCDNData(CreateArgs.TryShareCDNIndexWithHandler)) {
-                    m_cdnIdx = CreateArgs.TryShareCDNIndexWithHandler.m_cdnIdx;
+                    CDNIndex = CreateArgs.TryShareCDNIndexWithHandler.CDNIndex;
                 } else {
                     using var _ = new PerfCounter("CDNIndexHandler::Initialize`ClientHandler");
-                    m_cdnIdx = CDNIndexHandler.Initialize(this);
+                    CDNIndex = CDNIndexHandler.Initialize(this);
                 }
             }
             
@@ -227,7 +227,7 @@ namespace TACTLib.Client {
         }
 
         private bool CanShareCDNData([NotNullWhen(true)] ClientHandler? other) {
-            if (other?.m_cdnIdx == null) return false;
+            if (other?.CDNIndex == null) return false;
 
             var cdnConfig = ConfigHandler.CDNConfig;
             var otherCDNConfig = other.ConfigHandler.CDNConfig;
@@ -291,8 +291,8 @@ namespace TACTLib.Client {
                 var cascBlte = OpenEKeyFromContainer(fullEKey, eSize);
                 if (cascBlte != null) return cascBlte;
             } catch (Exception e) {
-                if (!CreateArgs.Online) throw;
                 if (e is BLTEKeyException) throw;
+                if (!CreateArgs.Online) throw;
                 Logger.Warn("CASC", $"Unable to open {fullEKey.ToHexString()} from CASC. Will try to download. Exception: {e}");
             }
             return null;
@@ -302,7 +302,7 @@ namespace TACTLib.Client {
             if (ContainerHandler == null) return null;
             var fromContainer = ContainerHandler.OpenEKey(fullEKey, eSize);
             if (fromContainer == null) throw new Exception($"failed to load local file {fullEKey.ToHexString()} (it was marked resident)");
-            return TryDecode(fromContainer);
+            return TryDecodeToStream(fromContainer);
         }
 
         private Stream? TryOpenEKeyFromRemote(FullEKey fullEKey, int eSize) {
@@ -319,22 +319,22 @@ namespace TACTLib.Client {
         }
 
         private Stream? TryOpenRemoteArchivedFile(FullEKey fullEKey) {
-            if (!m_cdnIdx!.TryGetIndexEntry(fullEKey, out var cdnIdx)) return null;
-            var encodedData = m_cdnIdx.OpenIndexEntry(cdnIdx);
+            if (!CDNIndex!.TryGetIndexEntry(fullEKey, out var cdnIdx)) return null;
+            var encodedData = CDNIndex.OpenIndexEntry(cdnIdx);
             if (encodedData == null) throw new Exception($"failed to fetch archived cdn file {fullEKey.ToHexString()}");
-            return TryDecode(encodedData);
+            return TryDecodeToStream(encodedData);
         }
 
         private Stream? TryOpenRemoteLooseFile(FullEKey fullKey) {
-            if (!m_cdnIdx!.IsLooseFile(fullKey)) return null;
+            if (!CDNIndex!.IsLooseFile(fullKey)) return null;
             var encodedData = NetHandle!.OpenData(fullKey);
             if (encodedData == null) throw new Exception($"failed to fetch loose cdn file {fullKey.ToHexString()}");
-            return TryDecode(encodedData);
+            return TryDecodeToStream(encodedData);
         }
 
-        private MemoryStream? TryDecode(ArraySegment<byte>? data) {
+        private MemoryStream? TryDecodeToStream(ArraySegment<byte>? data) {
             if (data == null) return null;
-            return new MemoryStream(BLTEDecoder.Decode(this, data.Value.AsSpan()));
+            return new MemoryStream(BLTEDecoder.Decode(this, data.Value.AsSpan()), false);
         }
 
         public Stream? OpenConfigKey(string key) {

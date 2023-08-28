@@ -191,8 +191,12 @@ namespace TACTLib.Container {
                 throw new EndOfStreamException($"bytesRead != buffer.Length. {bytesRead} != {buffer.Length}");
             }
 
-            ref var fileHeader = ref MemoryMarshal.AsRef<DataHeader>(buffer);
+            var initialMagic = BinaryPrimitives.ReadUInt32LittleEndian(buffer);
+            if (initialMagic == BLTEStream.Magic) {
+                return buffer;
+            }
 
+            ref var fileHeader = ref MemoryMarshal.AsRef<DataHeader>(buffer);
             if (fileHeader.m_size != indexEntry.EncodedSize) {
                 // header struct: https://github.com/ladislav-zezula/CascLib/blob/22b558e710d730edaa7b1610349081fce7fb0f7a/src/CascStructs.h#L244
                 
@@ -219,10 +223,7 @@ namespace TACTLib.Container {
                 // && headerSpan.SequenceEqual(ZEROED_HEADER)
                 var headerSpan = buffer.AsSpan(0, sizeof(DataHeader));
                 if (ALLOW_CORRUPT_HEADER && fourCC == BLTEStream.Magic) {
-                    if (!m_seenCorruptHeader) {
-                        Logger.Warn("CASC", "Corrupt install detected! To help us debug this issue, use the debug-install-issues mode in DataTool and upload the result to Discord.");
-                        m_seenCorruptHeader = true;
-                    }
+                    // aight
                 } else {
                     throw new InvalidDataException($"fileHeader.m_size != indexEntry.EncodedSize. {fileHeader.m_size} != {indexEntry.EncodedSize}. fourCC: {fourCC:X8}");
                 }
@@ -363,7 +364,7 @@ namespace TACTLib.Container {
 
             public uint EncodedSize;
 
-            public unsafe IndexEntry(EKeyEntry entry) {
+            public IndexEntry(EKeyEntry entry) {
                 var indexInt = entry.FileOffsetBE.ToInt();
 
                 const int fileOffsetBitCount = 30; // technically can vary via header but hardcoded same as everything else

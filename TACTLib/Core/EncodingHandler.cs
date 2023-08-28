@@ -19,6 +19,8 @@ namespace TACTLib.Core {
         private readonly FullEKey[] EKeyESpecHeaderKeys;
         private readonly EKeyESpecEntry[][] EKeyESpecPages;
 
+        //public readonly string[] ESpecs;
+
         public EncodingHandler(ClientHandler client) : this(client,
             client.ConfigHandler.BuildConfig.Encoding.EncodingKey, client.ConfigHandler.BuildConfig.EncodingSize!.EncodedSize)
         {
@@ -47,7 +49,7 @@ namespace TACTLib.Core {
 
             Debug.Assert(header.m_unknown == 0); // asserted by agent
 
-            //string[] strings = Encoding.ASCII.GetString(reader.ReadBytes(especBlockSize)).Split(new[] { '\0' }, StringSplitOptions.RemoveEmptyEntries);
+            //ESpecs = Encoding.ASCII.GetString(reader.ReadBytes((int)header.m_especBlockSize.ToInt())).Split(new[] { '\0' }, StringSplitOptions.RemoveEmptyEntries);
             stream.Position += header.m_especBlockSize.ToInt();
 
             var cKeyEKeyHeaders = reader.ReadArray<PageHeader>((int)cKeyEKeyPageCount);

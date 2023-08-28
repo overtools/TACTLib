@@ -43,7 +43,7 @@ namespace TACTLib.Core.Key {
         /// <param name="array">Source array</param>
         /// <returns></returns>
         /// <exception cref="ArgumentException">Array length != <see cref="CASC_FULL_KEY_SIZE"/></exception>
-        public static FullKey FromByteArray(byte[] array) {
+        public static FullKey FromByteArray(ReadOnlySpan<byte> array) {
             if (array.Length < CASC_FULL_KEY_SIZE)
                 throw new ArgumentException($"array size < {CASC_FULL_KEY_SIZE}");
 
