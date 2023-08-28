@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -9,11 +8,16 @@ using TACTLib.Helpers;
 namespace TACTLib.Core.Product.Tank {
     public class ContentManifestFile {
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct HashData { // version 25?
+        public struct HashData : IComparable<HashData> { // version 25?
             public ulong GUID;
             public uint Size;
             public byte Unknown;
             public CKey ContentKey;
+
+            public int CompareTo(HashData other)
+            {
+                return GUID.CompareTo(other.GUID);
+            }
         }
         
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -90,8 +94,6 @@ namespace TACTLib.Core.Product.Tank {
         
         public ApplicationPackageManifest.Entry[] m_entries = null!;
         public HashData[] m_hashList = null!;
-        public Dictionary<ulong, int> m_indexMap = null!;
-        private Dictionary<ulong, HashData> m_hashDataMap = null!;
 
         // ReSharper disable once InconsistentNaming
         public const int ENCRYPTED_MAGIC = 0x636D66; // todo: use the thingy again?
@@ -128,27 +130,29 @@ namespace TACTLib.Core.Product.Tank {
             if (m_entries.Length >= 1 && m_entries[0].m_index != 1) {
                 Logger.Warn("CMF", "CMF Crypto using invalid IV. This can probably be ignored.");
             }
-
-            m_indexMap = new Dictionary<ulong, int>(m_header.m_dataCount);
-            m_hashDataMap = new Dictionary<ulong, HashData>(m_header.m_dataCount); 
-            for (var i = 0; i < m_header.m_dataCount; i++) {
-                var hashData = m_hashList[i];
-                m_indexMap[hashData.GUID] = i;
-
-                m_hashDataMap[hashData.GUID] = hashData;
-            }
         }
 
         public bool TryGet(ulong guid, out HashData hashData) {
-            return m_hashDataMap.TryGetValue(guid, out hashData);
+            var speculativeEntry = new HashData
+            {
+                GUID = guid
+            };
+            var index = Array.BinarySearch(m_hashList, speculativeEntry);
+            if (index < 0 || index >= m_hashList.Length)
+            {
+                hashData = default;
+                return false;
+            }
+            hashData = m_hashList[index];
+            return true;
         }
 
         public bool Exists(ulong guid) {
-            return m_hashDataMap.ContainsKey(guid);
+            return TryGet(guid, out _);
         }
 
         public HashData GetHashData(ulong guid) {
-            if (m_hashDataMap.TryGetValue(guid, out var data)) {
+            if (TryGet(guid, out var data)) {
                 return data;
             }
             throw new FileNotFoundException($"{guid:X16}");
