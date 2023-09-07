@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -25,7 +26,7 @@ namespace TACTLib.Core.Product {
             return type;
         }
 
-        public static void SetHandler(TACTProduct product, Type type) {
+        public static void SetHandler(TACTProduct product, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type type) {
             _handlers[product] = type;
         }
     }

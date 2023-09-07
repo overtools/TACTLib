@@ -151,7 +151,7 @@ namespace TACTLib.Config {
 
             if (client.CreateArgs.LoadSupportKeyring) {
                 var keyFileName = client.CreateArgs.SupportKeyring ?? $@"{client.Product:G}.keyring";
-                var keyFile = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), keyFileName);
+                var keyFile = Path.Combine(AppContext.BaseDirectory, keyFileName);
 
                 localKeys = LoadSupportFileFromDisk(keyFile);
             }

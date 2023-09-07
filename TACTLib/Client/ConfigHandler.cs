@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using TACTLib.Config;
 
@@ -40,7 +41,7 @@ namespace TACTLib.Client {
             Keyring.LoadSupportKeyrings(client);
         }
 
-        private void LoadFromInstallationInfo<T>(ClientHandler client, string name, out T? @out) where T : Config.Config {
+        private static void LoadFromInstallationInfo<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(ClientHandler client, string name, out T? @out) where T : Config.Config {
             if (client.InstallationInfo.Values.TryGetValue(name, out var key) && !string.IsNullOrWhiteSpace(key)) {
                 using (var stream = client.OpenConfigKey(key)) {
                     LoadConfig(stream, out @out);
@@ -50,7 +51,7 @@ namespace TACTLib.Client {
             }
         }
 
-        private static void LoadConfig<T>(Stream? stream, out T @out) {
+        private static void LoadConfig<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(Stream? stream, out T @out) {
             // hmm
             @out = (T) Activator.CreateInstance(typeof(T), stream)!;
         }
