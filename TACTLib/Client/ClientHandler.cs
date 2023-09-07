@@ -319,14 +319,16 @@ namespace TACTLib.Client {
         }
 
         private Stream? TryOpenRemoteArchivedFile(FullEKey fullEKey) {
-            if (!CDNIndex!.TryGetIndexEntry(fullEKey, out var cdnIdx)) return null;
+            if (CDNIndex == null) return null;
+            if (!CDNIndex.TryGetIndexEntry(fullEKey, out var cdnIdx)) return null;
             var encodedData = CDNIndex.OpenIndexEntry(cdnIdx);
             if (encodedData == null) throw new Exception($"failed to fetch archived cdn file {fullEKey.ToHexString()}");
             return TryDecodeToStream(encodedData);
         }
 
         private Stream? TryOpenRemoteLooseFile(FullEKey fullKey) {
-            if (!CDNIndex!.IsLooseFile(fullKey)) return null;
+            if (CDNIndex == null) return null;
+            if (!CDNIndex.IsLooseFile(fullKey)) return null;
             var encodedData = NetHandle!.OpenData(fullKey);
             if (encodedData == null) throw new Exception($"failed to fetch loose cdn file {fullKey.ToHexString()}");
             return TryDecodeToStream(encodedData);
