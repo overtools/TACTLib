@@ -64,6 +64,8 @@ namespace TACTLib.Client {
         public readonly ClientCreateArgs CreateArgs;
 
         public readonly CDNIndexHandler? CDNIndex;
+        
+        private bool _seenNonResidentAsset;
 
         public ClientHandler(string? basePath, ClientCreateArgs createArgs) {
             CreateArgs = createArgs;
@@ -260,7 +262,12 @@ namespace TACTLib.Client {
             if (EncodingHandler != null && EncodingHandler.TryGetEncodingEntry(key, out var eKeys) && eKeys.Length > 0) {
                 var fromContainer = TryOpenEKeyListFromContainer(eKeys);
                 if (fromContainer != null) return fromContainer;
-                   
+
+                if (ContainerHandler != null && !_seenNonResidentAsset && CreateArgs.Online) {
+                    Logger.Error("CASC", "Due to an issue with the Battle.net updater (and your install), DataTool has to download some game assets from the CDN. The tool will still work properly.");
+                    _seenNonResidentAsset = true;
+                }
+                
                 // oopsie. it aint resident in local apparently. lets just try first from other sources
                 var first = eKeys[0];
                 return TryOpenEKeyFromRemote(first, EncodingHandler.GetEncodedSize(first));
