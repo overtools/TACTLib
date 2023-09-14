@@ -274,11 +274,6 @@ namespace TACTLib.Client {
             if (EncodingHandler == null) return null; // cant get here but okay
 
             foreach (var ekey in eKeys) {
-                if (!ContainerHandler.CheckResidency(ekey)) {
-                    //Logger.Debug("ClientHandler", $"skipping ekey {ekey.ToHexString()} as it is not resident locally");
-                    continue;
-                }
-
                 var fromContainer = TryOpenEKeyFromContainer(ekey, EncodingHandler.GetEncodedSize(ekey));
                 if (fromContainer != null) return fromContainer;
             }
@@ -287,6 +282,7 @@ namespace TACTLib.Client {
 
         private Stream? TryOpenEKeyFromContainer(FullEKey fullEKey, int eSize) {
             if (ContainerHandler == null) return null;
+            if (!ContainerHandler.CheckResidency(fullEKey)) return null;
             try {
                 var cascBlte = OpenEKeyFromContainer(fullEKey, eSize);
                 if (cascBlte != null) return cascBlte;
