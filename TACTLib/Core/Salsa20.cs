@@ -1,8 +1,8 @@
 using System;
 using System.Diagnostics;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace TACTLib.Core
 {
@@ -14,8 +14,8 @@ namespace TACTLib.Core
         private const int BLOCK_SIZE = 64;
         private const int ROUNDS = 20;
         
-        private static readonly byte[] Sigma = Encoding.ASCII.GetBytes("expand 32-byte k");
-        private static readonly byte[] Tau = Encoding.ASCII.GetBytes("expand 16-byte k");
+        private static ReadOnlySpan<byte> Sigma => "expand 32-byte k"u8;
+        private static ReadOnlySpan<byte> Tau => "expand 16-byte k"u8;
 
         private Span<uint> m_state => MemoryMarshal.CreateSpan(ref m_stateBuffer[0], STATE_COUNT);
         
@@ -108,7 +108,7 @@ namespace TACTLib.Core
         }
         
         private static uint Rotate(uint v, int c) {
-            return (v << c) | (v >> (32 - c));
+            return BitOperations.RotateLeft(v, c);
         }
 
         private static uint Add(uint v, uint w) {
