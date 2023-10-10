@@ -49,7 +49,7 @@ namespace TACTLib.Container {
             m_dataFiles = new Dictionary<int, SafeFileHandle>();
             foreach (var (i, path) in GetDataFilePaths()) {
                 //Logger.Debug("CASC", $"Opening data file {i} at {path}");
-                m_dataFiles.Add(i, File.OpenHandle(path, FileMode.Open, FileAccess.Read, FileShare.Read));
+                m_dataFiles.Add(i, File.OpenHandle(path, FileMode.Open, FileAccess.Read, FileShare.Read, FileOptions.RandomAccess));
             }
         }
 

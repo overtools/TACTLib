@@ -1,4 +1,3 @@
-
 using System;
 using System.Buffers.Binary;
 
@@ -7,7 +6,7 @@ namespace TACTLib.Helpers {
     {
         private uint m_data;
 
-        public uint ToInt()
+        public readonly uint ToInt()
         {
             if (BitConverter.IsLittleEndian) return BinaryPrimitives.ReverseEndianness(m_data);
             return m_data;

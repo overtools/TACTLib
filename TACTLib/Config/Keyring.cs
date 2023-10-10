@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net.Http;
-using System.Reflection;
 using TACTLib.Client;
 using static TACTLib.Utils;
 
@@ -17,13 +17,10 @@ namespace TACTLib.Config {
         public Keyring(Stream? stream) : base(stream) {
             Keys = new Dictionary<ulong, byte[]>();
             foreach (var pair in Values) {
-                string reverseKey = pair.Key.Substring(pair.Key.Length - 16);
-                string keyIDString = "";
-                for (var i = 0; i < 8; ++i) {
-                    keyIDString = reverseKey.Substring(i * 2, 2) + keyIDString;
-                }
-
-                var keyID = ulong.Parse(keyIDString, NumberStyles.HexNumber);
+                var reverseKey = pair.Key.AsSpan(pair.Key.Length - 16);
+                var keyID = ulong.Parse(reverseKey, NumberStyles.HexNumber);
+                keyID = BinaryPrimitives.ReverseEndianness(keyID); // unconditional be -> le
+                
                 Keys[keyID] = StringToByteArray(pair.Value[0]);
             }
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Buffers.Binary;
+using System.Globalization;
 
 namespace TACTLib {
     public static class Utils {
@@ -27,7 +28,7 @@ namespace TACTLib {
             str = str.Replace(" ", string.Empty);
 
             byte[] res = new byte[str.Length / 2];
-            for (var i = 0; i < res.Length; ++i) res[i] = Convert.ToByte(str.Substring(i * 2, 2), 16);
+            for (var i = 0; i < res.Length; ++i) res[i] = byte.Parse(str.AsSpan(i * 2, 2), NumberStyles.HexNumber);
 
             return res;
         }
