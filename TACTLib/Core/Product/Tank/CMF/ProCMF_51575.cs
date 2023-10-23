@@ -30,7 +30,7 @@ namespace TACTLib.Core.Product.Tank.CMF {
             {
                 buffer[i] = Keytable[SignedMod(kidx, 512)];
                 kidx += increment;
-                buffer[i] ^= digest[SignedMod(kidx + 0x16666D63, SHA1_DIGESTSIZE)];
+                buffer[i] ^= digest[SignedMod(kidx + header.GetNonEncryptedMagic(), SHA1_DIGESTSIZE)];
             }
 
             return buffer;

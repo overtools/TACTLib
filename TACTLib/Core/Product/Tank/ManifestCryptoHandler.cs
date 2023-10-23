@@ -57,7 +57,7 @@ namespace TACTLib.Core.Product.Tank {
 
                 Logger.Warn("Manifest", $"No {manifestType} procedure for build {buildVersion}, trying closest version");
                 try {
-                    var pair = providerVersions.Where(it => it.Key < buildVersion).OrderByDescending(it => it.Key).First();
+                    var pair = providerVersions.Where(it => it.Key < buildVersion).MaxBy(it => it.Key);
                     Logger.Info("Manifest", $"Using {manifestType} procedure {pair.Key}");
                     providerRaw = pair.Value;
                 } catch {
@@ -146,12 +146,6 @@ namespace TACTLib.Core.Product.Tank {
                 if (metadata.AutoDetectVersion) {
                     AddProvider(metadata.Product, typeof(T), provider, uint.Parse(tt.Name.Split('_')[1]));
                 }
-
-                if (metadata.BuildVersions != null) {
-                    foreach (var buildVersion in metadata.BuildVersions) {
-                        AddProvider(metadata.Product, typeof(T), provider, buildVersion);
-                    }
-                }
             }
         }
 
@@ -166,7 +160,6 @@ namespace TACTLib.Core.Product.Tank {
         public class ManifestCryptoAttribute : Attribute {
             public bool AutoDetectVersion = true;
             public TACTProduct Product = TACTProduct.Overwatch;
-            public uint[]? BuildVersions = Array.Empty<uint>();
         }
     }
 }

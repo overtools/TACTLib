@@ -25,7 +25,7 @@ namespace TACTLib.Core.Product.Tank.CMF {
             for (int i = 0; i != length; ++i) {
                 buffer[i] = Keytable[kidx % 512];
                 kidx += increment;
-                buffer[i] ^= digest[(kidx + 0x14666D63) % SHA1_DIGESTSIZE];
+                buffer[i] ^= digest[(kidx + header.GetNonEncryptedMagic()) % SHA1_DIGESTSIZE];
             }
 
             return buffer;
