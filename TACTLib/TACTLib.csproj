@@ -8,7 +8,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.1" />
+    <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.2" />
     <PackageReference Include="Google.Protobuf" Version="3.24.2" />
   </ItemGroup>
   <Target Name="SetSourceRevisionIdGit" BeforeTargets="BeforeBuild">
