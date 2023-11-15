@@ -6,7 +6,6 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using TACTLib.Helpers;
-using static TACTLib.Utils;
 
 namespace TACTLib.Core.VFS {
     public class VFSManifestReader {
@@ -85,57 +84,56 @@ namespace TACTLib.Core.VFS {
             /// </summary>
             public byte PKeySize;
 
-            public fixed byte Flags[4];
+            public UInt32BE Flags;
 
             /// <summary>
             /// Offset of the path table
             /// </summary>
-            public fixed byte PathTableOffset[4];
+            public UInt32BE PathTableOffset;
             
             /// <summary>
             /// Size of the path table
             /// </summary>
-            public fixed byte PathTableSize[4];
+            public UInt32BE PathTableSize;
             
             /// <summary>
             /// Offset of the VFS table
             /// </summary>
-            public fixed byte VfsTableOffset[4];
+            public UInt32BE VfsTableOffset;
             
             /// <summary>
             /// Size of the VFS table
             /// </summary>
-            public fixed byte VfsTableSize[4];
+            public UInt32BE VfsTableSize;
             
             /// <summary>
             /// Offset of the container file table
             /// </summary>
-            public fixed byte CftTableOffset[4];
+            public UInt32BE CftTableOffset;
             
             /// <summary>
             /// Size of the container file table
             /// </summary>
-            public fixed byte CftTableSize[4];
+            public UInt32BE CftTableSize;
             
             /// <summary>
             /// The maximum depth of the path prefix tree stored in the path table
             /// </summary>
-            public fixed byte MaxDepth[2];
+            public UInt16BE MaxDepth;
 
             //todo: only when write
             ///// <summary>
             ///// The offset of the encoding specifier table. Only if the write-support bit is set in the header flag
             ///// </summary>
-            //public fixed byte EstTableOffset[4];
+            //public UInt32BE EstTableOffset;
             //
             ///// <summary>
             ///// The size of the encoding specifier table. Only if the write-support bit is set in the header flag
             ///// </summary>
-            //public fixed byte EstTableSize[4];
+            //public UInt32BE EstTableSize;
             
             public ManifestFlags GetFlags() {
-                fixed (byte* b = Flags)
-                    return (ManifestFlags) Int32FromPtrBE(b);
+                return (ManifestFlags)Flags.ToInt();
             }
         }
 
@@ -143,12 +141,12 @@ namespace TACTLib.Core.VFS {
             public readonly ManifestHeader Header;
             
             public readonly ManifestFlags Flags;
-            public readonly int PathTableOffset;
-            public readonly int PathTableSize;
-            public readonly int VfsTableOffset;
-            public readonly int VfsTableSize;
-            public readonly int CftTableOffset;
-            public readonly int CftTableSize;
+            public readonly uint PathTableOffset;
+            public readonly uint PathTableSize;
+            public readonly uint VfsTableOffset;
+            public readonly uint VfsTableSize;
+            public readonly uint CftTableOffset;
+            public readonly uint CftTableSize;
             public readonly ushort MaxDepth;
             
             public readonly int CftOffsSize;
@@ -160,13 +158,13 @@ namespace TACTLib.Core.VFS {
                 Header = header;
 
                 Flags = header.GetFlags();
-                PathTableOffset = Int32FromPtrBE(header.PathTableOffset);
-                PathTableSize = Int32FromPtrBE(header.PathTableSize);
-                VfsTableOffset = Int32FromPtrBE(header.VfsTableOffset);
-                VfsTableSize = Int32FromPtrBE(header.VfsTableSize);
-                CftTableOffset = Int32FromPtrBE(header.CftTableOffset);
-                CftTableSize = Int32FromPtrBE(header.CftTableSize);
-                MaxDepth = (ushort)Int16FromPtrBE(header.MaxDepth);
+                PathTableOffset = header.PathTableOffset.ToInt();
+                PathTableSize = header.PathTableSize.ToInt();
+                VfsTableOffset = header.VfsTableOffset.ToInt();
+                VfsTableSize = header.VfsTableSize.ToInt();
+                CftTableOffset = header.CftTableOffset.ToInt();
+                CftTableSize = header.CftTableSize.ToInt();
+                MaxDepth = header.MaxDepth.ToInt();
                 CftOffsSize = GetOffsetFieldSize(CftTableSize);
                 //EstOffsSize = GetOffsetFieldSize(header.EstTableSize);
                 
@@ -178,7 +176,7 @@ namespace TACTLib.Core.VFS {
             // - If the container file table is larger than 0xffff bytes, it's 3 bytes
             // - If the container file table is larger than 0xff bytes, it's 2 bytes
             // - If the container file table is smaller than 0xff bytes, it's 1 byte
-            private static int GetOffsetFieldSize(int tableSize) {
+            private static int GetOffsetFieldSize(uint tableSize) {
                 if(tableSize > 0xffffff)
                     return 4;
                 if(tableSize > 0xffff)
