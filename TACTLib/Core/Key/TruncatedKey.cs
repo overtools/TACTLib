@@ -55,8 +55,8 @@ namespace TACTLib.Core.Key {
 
         public static int TruncatedKeyCompare(TruncatedKey left, TruncatedKey right)
         {
-            var leftSpan = MemoryMarshal.CreateReadOnlySpan(ref left, 1).AsBytes();
-            var rightSpan = MemoryMarshal.CreateReadOnlySpan(ref right, 1).AsBytes();
+            var leftSpan = (ReadOnlySpan<byte>)left;
+            var rightSpan = (ReadOnlySpan<byte>)right;
 
             var leftU0 = BinaryPrimitives.ReadUInt64BigEndian(leftSpan);
             var rightU0 = BinaryPrimitives.ReadUInt64BigEndian(rightSpan);

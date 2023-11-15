@@ -49,8 +49,8 @@ namespace TACTLib.Core.Key {
             return MemoryMarshal.Read<FullKey>(array);
         }
 
-        public EKey AsTruncated() {
-            return Unsafe.As<FullKey, EKey>(ref this);
+        public TruncatedKey AsTruncated() {
+            return MemoryMarshal.Read<TruncatedKey>(this);
         }
 
         public int CompareTo(FullKey other) {
@@ -59,8 +59,8 @@ namespace TACTLib.Core.Key {
 
         public static int FullKeyCompare(FullKey left, FullKey right)
         {
-            var leftSpan = MemoryMarshal.CreateReadOnlySpan(ref left, 1).AsBytes();
-            var rightSpan = MemoryMarshal.CreateReadOnlySpan(ref right, 1).AsBytes();
+            var leftSpan = (ReadOnlySpan<byte>)left;
+            var rightSpan = (ReadOnlySpan<byte>)right;
 
             var leftU0 = BinaryPrimitives.ReadUInt64BigEndian(leftSpan);
             var rightU0 = BinaryPrimitives.ReadUInt64BigEndian(rightSpan);
