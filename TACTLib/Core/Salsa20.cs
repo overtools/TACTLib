@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -69,10 +68,8 @@ namespace TACTLib.Core
             }
         }
 
-        private static void Hash(Span<uint> output, ReadOnlySpan<uint> existingState) {
-            Debug.Assert(existingState.Length == 16); // should be the existing state buffer
-            var state = new UIntArray();
-            existingState.CopyTo(state);
+        private static void Hash(UIntArray output, UIntArray existingState) {
+            var state = existingState;
 
             for (var round = ROUNDS; round > 0; round -= 2) {
                 state[4] ^= Rotate(Add(state[0], state[12]), 7);
@@ -118,11 +115,11 @@ namespace TACTLib.Core
         }
 
         private static uint Add(uint v, uint w) {
-            return unchecked(v + w);
+            return v + w;
         }
         
         private static uint AddOne(uint v) {
-            return unchecked(v + 1);
+            return v + 1;
         }
         
         private static uint ExtractU32(ReadOnlySpan<byte> input, int inputOffset) {
