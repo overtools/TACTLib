@@ -263,7 +263,7 @@ namespace TACTLib.Client {
                 var fromContainer = TryOpenEKeyListFromContainer(eKeys);
                 if (fromContainer != null) return fromContainer;
 
-                if (ContainerHandler != null && !_seenNonResidentAsset && CreateArgs.Online) {
+                if (CreateArgs.VersionSource == ClientCreateArgs.InstallMode.Local && !_seenNonResidentAsset && CreateArgs.Online) {
                     Logger.Error("CASC", "Due to an issue with the Battle.net updater (and your install), DataTool has to download some game assets from the CDN. The tool will still work properly.");
                     _seenNonResidentAsset = true;
                 }
