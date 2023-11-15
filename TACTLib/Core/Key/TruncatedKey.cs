@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Buffers.Binary;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using CommunityToolkit.HighPerformance;
 using TACTLib.Helpers;
@@ -10,21 +11,20 @@ namespace TACTLib.Core.Key {
     /// Encoding Key
     /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct TruncatedKey : IComparable<TruncatedKey>  {
+    [InlineArray(CASC_TRUNCATED_KEY_SIZE)]
+    public struct TruncatedKey : IComparable<TruncatedKey>  {
         // ReSharper disable once InconsistentNaming
         /// <summary>Encoding Key size, in bytes</summary>
         public const int CASC_TRUNCATED_KEY_SIZE = 9;
 
-        /// <summary>Key value</summary>
-        public fixed byte Value[CASC_TRUNCATED_KEY_SIZE];
+        private byte _first;
 
         /// <summary>
         /// Convert to a hex string
         /// </summary>
         /// <returns>Hex stirng</returns>
         public readonly string ToHexString() {
-            fixed (byte* b = Value)
-                return PtrToSpan(b, CASC_TRUNCATED_KEY_SIZE).ToHexString();
+            return Extensions.ToHexString(this);
         }
 
         /// <summary>

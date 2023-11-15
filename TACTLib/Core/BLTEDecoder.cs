@@ -156,7 +156,7 @@ namespace TACTLib.Core
 
         private static unsafe void Decompress(ReadOnlySpan<byte> input, Span<byte> output)
         {
-            fixed (byte* pBuffer = &input[0]) {
+            fixed (byte* pBuffer = input) {
                 using var unmanagedInputStream = new UnmanagedMemoryStream(pBuffer, input.Length);
                 using var deflateStream = new ZLibStream(unmanagedInputStream, CompressionMode.Decompress);
                 deflateStream.DefinitelyRead(output);

@@ -5,7 +5,7 @@ using TACTLib.Protocol;
 
 namespace TACTLib.Config {
     public class InstallationInfoFile {
-        public List<Dictionary<string, string>> Values { get; }
+        public readonly List<Dictionary<string, string>> Values;
 
         public InstallationInfoFile(string path) {
             using StreamReader reader = new StreamReader(path);

@@ -127,7 +127,7 @@ namespace TACTLib.Core.Product.Tank {
                 m_packages[i] = package;
 
                 if (package.m_recordCount == 0) {
-                    m_packageRecords[i] = new PackageRecord[0];
+                    m_packageRecords[i] = Array.Empty<PackageRecord>();
                     return;
                 }
                 

@@ -107,13 +107,10 @@ namespace TACTLib.Container {
             IndexEntryBuckets[header.BucketIndex] = entries;
         }
 
-        private static byte EKeyToIndexNumber(TruncatedKey key) {
+        private static byte EKeyToIndexNumber(TruncatedKey k) {
             // https://wowdev.wiki/CASC#.IDX_Journals
-            unsafe {
-                var k = key.Value;
-                var i = (byte)(k[0] ^ k[1] ^ k[2] ^ k[3] ^ k[4] ^ k[5] ^ k[6] ^ k[7] ^ k[8]);
-                return (byte)((i & 0xf) ^ (i >> 4));
-            }
+            var i = (byte)(k[0] ^ k[1] ^ k[2] ^ k[3] ^ k[4] ^ k[5] ^ k[6] ^ k[7] ^ k[8]);
+            return (byte)((i & 0xf) ^ (i >> 4));
         }
 
         private bool TryFindIndexEntry(TruncatedKey key, out EKeyEntry entry) {

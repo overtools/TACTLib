@@ -9,17 +9,15 @@ namespace TACTLib.Core.Key {
         /// <summary>Static instance</summary>
         public static readonly CASCKeyComparer Instance = new CASCKeyComparer();
         
-        public unsafe bool Equals(TruncatedKey x, TruncatedKey y) {
-            return Equals(x.Value, y.Value, EKey.CASC_TRUNCATED_KEY_SIZE);
+        public bool Equals(TruncatedKey x, TruncatedKey y) {
+            return CASCKeyComparer.Equals(x, y);
         }
         
-        public unsafe bool Equals(FullKey x, FullKey y) {
-            return Equals(x.Value, y.Value, FullKey.CASC_FULL_KEY_SIZE);
+        public bool Equals(FullKey x, FullKey y) {
+            return CASCKeyComparer.Equals(x, y);
         }
 
-        private static unsafe bool Equals(byte* valA, byte* valB, int count) {
-            var spanA = new ReadOnlySpan<byte>(valA, count);
-            var spanB = new ReadOnlySpan<byte>(valB, count);
+        private static bool Equals(ReadOnlySpan<byte> spanA, ReadOnlySpan<byte> spanB) {
             return spanA.SequenceEqual(spanB);
         }
         

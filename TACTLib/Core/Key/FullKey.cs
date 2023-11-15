@@ -11,21 +11,20 @@ namespace TACTLib.Core.Key {
     /// Content Key
     /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct FullKey : IComparable<FullKey> {
+    [InlineArray(CASC_FULL_KEY_SIZE)]
+    public struct FullKey : IComparable<FullKey> {
         // ReSharper disable once InconsistentNaming
         /// <summary>Content Key size, in bytes</summary>
         public const int CASC_FULL_KEY_SIZE = 16;
 
-        /// <summary>Key value</summary>
-        public fixed byte Value[CASC_FULL_KEY_SIZE];
+        private byte _first;
 
         /// <summary>
         /// Convert to a hex string
         /// </summary>
         /// <returns>Hex stirng</returns>
         public readonly string ToHexString() {
-            fixed (byte* b = Value)
-                return PtrToSpan(b, CASC_FULL_KEY_SIZE).ToHexString();
+            return Extensions.ToHexString(this);
         }
 
         /// <summary>

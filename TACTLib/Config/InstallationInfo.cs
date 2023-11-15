@@ -6,7 +6,7 @@ using TACTLib.Protocol;
 
 namespace TACTLib.Config {
     public class InstallationInfo {
-        public Dictionary<string, string> Values { get; private set; }
+        public readonly Dictionary<string, string> Values;
 
         public InstallationInfo(Dictionary<string, string> values) {
             Values = values;

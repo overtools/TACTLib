@@ -1,12 +1,15 @@
+using System.Runtime.CompilerServices;
+
 namespace TACTLib.Helpers
 {
-    public unsafe struct UInt24BE
+    [InlineArray(3)]
+    public struct UInt24BE
     {
-        private fixed byte m_data[3];
+        private byte m_first;
 
         public readonly int ToInt()
         {
-            return m_data[2] | (m_data[1] << 8) | (m_data[0] << 16);
+            return this[2] | (this[1] << 8) | (this[0] << 16);
         }
     }
 }

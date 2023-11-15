@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace TACTLib.Config {
     public class Config {
-        public Dictionary<string, List<string>> Values;
+        public readonly Dictionary<string, List<string>> Values;
 
         protected Config(Stream? stream) {
             Values = new Dictionary<string, List<string>>();

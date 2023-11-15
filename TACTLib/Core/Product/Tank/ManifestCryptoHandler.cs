@@ -96,11 +96,8 @@ namespace TACTLib.Core.Product.Tank {
         }
 
         private static byte[] CreateDigest(string value) {
-            byte[] digest;
-            using (SHA1 shaM = SHA1.Create()) {
-                byte[] stringBytes = Encoding.ASCII.GetBytes(value);
-                digest = shaM.ComputeHash(stringBytes);
-            }
+            var digest = new byte[SHA1_DIGESTSIZE];
+            SHA1.HashData(Encoding.ASCII.GetBytes(value), digest);
             return digest;
         }
 

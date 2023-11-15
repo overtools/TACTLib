@@ -1,53 +1,59 @@
 using System;
 using System.Diagnostics;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 
 namespace TACTLib.Core
 {
-    public unsafe struct Salsa20
+    public struct Salsa20
     {
-        private fixed uint m_stateBuffer[STATE_COUNT];
+        private UIntArray m_state;
         
-        private const int STATE_COUNT = 16;
+        [InlineArray(STATE_COUNT)]
+        private struct UIntArray
+        {
+            private uint m_first;
+        }
+        
         private const int BLOCK_SIZE = 64;
+        private const int STATE_COUNT = BLOCK_SIZE/sizeof(uint); // 16
         private const int ROUNDS = 20;
         
         private static ReadOnlySpan<byte> Sigma => "expand 32-byte k"u8;
         private static ReadOnlySpan<byte> Tau => "expand 16-byte k"u8;
-
-        private Span<uint> m_state => MemoryMarshal.CreateSpan(ref m_stateBuffer[0], STATE_COUNT);
         
         public Salsa20(ReadOnlySpan<byte> key, ReadOnlySpan<byte> iv) {
             if (key.Length != 16 && key.Length != 32) throw new CryptographicException("Invalid key size; it must be 128 or 256 bits.");
             if (iv.Length != 8) throw new CryptographicException("Invalid IV size; it must be 8 bytes.");
             
-            m_state[1] = ToUInt32(key, 0);
-            m_state[2] = ToUInt32(key, 4);
-            m_state[3] = ToUInt32(key, 8);
-            m_state[4] = ToUInt32(key, 12);
+            m_state[1] = ExtractU32(key, 0);
+            m_state[2] = ExtractU32(key, 4);
+            m_state[3] = ExtractU32(key, 8);
+            m_state[4] = ExtractU32(key, 12);
 
             var constants = key.Length == 32 ? Sigma : Tau;
             var keyIndex = key.Length - 16;
 
-            m_state[11] = ToUInt32(key, keyIndex + 0);
-            m_state[12] = ToUInt32(key, keyIndex + 4);
-            m_state[13] = ToUInt32(key, keyIndex + 8);
-            m_state[14] = ToUInt32(key, keyIndex + 12);
-            m_state[0] = ToUInt32(constants, 0);
-            m_state[5] = ToUInt32(constants, 4);
-            m_state[10] = ToUInt32(constants, 8);
-            m_state[15] = ToUInt32(constants, 12);
+            m_state[11] = ExtractU32(key, keyIndex + 0);
+            m_state[12] = ExtractU32(key, keyIndex + 4);
+            m_state[13] = ExtractU32(key, keyIndex + 8);
+            m_state[14] = ExtractU32(key, keyIndex + 12);
+            m_state[0] = ExtractU32(constants, 0);
+            m_state[5] = ExtractU32(constants, 4);
+            m_state[10] = ExtractU32(constants, 8);
+            m_state[15] = ExtractU32(constants, 12);
 
-            m_state[6] = ToUInt32(iv, 0);
-            m_state[7] = ToUInt32(iv, 4);
+            m_state[6] = ExtractU32(iv, 0);
+            m_state[7] = ExtractU32(iv, 4);
             m_state[8] = 0;
             m_state[9] = 0;
         }
         
         public void Transform(ReadOnlySpan<byte> input, Span<byte> output) {
-            Span<byte> hashOutput = stackalloc byte[64];
+            var hashOutput = new UIntArray();
+            var hashOutputBytes = MemoryMarshal.Cast<uint, byte>(hashOutput);
             
             while (input.Length > 0) {
                 Hash(hashOutput, m_state);
@@ -56,16 +62,16 @@ namespace TACTLib.Core
 
                 var blockSize = Math.Min(BLOCK_SIZE, input.Length);
                 for (var i = 0; i < blockSize; i++)
-                    output[i] = (byte) (input[i] ^ hashOutput[i]);
+                    output[i] = (byte) (input[i] ^ hashOutputBytes[i]);
 
                 input = input.Slice(blockSize);
                 output = output.Slice(blockSize);
             }
         }
 
-        private static void Hash(Span<byte> output, ReadOnlySpan<uint> existingState) {
+        private static void Hash(Span<uint> output, ReadOnlySpan<uint> existingState) {
             Debug.Assert(existingState.Length == 16); // should be the existing state buffer
-            Span<uint> state = stackalloc uint[existingState.Length];
+            var state = new UIntArray();
             existingState.CopyTo(state);
 
             for (var round = ROUNDS; round > 0; round -= 2) {
@@ -103,8 +109,8 @@ namespace TACTLib.Core
                 state[15] ^= Rotate(Add(state[14], state[13]), 18);
             }
             
-            for (var index = 0; index < 16; index++)
-                ToBytes(Add(state[index], existingState[index]), output, 4 * index);
+            for (var index = 0; index < STATE_COUNT; index++)
+                output[index] = Add(state[index], existingState[index]);
         }
         
         private static uint Rotate(uint v, int c) {
@@ -119,11 +125,7 @@ namespace TACTLib.Core
             return unchecked(v + 1);
         }
         
-        private static void ToBytes(uint input, Span<byte> output, int outputOffset) {
-            MemoryMarshal.Write(output.Slice(outputOffset, 4), ref input);
-        }
-        
-        private static uint ToUInt32(ReadOnlySpan<byte> input, int inputOffset) {
+        private static uint ExtractU32(ReadOnlySpan<byte> input, int inputOffset) {
             return BitConverter.ToUInt32(input.Slice(inputOffset, 4));
         }
     }

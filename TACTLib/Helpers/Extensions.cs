@@ -131,9 +131,8 @@ namespace TACTLib.Helpers {
         // ReSharper disable once InconsistentNaming
         public static int ReadInt24BE(this BinaryReader reader)
         {
-            Span<byte> data = stackalloc byte[3];
-            reader.DefinitelyRead(data);
-            return data[2] | (data[1] << 8) | (data[0] << 16);
+            var s = reader.Read<UInt24BE>();
+            return s.ToInt();
         }
         #endregion
         

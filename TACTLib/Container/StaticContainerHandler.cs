@@ -47,13 +47,10 @@ namespace TACTLib.Container {
             //var offset = 0ul;
             //var alignment = 0ul;
 
-            ulong ekeyHiUl;
-            unsafe {
-                var ekeySpan = new ReadOnlySpan<byte>(ekey.Value, sizeof(FullEKey));
-                ekeyHiUl = BinaryPrimitives.ReadUInt64BigEndian(ekeySpan.Slice(8));
-            }
-            //Console.Out.WriteLine($"{ekeyHiUl}");
+            var ekeySpan = (ReadOnlySpan<byte>)ekey;
+            var ekeyHiUl = BinaryPrimitives.ReadUInt64BigEndian(ekeySpan.Slice(8));
 
+            //Console.Out.WriteLine($"{ekeyHiUl}");
             var keyLayoutBitCount = m_keyLayoutIndexBits;
             var keyLayoutIndexBitOffset = 56-keyLayoutBitCount;
             var keyLayoutIndex = BitHelper.ExtractRange(ekeyHiUl, (byte)keyLayoutIndexBitOffset, keyLayoutBitCount);
@@ -61,15 +58,15 @@ namespace TACTLib.Container {
             
             var chunkBitCount = keyLayout.m_chunkBits;
             var chunkBitOffset = keyLayoutIndexBitOffset-chunkBitCount;
-            chunk = BitHelper.ExtractRange(ekeyHiUl, (byte)chunkBitOffset, (byte)chunkBitCount);
+            chunk = BitHelper.ExtractRange(ekeyHiUl, (byte)chunkBitOffset, chunkBitCount);
 
             var archiveBitCount = keyLayout.m_archiveBits;
             var archiveBitOffset = chunkBitOffset-archiveBitCount;
-            archive = BitHelper.ExtractRange(ekeyHiUl, (byte)archiveBitOffset, (byte)archiveBitCount);
+            archive = BitHelper.ExtractRange(ekeyHiUl, (byte)archiveBitOffset, archiveBitCount);
 
             var offsetBitCount = keyLayout.m_offsetBits;
             var offsetBitOffset = archiveBitOffset-offsetBitCount;
-            offset = BitHelper.ExtractRange(ekeyHiUl, (byte)offsetBitOffset, (byte)offsetBitCount);
+            offset = BitHelper.ExtractRange(ekeyHiUl, (byte)offsetBitOffset, offsetBitCount);
         }
 
         private static string GetFileName(ulong chunk, ulong archive) {

@@ -4,12 +4,6 @@ using System.Globalization;
 
 namespace TACTLib {
     public static class Utils {
-        public static unsafe ReadOnlySpan<byte> PtrToSpan(byte* ptr, int len)
-        {
-            // todo: please delete
-            return new ReadOnlySpan<byte>(ptr, len);
-        }
-
         // ReSharper disable once InconsistentNaming
         public static unsafe int Int32FromPtrBE(byte* ptr)
         {
