@@ -55,7 +55,7 @@ namespace TACTLib.Core
             var hashOutputBytes = MemoryMarshal.Cast<uint, byte>(hashOutput);
             
             while (input.Length > 0) {
-                Hash(hashOutput, m_state);
+                Hash(ref hashOutput, ref m_state);
                 m_state[8] = AddOne(m_state[8]);
                 if (m_state[8] == 0) m_state[9] = AddOne(m_state[9]);
 
@@ -68,7 +68,7 @@ namespace TACTLib.Core
             }
         }
 
-        private static void Hash(UIntArray output, UIntArray existingState) {
+        private static void Hash(ref UIntArray output, ref readonly UIntArray existingState) {
             var state = existingState;
 
             for (var round = ROUNDS; round > 0; round -= 2) {
