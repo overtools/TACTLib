@@ -37,9 +37,8 @@ namespace TACTLib.Core
             if (BitConverter.IsLittleEndian) header.m_frameHeaderSize = BinaryPrimitives.ReverseEndianness(header.m_frameHeaderSize);
 
             if (header.m_magic != BLTEStream.Magic) throw new BLTEDecoderException(null, $"frame header mismatch (bad BLTE file) {header.m_magic:X}");
-
-            // ReSharper disable once RedundantAssignment
-            ReadOnlySpan<DataBlock> blocks = stackalloc DataBlock[0]; // assign to convince compile we aren't escaping the ref
+            
+            scoped ReadOnlySpan<DataBlock> blocks;
             if (header.m_frameHeaderSize > 0)
             {
                 var frameHeaderSpan = SpanHelper.Advance(ref span, header.m_frameHeaderSize - 8);

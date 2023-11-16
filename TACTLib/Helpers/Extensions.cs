@@ -100,31 +100,24 @@ namespace TACTLib.Helpers {
         
         /// <summary>Read a big endian 32-bit int</summary>
         // ReSharper disable once InconsistentNaming
-        public static int ReadInt32BE(this BinaryReader reader) {
-            var val = reader.ReadInt32();
-            if (BitConverter.IsLittleEndian)
-            {
-                val = BinaryPrimitives.ReverseEndianness(val);
-            }
-            return val;
+        public static int ReadInt32BE(this BinaryReader reader)
+        {
+            var s = reader.Read<UInt32BE>();
+            return (int)s.ToInt();
         }
         /// <summary>Read a big endian 16-bit int</summary>
         // ReSharper disable once InconsistentNaming
         public static short ReadInt16BE(this BinaryReader reader)
         {
-            var val = reader.ReadInt16();
-            if (BitConverter.IsLittleEndian)
-            {
-                val = BinaryPrimitives.ReverseEndianness(val);
-            }
-            return val;
+            return (short)ReadUInt16BE(reader);
         }
         
         /// <summary>Read a big endian 16-bit uint</summary>
         // ReSharper disable once InconsistentNaming
         public static ushort ReadUInt16BE(this BinaryReader reader)
         {
-            return (ushort)ReadInt16BE(reader);
+            var s = reader.Read<UInt16BE>();
+            return s.ToInt();
         }
 
         /// <summary>Read a big-endian 24-bit int</summary>
@@ -139,7 +132,7 @@ namespace TACTLib.Helpers {
         /// <summary>Convert <see cref="Span{T}"/> to a hexadecimal string</summary>
         public static string ToHexString(this ReadOnlySpan<byte> data)
         {
-            return BitConverter.ToString(data.ToArray()).Replace("-", string.Empty);
+            return Convert.ToHexString(data);
         }
     }
 }

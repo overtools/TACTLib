@@ -32,7 +32,7 @@ namespace TACTLib.Core.Key {
         /// </summary>
         /// <param name="string">Source stirng</param>
         /// <returns>Created EKey</returns>
-        public static TruncatedKey FromString(string @string) {
+        public static TruncatedKey FromString(ReadOnlySpan<char> @string) {
             return FromByteArray(StringToByteArray(@string));
         }
 

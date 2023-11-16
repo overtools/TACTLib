@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
 
 // ReSharper disable file NotAccessedField.Global
 namespace TACTLib.Core.Product.CommonV2 {
@@ -11,19 +13,80 @@ namespace TACTLib.Core.Product.CommonV2 {
         public string? FileName;
         public string? InstallPath;
         
-        public RootFile(IReadOnlyList<string> data) {
-            FileID = data[0];
-            MD5 = CKey.FromString(data[1]);
-            ChunkID = byte.Parse(data[2]);
-            Priority = byte.Parse(data[3]);
-            MPriority = byte.Parse(data[4]);
-            FileName = data[5];
-            InstallPath = data[6];
+        public RootFile()
+        {
         }
         
-        public RootFile(string fileName, string md5)  {
-            FileName = fileName;
-            MD5 = CKey.FromString(md5);
+        private RootFile(ReadOnlySpan<string> columns, string row)
+        {
+            Span<Range> ranges = stackalloc Range[columns.Length];
+            MemoryExtensions.Split(row, ranges, '|');
+            
+            for (var i = 0; i < columns.Length; i++)
+            {
+                var valueSpan = row.AsSpan(ranges[i]);
+                
+                switch (columns[i])
+                {
+                    case "FILEID":
+                    {
+                        FileID = row[ranges[i]];
+                        break;
+                    }
+                    case "MD5":
+                    {
+                        MD5 = CKey.FromString(valueSpan);
+                        break;
+                    }
+                    case "CHUNK_ID":
+                    {
+                        ChunkID = byte.Parse(valueSpan);
+                        break;
+                    }
+                    case "PRIORITY":
+                    {
+                        Priority = byte.Parse(valueSpan);
+                        break;
+                    }
+                    case "MPRIORITY":
+                    {
+                        MPriority = byte.Parse(valueSpan);
+                        break;
+                    }
+                    case "FILENAME":
+                    {
+                        FileName = row[ranges[i]];
+                        break;
+                    }
+                    case "INSTALLPATH":
+                    {
+                        InstallPath = row[ranges[i]];
+                        break;
+                    }
+                    default:
+                    {
+                        Logger.Debug("RootFile", $"Unknown column {columns[i]}");
+                        break;
+                    }
+                }
+            }
+        }
+        
+        public static List<RootFile> ParseList(StreamReader reader)
+        {
+            var header = reader.ReadLine()!;
+            if (header[0] != '#') throw new InvalidDataException($"bad header: \"{header}\"");
+            
+            var files = new List<RootFile>();
+            
+            var columns = header.Substring(1).Split('|');
+            while (reader.ReadLine() is { } row)
+            {
+                var rootFile = new RootFile(columns, row);
+                files.Add(rootFile);
+            }
+            
+            return files;
         }
     }
 }

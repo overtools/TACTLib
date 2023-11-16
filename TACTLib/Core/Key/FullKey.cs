@@ -32,7 +32,7 @@ namespace TACTLib.Core.Key {
         /// </summary>
         /// <param name="string">Source stirng</param>
         /// <returns>Created FullKey</returns>
-        public static FullKey FromString(string @string) {
+        public static FullKey FromString(ReadOnlySpan<char> @string) {
             return FromByteArray(StringToByteArray(@string));
         }
 

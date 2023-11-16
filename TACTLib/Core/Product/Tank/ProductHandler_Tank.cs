@@ -60,7 +60,6 @@ namespace TACTLib.Core.Product.Tank {
         public const string REGION_CN = "RCN";
         public const string SPEECH_MANIFEST_NAME = "speech";
         public const string TEXT_MANIFEST_NAME = "text";
-        public const string ROOT_FILE_FIELD_ORDER_CHECK = @"#FILEID|MD5|CHUNK_ID|PRIORITY|MPRIORITY|FILENAME|INSTALLPATH";
 
         private const string OutdatedTACTLibErrorMessage =
             "Fatal - Manifest decryption failed. Please update TACTLib. This can happen due the game receiving a new patch that is not supported by this version of TACTLib.";
@@ -70,18 +69,8 @@ namespace TACTLib.Core.Product.Tank {
 
             var clientArgs = client.CreateArgs.HandlerArgs as ClientCreateArgs_Tank ?? new ClientCreateArgs_Tank();
 
-            using (BinaryReader reader = new BinaryReader(stream)) {
-                string str = Encoding.ASCII.GetString(reader.ReadBytes((int) stream.Length));
-
-                string[] array = str.Split(new[] {'\r', '\n'}, StringSplitOptions.RemoveEmptyEntries);
-                if (ROOT_FILE_FIELD_ORDER_CHECK != array[0]) {
-                    throw new InvalidDataException($"ProductHandler_Tank: Root file field list mismatch ({array[0]})");
-                }
-
-                m_rootFiles = new RootFile[array.Length - 1];
-                for (var i = 1; i < array.Length; i++) {
-                    m_rootFiles[i - 1] = new RootFile(array[i].Split('|'));
-                }
+            using (var reader = new StreamReader(stream)) {
+                m_rootFiles = RootFile.ParseList(reader).ToArray();
             }
 
             if (!clientArgs.LoadManifest) return;
