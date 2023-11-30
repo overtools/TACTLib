@@ -39,16 +39,21 @@ namespace TACTLib.Core.VFS {
         /// Open file by path
         /// </summary>
         /// <param name="file"></param>
+        /// <param name="isBase"></param>
+        /// <param name="meta"></param>
         /// <returns></returns>
         /// <exception cref="FileNotFoundException"></exception>
-        public Stream? Open(string file) {
+        public Stream? Open(string file, bool isBase = true, string meta = "meta") {
             if (_files.TryGetValue(file, out var vfsFile)) {
                 if (vfsFile is VFSCFile cFile) {
                     return _client.OpenCKey(cFile.CKey);
                 }
 
+                if (_client is { IsStaticContainer: true, ConfigHandler.BuildConfig.HasNoEncoding: true }) {
+                    return _client.OpenStaticEKey(vfsFile.EKey, isBase, meta);
+                }
+
                 throw new NotImplementedException("where esize?");
-                //return _client.OpenEKey(vfsFile.EKey);
             }
             throw new FileNotFoundException(file);
         }

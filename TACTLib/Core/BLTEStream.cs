@@ -3,6 +3,7 @@ using System.Buffers;
 using System.Buffers.Binary;
 using System.IO;
 using System.IO.Compression;
+using System.Text;
 using TACTLib.Client;
 using TACTLib.Exceptions;
 using TACTLib.Helpers;
@@ -20,13 +21,13 @@ namespace TACTLib.Core {
         public const uint Magic = 0x45544C42;
         private const byte EncryptionSalsa20 = (byte)'S';
         private const byte EncryptionArc4 = (byte)'A';
-        
+
         private readonly ClientHandler m_client;
 
         private readonly byte[] m_inputData;
         private readonly MemoryStream m_outputStream;
         private int m_readOffset;
-        
+
         private readonly DataBlock[] m_dataBlocks;
         private int m_blockIndex;
 
@@ -51,6 +52,55 @@ namespace TACTLib.Core {
             }
         }
 
+        // quick way to sneak the encoded size from BLTE
+        public static int GetEncodedSize(Stream stream) {
+            var offset = stream.Position;
+            using var _reader = new BinaryReader(stream, Encoding.Default, true);
+
+            var size = stream.Length - offset;
+            if (size < 8) {
+                return 0;
+            }
+
+            var magic = _reader.ReadInt32();
+            if (magic != Magic) {
+                return 0;
+            }
+
+            var headerSize = _reader.ReadInt32BE();
+            if (headerSize <= 0) {
+                return 0;
+            }
+
+            Span<byte> fcbytes = stackalloc byte[4]; // todo: too lazy to change....
+            _reader.DefinitelyRead(fcbytes);
+
+            var numBlocks = (fcbytes[1] << 16) | (fcbytes[2] << 8) | (fcbytes[3] << 0);
+
+            if (fcbytes[0] != 0x0F || numBlocks == 0) {
+                return 0;
+            }
+
+            var frameHeaderSize = 24 * numBlocks + 12;
+
+            if (headerSize != frameHeaderSize) {
+                return 0;
+            }
+
+            if (size < frameHeaderSize) {
+                return 0;
+            }
+
+            size = frameHeaderSize;
+            for (var i = 0; i < numBlocks; i++) {
+                size += _reader.ReadInt32BE();
+                stream.Position += 20L;
+            }
+
+            stream.Position = offset;
+            return (int) size;
+        }
+
         public BLTEStream(ClientHandler client, byte[]? src, int offset) {
             if (src == null) throw new ArgumentNullException(nameof(src));
 
@@ -58,10 +108,10 @@ namespace TACTLib.Core {
             m_client = client;
 
             // todo: remove reader and ms
-            var ms = new MemoryStream(m_inputData);
+            using var ms = new MemoryStream(m_inputData);
             ms.Position = offset;
-            var _reader = new BinaryReader(ms);
-            
+            using var _reader = new BinaryReader(ms);
+
             var size = src.Length;
             if (size < 8)
                 throw new BLTEDecoderException(Dump(), "not enough data: {0}", 8);
@@ -119,7 +169,7 @@ namespace TACTLib.Core {
             for (var i = 0; i < numBlocks; i++)
             {
                 ref var block = ref m_dataBlocks[i];
-                
+
                 if (headerSize != 0)
                 {
                     block.m_encodedSize = _reader.ReadInt32BE();
@@ -149,7 +199,7 @@ namespace TACTLib.Core {
             //    ProcessNextBlock();
             //}
         }
-        
+
         public byte[] Dump()
         {
             // todo: repair
@@ -180,7 +230,7 @@ namespace TACTLib.Core {
         private ArraySegment<byte> Decrypt(ArraySegment<byte> data, int index)
         {
             var dataOffset = 0;
-            
+
             var keyNameSize = data[dataOffset++];
             if (keyNameSize == 0 || keyNameSize != 8)
                 throw new BLTEDecoderException(Dump(), "keyNameSize == 0 || keyNameSize != 8");
@@ -188,7 +238,7 @@ namespace TACTLib.Core {
             var keyNameData = data.Slice(dataOffset, keyNameSize);
             var keyName = BinaryPrimitives.ReadUInt64LittleEndian(keyNameData);
             dataOffset += keyNameSize;
-            
+
             var key = m_client.ConfigHandler.Keyring.GetKey(keyName);
             if (key == null)
                 throw new BLTEKeyException(keyName);
@@ -210,7 +260,7 @@ namespace TACTLib.Core {
             // expand to 8 bytes
             Span<byte> iv = stackalloc byte[8];
             ivPart.AsSpan().CopyTo(iv);
-            
+
             // do some magic (knowledge passed down through generations)
             for (int shift = 0, i = 0; i < sizeof(int); shift += 8, i++) iv[i] ^= (byte) ((index >> shift) & 0xFF);
 
@@ -221,18 +271,18 @@ namespace TACTLib.Core {
 
                 var decryptor = new Salsa20(key, iv);
                 decryptor.Transform(bodySpan, bodySpan);
-                
+
                 return bodyData;
             } else
             {
                 throw new BLTEDecoderException(Dump(), $"encType {encType} not implemented");
             }
         }
-        
+
         private static void Decompress(ArraySegment<byte> data, Stream outputStream)
         {
             // skip first 3 bytes (zlib)
-            
+
             using (var memoryStream = new MemoryStream(data.Array!, data.Offset, data.Count))
             using (var zlibStream = new ZLibStream(memoryStream, CompressionMode.Decompress)) {
                 NoAllocCopyTo(zlibStream, outputStream);
@@ -250,7 +300,7 @@ namespace TACTLib.Core {
                 ArrayPool<byte>.Shared.Return(buffer);
             }
         }
-        
+
         public override void Flush()
         {
             m_outputStream.Flush();

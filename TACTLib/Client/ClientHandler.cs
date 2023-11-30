@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using System.Runtime.InteropServices;
 using TACTLib.Agent;
 using TACTLib.Agent.Protobuf;
 using TACTLib.Config;
@@ -41,7 +43,7 @@ namespace TACTLib.Client {
         public readonly IContainerHandler? ContainerHandler;
 
         /// <summary>Encoding table handler</summary>
-        public readonly EncodingHandler? EncodingHandler;
+        public readonly IEncodingHandler? EncodingHandler;
 
         /// <summary>Configuration handler</summary>
         public readonly ConfigHandler ConfigHandler;
@@ -64,8 +66,10 @@ namespace TACTLib.Client {
         public readonly ClientCreateArgs CreateArgs;
 
         public readonly CDNIndexHandler? CDNIndex;
-        
+
         private bool _seenNonResidentAsset;
+
+        public readonly bool IsStaticContainer;
 
         public ClientHandler(string? basePath, ClientCreateArgs createArgs) {
             CreateArgs = createArgs;
@@ -107,9 +111,14 @@ namespace TACTLib.Client {
                 throw new Exception($"Failed to determine TACT Product at `{BasePath}`");
             }
 
-            var staticBuildConfigPath = Path.Combine(BasePath, "data", ".build.config"); // todo: um
-            var isStaticContainer = File.Exists(staticBuildConfigPath);
-            if (isStaticContainer) {
+            var staticBuildConfigPath = Path.Combine(BasePath, "data", ".build.config");
+            IsStaticContainer = File.Exists(staticBuildConfigPath);
+            if (!IsStaticContainer) { // case sensitive fs?
+                staticBuildConfigPath = Path.Combine(BasePath, "Data", ".build.config");
+                IsStaticContainer = File.Exists(staticBuildConfigPath);
+            }
+
+            if (IsStaticContainer) {
                 if (CreateArgs.VersionSource != ClientCreateArgs.InstallMode.Local) throw new Exception("only local version sources are supported for static containers (steam)");
                 CreateArgs.Online = false;
 
@@ -135,9 +144,9 @@ namespace TACTLib.Client {
                 }
             }
 
-            if (isStaticContainer) {
+            if (IsStaticContainer) {
                 InstallationInfo = new InstallationInfo(new Dictionary<string, string> {
-                    {"Version", ConfigHandler!.BuildConfig.Values["build-name"][0]}
+                    {"Version", ConfigHandler!.BuildConfig.Values.TryGetValue("build-name", out var buildName) ? buildName[0] : "0" },
                 });
             } else if (CreateArgs.VersionSource == ClientCreateArgs.InstallMode.Local) {
                 InstallationInfo = new InstallationInfo(InstallationInfoFile!.Values, ProductCode!);
@@ -183,7 +192,7 @@ namespace TACTLib.Client {
 
             if (CreateArgs.UseContainer) {
                 Logger.Info("CASC", "Initializing...");
-                if (isStaticContainer) {
+                if (IsStaticContainer) {
                     ContainerHandler = new StaticContainerHandler(this);
                 } else {
                     using var _ = new PerfCounter("ContainerHandler::ctor`ClientHandler");
@@ -205,17 +214,27 @@ namespace TACTLib.Client {
                     CDNIndex = CDNIndexHandler.Initialize(this);
                 }
             }
-            
+
             // for testing local cdn index init but remote data:
             //ContainerHandler = null;
 
-            using (var _ = new PerfCounter("EncodingHandler::ctor`ClientHandler"))
-                EncodingHandler = new EncodingHandler(this);
+            if (ConfigHandler.BuildConfig.HasNoEncoding) {
+                using (var _ = new PerfCounter("DummyEncodingHandler::ctor`ClientHandler"))
+                    EncodingHandler = new DummyEncodingHandler();
+            } else {
+                using (var _ = new PerfCounter("EncodingHandler::ctor`ClientHandler"))
+                    EncodingHandler = new EncodingHandler(this);
+            }
 
             if (ConfigHandler.BuildConfig.VFSRoot != null) {
                 using var _ = new PerfCounter("VFSFileTree::ctor`ClientHandler");
-                using var vfsStream = OpenCKey(ConfigHandler.BuildConfig.VFSRoot!.ContentKey)!;
-                VFS = new VFSFileTree(this, vfsStream);
+                if (IsStaticContainer && ConfigHandler.BuildConfig.HasNoEncoding) {
+                    using var vfsStream = OpenStaticEKey(ConfigHandler.BuildConfig.VFSRoot!.EncodingKey, true, "meta");
+                    VFS = new VFSFileTree(this, vfsStream);
+                } else {
+                    using var vfsStream = OpenCKey(ConfigHandler.BuildConfig.VFSRoot!.ContentKey)!;
+                    VFS = new VFSFileTree(this, vfsStream);
+                }
             }
 
             ProductHandler = CreateProductHandler();
@@ -224,8 +243,12 @@ namespace TACTLib.Client {
         }
 
         public IProductHandler? CreateProductHandler() {
+            if (ConfigHandler.BuildConfig.HasNoEncoding && !IsStaticContainer) {
+                throw new InvalidOperationException("Using a build without encoding and is not a static container");
+            }
+
             using var _ = new PerfCounter("ProductHandlerFactory::GetHandler`TACTProduct`ClientHandler`Stream");
-            return ProductHandlerFactory.GetHandler(Product, this, OpenCKey(ConfigHandler.BuildConfig.Root.ContentKey)!);
+            return ProductHandlerFactory.GetHandler(Product, this, ConfigHandler.BuildConfig.HasNoEncoding ? null : OpenCKey(ConfigHandler.BuildConfig.Root.ContentKey));
         }
 
         private bool CanShareCDNData([NotNullWhen(true)] ClientHandler? other) {
@@ -249,14 +272,14 @@ namespace TACTLib.Client {
             }
             return archivesMatch;
         }
-        
+
         public Stream? OpenEKey(FullEKey fullEKey, int eSize) {  // ekey = value of ckey in encoding table
             var fromContainer = TryOpenEKeyFromContainer(fullEKey, eSize);
             if (fromContainer != null) return fromContainer;
 
             return TryOpenEKeyFromRemote(fullEKey, eSize);
         }
-        
+
         public Stream? OpenCKey(CKey key) {
             // todo: EncodingHandler can't be null after constructor has finished, but can be during init
             if (EncodingHandler != null && EncodingHandler.TryGetEncodingEntry(key, out var eKeys) && eKeys.Length > 0) {
@@ -267,15 +290,15 @@ namespace TACTLib.Client {
                     Logger.Error("CASC", "Due to an issue with the Battle.net updater (and your install), DataTool has to download some game assets from the CDN. The tool will still work properly.");
                     _seenNonResidentAsset = true;
                 }
-                
+
                 // oopsie. it aint resident in local apparently. lets just try first from other sources
                 var first = eKeys[0];
                 return TryOpenEKeyFromRemote(first, EncodingHandler.GetEncodedSize(first));
             }
-            
+
             return TryOpenRemoteLooseFile(key);
         }
-        
+
         private Stream? TryOpenEKeyListFromContainer(ReadOnlySpan<FullEKey> eKeys) {
             if (ContainerHandler == null) return null;
             if (EncodingHandler == null) return null; // cant get here but okay
@@ -300,7 +323,7 @@ namespace TACTLib.Client {
             }
             return null;
         }
-        
+
         private Stream? OpenEKeyFromContainer(FullEKey fullEKey, int eSize) {  // ekey = value of ckey in encoding table
             if (ContainerHandler == null) return null;
             var fromContainer = ContainerHandler.OpenEKey(fullEKey, eSize);
@@ -310,7 +333,7 @@ namespace TACTLib.Client {
 
         private Stream? TryOpenEKeyFromRemote(FullEKey fullEKey, int eSize) {
             if (!CreateArgs.Online) return null;
-            
+
             var archiveResult = TryOpenRemoteArchivedFile(fullEKey);
             if (archiveResult != null) return archiveResult;
 
@@ -378,6 +401,45 @@ namespace TACTLib.Client {
             }
 
             return null;
+        }
+
+        public Stream? OpenStaticEKey(FullEKey ekey, bool isBase, string? meta) {
+            if (ContainerHandler is not StaticContainerHandler staticContainerHandler) {
+                return null;
+            }
+
+            var arr = staticContainerHandler.OpenEKey(ekey, isBase, meta);
+            if (!arr.HasValue) {
+                return null;
+            }
+
+            if (ConfigHandler.BuildConfig.TryGetESpecRecord(ekey, out var espec)) {
+                var ms = new MemoryStream(arr!.Value.Array!);
+                ms.Position = 0;
+
+                if (espec.ESpec == 'N') {
+                    return ms;
+                }
+
+                if (espec.ESpec != 'Z') {
+                    throw new InvalidOperationException("not N or Z espec");
+                }
+
+                using var zlibStream = new ZLibStream(ms, CompressionMode.Decompress);
+                var memory = new MemoryStream(ConfigHandler.BuildConfig.VFSRootSize!.ContentSize);
+                zlibStream.CopyTo(memory);
+                memory.Position = 0;
+                ms.Dispose();
+                return memory;
+            }
+
+            if (MemoryMarshal.Read<uint>(arr.Value) == BLTEStream.Magic) {
+                return new BLTEStream(this, arr.Value.Array, 0);
+            }
+
+            return new MemoryStream(arr.Value.Array!) {
+                Position = 0,
+            };
         }
     }
 }

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 
 namespace TACTLib.Config {
     public class BuildConfig : Config {
@@ -11,21 +13,40 @@ namespace TACTLib.Config {
         public FileRecord Encoding;
         public SizeRecord? EncodingSize;
         public FileRecord? VFSRoot;
-        
+        public SizeRecord? VFSRootSize;
+        public List<ESpecRecord> ESpecRecords = [];
+        public bool HasNoEncoding { get; }
+
         public BuildConfig(Stream? stream) : base(stream) {
-            GetFileRecord("root", out var root);
+            GetFileRecord("root", out Root!);
             GetFileRecord("install", out Install);
             GetFileRecord("patch", out Patch);
             GetFileRecord("download", out Download);
-            GetFileRecord("encoding", out var encoding);
+            GetFileRecord("encoding", out Encoding!);
             GetSizeRecord("encoding-size", out EncodingSize);
             GetFileRecord("vfs-root", out VFSRoot);
+            GetSizeRecord("vfs-root-size", out VFSRootSize);
 
-            if (root == null) throw new NullReferenceException(nameof(root));
-            Root = root;
-            
-            if (encoding == null) throw new NullReferenceException(nameof(encoding));
-            Encoding = encoding;
+            var vfsIndex = 0;
+            while (true) {
+                GetFileRecord($"vfs-{++vfsIndex}", out var vfsRecord);
+                if (vfsRecord == null) {
+                    break;
+                }
+                GetSizeRecord($"vfs-{vfsIndex}-size", out var vfsSize);
+                Values.TryGetValue($"vfs-{vfsIndex}-espec", out var vfsEspecs);
+
+                ESpecRecords.Add(new ESpecRecord {
+                    Record = vfsRecord,
+                    Size = vfsSize!,
+                    ESpec = (vfsEspecs?.ElementAtOrDefault(0) ?? "n").ToUpper()[0],
+                });
+            }
+
+            // ReSharper disable twice ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+            HasNoEncoding = Root == null || Encoding == null;
+            Root ??= new FileRecord();
+            Encoding ??= new FileRecord();
         }
 
         private void GetFileRecord(string key, out FileRecord? @out) {
@@ -35,7 +56,7 @@ namespace TACTLib.Config {
             }
             @out = GetFileRecord(Values[key]);
         }
-        
+
         private void GetSizeRecord(string key, out SizeRecord? @out) {
             if (!Values.TryGetValue(key, out var list)) {
                 @out = null;
@@ -57,8 +78,20 @@ namespace TACTLib.Config {
             if (vals.Count > 1) {
                 record.EncodingKey = FullEKey.FromString(vals[1]);
             }
-            
+
             return record;
+        }
+
+        public bool TryGetESpecRecord(FullEKey ekey, [MaybeNullWhen(false)] out ESpecRecord record) {
+            foreach (var espec in ESpecRecords) {
+                if (espec.Record.EncodingKey.CompareTo(ekey) == 0) {
+                    record = espec;
+                    return true;
+                }
+            }
+
+            record = null;
+            return false;
         }
 
         public class FileRecord {
@@ -69,6 +102,12 @@ namespace TACTLib.Config {
         public class SizeRecord {
             public int ContentSize;
             public int EncodedSize;
+        }
+
+        public class ESpecRecord {
+            public FileRecord Record = null!;
+            public SizeRecord Size = null!;
+            public char ESpec;
         }
     }
 }

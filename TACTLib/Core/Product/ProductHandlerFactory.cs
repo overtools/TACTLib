@@ -11,12 +11,12 @@ namespace TACTLib.Core.Product {
     public static class ProductHandlerFactory {
         private static readonly Dictionary<TACTProduct, Type> _handlers = new Dictionary<TACTProduct, Type>();
 
-        public static IProductHandler? GetHandler(TACTProduct product, ClientHandler client, Stream root) {
+        public static IProductHandler? GetHandler(TACTProduct product, ClientHandler client, Stream? root) {
             var handlerType = GetHandlerType(product);
             if (handlerType == null) return null;
 
-            using (var _ = new PerfCounter($"{handlerType.Name}::ctor`ClientHandler`Stream"))
-                return (IProductHandler)Activator.CreateInstance(handlerType, client, root)!;
+            using var _ = new PerfCounter($"{handlerType.Name}::ctor`ClientHandler`Stream");
+            return (IProductHandler)Activator.CreateInstance(handlerType, client, root)!;
         }
 
         public static Type? GetHandlerType(TACTProduct product) {

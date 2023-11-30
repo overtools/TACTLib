@@ -21,7 +21,7 @@ public class ProductHandler_Fenris : IProductHandler {
     public ReplacedSnos ReplacedSnos { get; }
     public SharedPayloadsMapping SharedPayloads { get; }
     public CoreTOC TOC { get; }
-    public Dictionary<ulong, EncryptedNameDict> EncryptedNameDicts = new();
+    public Dictionary<ulong, EncryptedNameDict> EncryptedNameDicts { get; } = new();
 
 #endregion
 
@@ -209,7 +209,8 @@ public class ProductHandler_Fenris : IProductHandler {
             }
 
             if (type is SnoType.Child ? manifest.ContainsChild(id, subId) : manifest.Contains(id)) {
-                value = vfs.Open(path);
+                value = vfs.Open(path, true, type.ToString("G").ToLower());
+
                 if (value is null) {
                     if (LogLevel >= 1 && (!waterfall || type is not (SnoType.Payload or SnoType.Paymid))) {
                         Logger.Debug("Fenris", $"{id}{(type is SnoType.Child ? "-" + subId : "")} found in {manifest.Locale:G} ({manifest.Role}) but VFS returned null for type {type:G}");
