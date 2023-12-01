@@ -26,7 +26,7 @@ namespace TACTLib.Container {
             m_containerDirectory = Path.Combine(client.BasePath, GetContainerDirectory(client.Product));
 
             m_keyLayoutIndexBits = byte.Parse(client.ConfigHandler.BuildConfig.Values["key-layout-index-bits"][0]);
-            m_keyLayouts = new KeyLayout[Math.Min((int)Math.Pow(2, m_keyLayoutIndexBits), 1)];
+            m_keyLayouts = new KeyLayout[Math.Max((int)Math.Pow(2, m_keyLayoutIndexBits), 1)];
             
             foreach (var keyLayoutPair in client.ConfigHandler.BuildConfig.Values
                     .Where(static x => x.Key.StartsWith("key-layout-") && x.Key != "key-layout-index-bits")) {
