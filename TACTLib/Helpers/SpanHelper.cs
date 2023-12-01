@@ -28,6 +28,13 @@ namespace TACTLib.Helpers
             return ref result;
         }
         
+        public static unsafe T ReadStruct<T>(ref ReadOnlySpan<byte> input) where T : unmanaged
+        {
+            var result = MemoryMarshal.Read<T>(input);
+            input = input.Slice(sizeof(T));
+            return result;
+        }
+        
         public static unsafe ReadOnlySpan<T> ReadArray<T>(ref ReadOnlySpan<byte> input, int count) where T : unmanaged
         {
             var resultBytes = Advance(ref input, sizeof(T) * count);

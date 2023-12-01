@@ -14,8 +14,6 @@ namespace TACTLib.Core.Product.MNDX
         /// <returns>Array of read structs</returns>
         public static T[] ReadArray<T>(this BinaryReader reader) where T : unmanaged
         {
-            // todo: why is this here? this is extremely specific
-            
             var numBytes = (int)reader.ReadInt64();
             if (numBytes == 0)
             {
