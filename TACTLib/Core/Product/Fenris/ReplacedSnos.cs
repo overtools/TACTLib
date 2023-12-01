@@ -1,7 +1,5 @@
 using System;
-using System.Buffers.Binary;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -27,32 +25,13 @@ public class ReplacedSnos {
             return;
         }
         
-        Span<byte> header = stackalloc byte[8];
-        if (stream.Read(header) != 8) {
-            throw new DataException();
-        }
-
-        if (BinaryPrimitives.ReadUInt32LittleEndian(header) != 0xABBA0003) {
+        var magic = stream.Read<uint>();
+        if (magic != 0xABBA0003) {
             throw new InvalidDataException("Not an CoreTOCReplacedSNOs.dat file");
         }
 
-        var count = BinaryPrimitives.ReadUInt32LittleEndian(header[4..]);
-        if (count == 0) {
-            Entries = Array.Empty<ReplacedSno>();
-        }
-
-        Entries = new ReplacedSno[count];
-        var buffer = MemoryMarshal.AsBytes(Entries.AsSpan());
-        var offset = 0;
-        while (offset < buffer.Length) {
-            var read = stream.Read(buffer[offset..]);
-            if (read == 0) {
-                break;
-            }
-
-            offset += read;
-        }
-
+        var count = stream.Read<int>();
+        Entries = stream.ReadArray<ReplacedSno>(count);
         Lookup = Entries.ToDictionary(x => x.Sno.Id, x => x.ReplacementSno.Id);
     }
 }

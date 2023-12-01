@@ -1,5 +1,4 @@
 using System;
-using System.Buffers.Binary;
 using System.IO;
 using System.Runtime.InteropServices;
 using CommunityToolkit.HighPerformance;
@@ -29,33 +28,16 @@ namespace TACTLib.Helpers {
         /// <param name="reader">Source reader</param>
         /// <typeparam name="T">Struct to read</typeparam>
         /// <returns>Read struct</returns>
-        public static unsafe T Read<T>(this BinaryReader reader) where T : unmanaged
+        public static T Read<T>(this BinaryReader reader) where T : unmanaged
+        {
+            return reader.BaseStream.Read<T>();
+        }
+        
+        public static unsafe T Read<T>(this Stream stream) where T : unmanaged
         {
             Span<byte> stackMemory = stackalloc byte[sizeof(T)];
-            reader.DefinitelyRead(stackMemory);
+            stream.DefinitelyRead(stackMemory);
             return MemoryMarshal.Read<T>(stackMemory);
-        }
-
-        /// <summary>
-        /// Read array of structs from a BinaryReader
-        /// </summary>
-        /// <param name="reader">Source reader</param>
-        /// <typeparam name="T">Struct to read</typeparam>
-        /// <returns>Array of read structs</returns>
-        public static T[] ReadArray<T>(this BinaryReader reader) where T : unmanaged
-        {
-            // todo: why is this here? this is extremely specific
-            
-            var numBytes = (int)reader.ReadInt64();
-            if (numBytes == 0)
-            {
-                return Array.Empty<T>();
-            }
-
-            var result = reader.ReadBytes(numBytes);
-
-            reader.BaseStream.Position += (0 - numBytes) & 0x07;
-            return MemoryMarshal.Cast<byte, T>(result).ToArray();
         }
         
         /// <summary>
@@ -67,10 +49,15 @@ namespace TACTLib.Helpers {
         /// <returns>Stuct array</returns>
         public static T[] ReadArray<T>(this BinaryReader reader, int count) where T : unmanaged
         {
+            return reader.BaseStream.ReadArray<T>(count);
+        }
+        
+        public static T[] ReadArray<T>(this Stream stream, int count) where T : unmanaged
+        {
             if (count == 0) return Array.Empty<T>();
             
             var result = new T[count];
-            reader.DefinitelyRead(MemoryMarshal.Cast<T, byte>(result));
+            stream.DefinitelyRead(result.AsSpan().AsBytes());
             return result;
         }
 
