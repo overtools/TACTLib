@@ -19,13 +19,13 @@ namespace TACTLib.Config {
         private void Read(TextReader reader) {
             string? line;
             while ((line = reader.ReadLine()) != null) {
-                if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#")) continue;
-                string[] tokens = line.Split(new[] {'='}, StringSplitOptions.RemoveEmptyEntries);
+                if (string.IsNullOrWhiteSpace(line) || line.StartsWith('#')) continue;
+                string[] tokens = line.Split('=', StringSplitOptions.RemoveEmptyEntries);
 
                 if (tokens.Length != 2)
                     throw new Exception("Config: tokens.Length != 2");
 
-                string[] values = tokens[1].Trim().Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries);
+                string[] values = tokens[1].Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
                 List<string> valuesList = values.ToList();
                 Values.Add(tokens[0].Trim(), valuesList);
             }

@@ -39,12 +39,12 @@ namespace TACTLib.Config {
             using TextReader r = new StreamReader(stream);
             string? line;
             while ((line = r.ReadLine()) != null) {
-                line = line.Trim().Split(new[] { '#' }, StringSplitOptions.None)[0].Trim();
+                line = line.Trim().Split('#')[0].Trim();
                 if (string.IsNullOrWhiteSpace(line)) {
                     continue;
                 }
 
-                string[] c = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                string[] c = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
                 if (c.Length < 2) {
                     continue;
                 }
