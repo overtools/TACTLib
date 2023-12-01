@@ -1,9 +1,5 @@
-using System;
-using System.Buffers.Binary;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
-using System.Runtime.InteropServices;
 using TACTLib.Helpers;
 
 namespace TACTLib.Core.Product.Fenris;
@@ -31,54 +27,18 @@ public class SnoManifest {
             return;
         }
 
-        Span<byte> header = stackalloc byte[8];
-        if (stream.Read(header) != 8) {
-            throw new DataException();
-        }
-
-        if (BinaryPrimitives.ReadUInt32LittleEndian(header) != 0xEAF1FE90) {
+        var magic = stream.Read<uint>();
+        if (magic != 0xEAF1FE90) {
             throw new InvalidDataException("Not a SNO Manifest file");
         }
 
-        var count = BinaryPrimitives.ReadUInt32LittleEndian(header[4..]);
-        if (count > 0) {
-            var snoIds = new uint[count];
-            var buffer = MemoryMarshal.AsBytes(snoIds.AsSpan());
-            var offset = 0;
-            while (offset < buffer.Length) {
-                var read = stream.Read(buffer[offset..]);
-                if (read == 0) {
-                    break;
-                }
+        var count = stream.Read<int>();
+        var snoIds = stream.ReadArray<uint>(count);
+        SnoIds = new HashSet<uint>(snoIds);
 
-                offset += read;
-            }
-
-            SnoIds = new HashSet<uint>(snoIds);
-        } else {
-            SnoIds = new HashSet<uint>();
-        }
-
-        if (stream.Read(header[..4]) != 4) {
-            throw new DataException();
-        }
-        count = BinaryPrimitives.ReadUInt32LittleEndian(header);
-        if (count > 0) {
-            var childIds = new SnoChild[count];
-            var buffer = MemoryMarshal.AsBytes(childIds.AsSpan());
-            var offset = 0;
-            while (offset < buffer.Length) {
-                var read = stream.Read(buffer[offset..]);
-                if (read == 0) {
-                    break;
-                }
-
-                offset += read;
-            }
-            ChildIds = new HashSet<SnoChild>(childIds);
-        } else {
-            ChildIds = new HashSet<SnoChild>();
-        }
+        count = stream.Read<int>();
+        var childIds = stream.ReadArray<SnoChild>(count);
+        ChildIds = new HashSet<SnoChild>(childIds);
     }
 
     public bool ContainsChild(uint id, uint subId) =>

@@ -61,15 +61,15 @@ namespace TACTLib.Core
                 blocks = blocksRW;
             } else
             {
-                // ReSharper disable once InconsistentNaming
-                Span<DataBlock> blocksRW = stackalloc DataBlock[1];
-                blocksRW[0] = new DataBlock
+                blocks = stackalloc DataBlock[1]
                 {
-                    m_encodedSize = src.Length - 8,
-                    m_decodedSize = src.Length - 8 - 1,
-                    m_md5 = default,
+                    new DataBlock
+                    {
+                        m_encodedSize = src.Length - 8,
+                        m_decodedSize = src.Length - 8 - 1,
+                        m_md5 = default,
+                    }
                 };
-                blocks = blocksRW;
             }
 
             var decodedSize = 0;

@@ -97,33 +97,24 @@ namespace TACTLib.Core {
                 CKeyEKeyPages_CKeys[pageIdx] = new LinearCKeyEntry[pageEntryCount];
                 CKeyEKeyPages_EKeys[pageIdx] = new FullEKey[pageEntryCount][];
 
-                var arrOffset = 0;
+                var pageSpan = (ReadOnlySpan<byte>)page;
                 var entryIdx = 0;
                 while (true) {
-                    var foundEntrySpan = page.AsSpan(arrOffset);
-                    if (foundEntrySpan.Length < structSize) break;
-                    var foundEntry = MemoryMarshal.Read<CKeyEKeyEntry>(foundEntrySpan);
+                    if (pageSpan.Length < structSize) break;
+                    var foundEntry = SpanHelper.ReadStruct<CKeyEKeyEntry>(ref pageSpan);
                     if (foundEntry.EKeyCount == 0) break; // end
-                    arrOffset += structSize;
+
+                    var ekeyArray = SpanHelper.ReadArray<FullEKey>(ref pageSpan, foundEntry.EKeyCount);
 
                     CKeyEKeyPages_CKeys[pageIdx][entryIdx] = new LinearCKeyEntry {
                         CKey = foundEntry.CKey,
                         ContentSize = foundEntry.ContentSize
                     };
-
-                    var ekeyArray = new FullEKey[foundEntry.EKeyCount];
-                    CKeyEKeyPages_EKeys[pageIdx][entryIdx] = ekeyArray;
-
-                    for (int ekeyIdx = 0; ekeyIdx < foundEntry.EKeyCount; ekeyIdx++) {
-                        if (ekeyIdx == 0) ekeyArray[ekeyIdx] = foundEntry.EKey;
-                        else ekeyArray[ekeyIdx] = MemoryMarshal.Read<FullEKey>(page.AsSpan(arrOffset + 16 * (ekeyIdx - 1), 16));
-                    }
-
-                    arrOffset += (foundEntry.EKeyCount - 1) * 16;
+                    CKeyEKeyPages_EKeys[pageIdx][entryIdx] = ekeyArray.ToArray();
                     entryIdx++;
                 }
 
-                CKeyEKeyPages_CKeys[pageIdx] = CKeyEKeyPages_CKeys[pageIdx].Take(entryIdx).ToArray();
+                CKeyEKeyPages_CKeys[pageIdx] = CKeyEKeyPages_CKeys[pageIdx].AsSpan(0, entryIdx).ToArray();
             }
 
             var eKeyESpecHeaders = reader.ReadArray<PageHeader>((int)eKeyEspecPageCount);
@@ -270,7 +261,6 @@ namespace TACTLib.Core {
             public ushort EKeyCount; // number of EKeys
             public UInt32BE ContentSize; // decoded size
             public FullKey CKey; // decoded key
-            public FullEKey EKey; // encoded key
 
             public int CompareTo(CKeyEKeyEntry other) {
                 return CKey.CompareTo(other.CKey);
