@@ -1,6 +1,5 @@
 ﻿using TACTLib;
 using TACTLib.Client;
-using TACTLib.Protocol.Ribbit;
 
 namespace TACTLibTest {
     internal static class Program {
