@@ -1,14 +1,18 @@
 ﻿using static TACTLib.Core.Product.Tank.ManifestCryptoHandler;
 using static TACTLib.Core.Product.Tank.ContentManifestFile;
 
-namespace TACTLib.Core.Product.Tank.CMF {
+namespace TACTLib.Core.Product.Tank.CMF
+{
     [ManifestCrypto(AutoDetectVersion = true, Product = TACTProduct.Overwatch)]
-    public class ProCMF_45752 : ICMFEncryptionProc {
-        public byte[] Key(CMFHeader header, int length) {
+    public class ProCMF_45752 : ICMFEncryptionProc
+    {
+        public byte[] Key(CMFHeader header, int length)
+        {
             byte[] buffer = new byte[length];
 
             uint kidx = Keytable[SignedMod(length * Keytable[0], 512)];
-            for (int i = 0; i != length; ++i) {
+            for (int i = 0; i != length; ++i)
+            {
                 buffer[i] = Keytable[SignedMod(kidx, 512)];
                 kidx += 3;
             }
@@ -16,11 +20,13 @@ namespace TACTLib.Core.Product.Tank.CMF {
             return buffer;
         }
 
-        public byte[] IV(CMFHeader header, byte[] digest, int length) {
+        public byte[] IV(CMFHeader header, byte[] digest, int length)
+        {
             byte[] buffer = new byte[length];
 
             uint kidx = (uint)length * header.m_buildVersion;
-            for (int i = 0; i != length; ++i) {
+            for (int i = 0; i != length; ++i)
+            {
                 buffer[i] = Keytable[SignedMod(kidx, 512)];
                 kidx = header.m_buildVersion - kidx;
                 buffer[i] ^= digest[SignedMod(i + kidx, SHA1_DIGESTSIZE)];
@@ -29,7 +35,8 @@ namespace TACTLib.Core.Product.Tank.CMF {
             return buffer;
         }
 
-        private static readonly byte[] Keytable = {
+        private static readonly byte[] Keytable =
+        {
             0xF5, 0xD0, 0xE7, 0x8D, 0x86, 0xD6, 0x22, 0xA2, 0xA6, 0xEC, 0x4B, 0xCD, 0x72, 0x4A, 0xD4, 0x8B, 
             0xC7, 0xE4, 0x5B, 0x55, 0x25, 0xF6, 0xEE, 0xBE, 0xA5, 0x24, 0x1B, 0xFA, 0x50, 0xEF, 0x0C, 0xE7, 
             0xA4, 0xA8, 0xE4, 0xF5, 0x97, 0x2B, 0xCF, 0xF6, 0xBB, 0x06, 0x75, 0x6A, 0xF4, 0x61, 0xE4, 0xF2, 

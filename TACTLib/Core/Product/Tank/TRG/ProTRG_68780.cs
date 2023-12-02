@@ -1,13 +1,17 @@
 using static TACTLib.Core.Product.Tank.ManifestCryptoHandler;
 using static TACTLib.Core.Product.Tank.ResourceGraph;
 
-namespace TACTLib.Core.Product.Tank.TRG {
+namespace TACTLib.Core.Product.Tank.TRG
+{
     [ManifestCrypto(AutoDetectVersion = true, Product = TACTProduct.Overwatch)]
-    public class ProTRG_68780 : ITRGEncryptionProc {
-        public byte[] Key(TRGHeader header, int length) {
+    public class ProTRG_68780 : ITRGEncryptionProc
+    {
+        public byte[] Key(TRGHeader header, int length)
+        {
             byte[] buffer = new byte[length];
             uint kidx = Keytable[header.m_buildVersion & 511];
-            for (uint i = 0; i != length; ++i) {
+            for (uint i = 0; i != length; ++i)
+            {
                 buffer[i] = Keytable[SignedMod(kidx, 512)];
                 switch (SignedMod(kidx, 3)) {
                     case 0:
@@ -25,20 +29,23 @@ namespace TACTLib.Core.Product.Tank.TRG {
             return buffer;
         }
 
-        public byte[] IV(TRGHeader header, byte[] digest, int length) {
+        public byte[] IV(TRGHeader header, byte[] digest, int length)
+        {
             byte[] buffer = new byte[length];
             uint okidx;
-            uint kidx = okidx = (uint) (2 * digest[7]);
-            for (int i = 0; i != length; ++i) {
+            uint kidx = okidx = (uint)(2 * digest[7]);
+            for (int i = 0; i != length; ++i)
+            {
                 buffer[i] = Keytable[SignedMod(kidx, 512)];
                 kidx += okidx % 29;
-                buffer[i] ^= (byte) (digest[SignedMod(kidx + header.m_packageCount, SHA1_DIGESTSIZE)] + 1);
+                buffer[i] ^= (byte)(digest[SignedMod(kidx + header.m_packageCount, SHA1_DIGESTSIZE)] + 1);
             }
 
             return buffer;
         }
 
-        private static readonly byte[] Keytable = {
+        private static readonly byte[] Keytable =
+        {
             0xA0, 0x18, 0x1B, 0x6F, 0x84, 0xB6, 0x9A, 0x3F, 0x55, 0x24, 0x8D, 0xBD, 0x04, 0xAF, 0xD6, 0xD5,
             0x6F, 0x71, 0xC4, 0x49, 0x52, 0xCF, 0x41, 0x4E, 0xC0, 0xD9, 0xE9, 0x4B, 0x21, 0x0B, 0xD3, 0x07,
             0x4A, 0x29, 0xE6, 0x2B, 0x22, 0xCA, 0x70, 0x94, 0xE2, 0x06, 0x99, 0xDB, 0x1F, 0x59, 0x19, 0xF0,

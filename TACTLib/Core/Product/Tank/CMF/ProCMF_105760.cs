@@ -24,7 +24,8 @@ namespace TACTLib.Core.Product.Tank.CMF
             byte[] buffer = new byte[length];
             uint kidx, okidx;
             kidx = okidx = Keytable[(digest[7] * Keytable[0]) & 511];
-            for (int i = 0; i != length; ++i) {
+            for (int i = 0; i != length; ++i)
+            {
                 buffer[i] = Keytable[SignedMod(kidx, 512)];
                 kidx += ((digest[6] & 1) != 0) ? 37 : (okidx % 61);
                 buffer[i] ^= digest[SignedMod(kidx - i, SHA1_DIGESTSIZE)];

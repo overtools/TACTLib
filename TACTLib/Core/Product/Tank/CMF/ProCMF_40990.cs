@@ -1,46 +1,54 @@
 ﻿using static TACTLib.Core.Product.Tank.ManifestCryptoHandler;
 using static TACTLib.Core.Product.Tank.ContentManifestFile;
 
-namespace TACTLib.Core.Product.Tank.CMF {
+namespace TACTLib.Core.Product.Tank.CMF
+{
     [ManifestCrypto(AutoDetectVersion = true, Product = TACTProduct.Overwatch)]
-    public class ProCMF_40990 : ICMFEncryptionProc {
-        public byte[] Key(CMFHeader header, int length) {
+    public class ProCMF_40990 : ICMFEncryptionProc
+    {
+        public byte[] Key(CMFHeader header, int length)
+        {
             byte[] buffer = new byte[length];
 
             uint kidx = Keytable[header.m_buildVersion & 511];
-            for (int i = 0; i != length; ++i) {
+            for (int i = 0; i != length; ++i)
+            {
                 buffer[i] = Keytable[kidx % 512];
-                switch (kidx % 3) {
-                    case 0:
-                        kidx += 103;
-                        break;
-                    case 1:
-                        kidx = 4 * kidx % header.m_buildVersion;
-                        break;
-                    case 2:
-                        --kidx;
-                        break;
+                switch (kidx % 3)
+                {
+                case 0:
+                    kidx += 103;
+                    break;
+                case 1:
+                    kidx = 4 * kidx % header.m_buildVersion;
+                    break;
+                case 2:
+                    --kidx;
+                    break;
                 }
             }
 
             return buffer;
         }
 
-        public byte[] IV(CMFHeader header, byte[] digest, int length) {
+        public byte[] IV(CMFHeader header, byte[] digest, int length)
+        {
             byte[] buffer = new byte[length];
 
-            uint kidx = (uint) 2 * digest[5];
+            uint kidx = (uint)2 * digest[5];
             uint increment = header.m_buildVersion * (uint)header.m_dataCount % 7;
-            for (int i = 0; i != length; ++i) {
+            for (int i = 0; i != length; ++i)
+            {
                 buffer[i] = Keytable[kidx % 512];
                 kidx += increment;
-                buffer[i] ^= (byte) (digest[(kidx - 73) % SHA1_DIGESTSIZE] + 1);
+                buffer[i] ^= (byte)(digest[(kidx - 73) % SHA1_DIGESTSIZE] + 1);
             }
 
             return buffer;
         }
 
-        private static readonly byte[] Keytable = {
+        private static readonly byte[] Keytable =
+        {
             0x5F, 0xCC, 0x2B, 0x0B, 0xD1, 0x6E, 0xAA, 0xAF, 0x04, 0xBD, 0xDB, 0x33, 0x25, 0x96, 0x45, 0xBB,
             0xE7, 0x03, 0xBE, 0x3C, 0xC8, 0xE1, 0x20, 0x07, 0x60, 0x66, 0x9C, 0x98, 0x69, 0xB6, 0xE9, 0x69,
             0xA6, 0x77, 0x8B, 0x85, 0x45, 0x44, 0xE2, 0x14, 0xF2, 0x7A, 0xB2, 0xC0, 0xA1, 0x95, 0xF1, 0x91,

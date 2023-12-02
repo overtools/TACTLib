@@ -1,15 +1,19 @@
 ﻿using static TACTLib.Core.Product.Tank.ManifestCryptoHandler;
 using static TACTLib.Core.Product.Tank.ContentManifestFile;
 
-namespace TACTLib.Core.Product.Tank.CMF {
+namespace TACTLib.Core.Product.Tank.CMF
+{
     [ManifestCrypto(AutoDetectVersion = true, Product = TACTProduct.Overwatch)]
-    public class ProCMF_37275 : ICMFEncryptionProc {
-        public byte[] Key(CMFHeader header, int length) {
+    public class ProCMF_37275 : ICMFEncryptionProc
+    {
+        public byte[] Key(CMFHeader header, int length)
+        {
             byte[] buffer = new byte[length];
 
             uint kidx = Keytable[header.m_buildVersion & 511];
             const uint increment = 3;
-            for (int i = 0; i != length; ++i) {
+            for (int i = 0; i != length; ++i)
+            {
                 buffer[i] = Keytable[kidx % 512];
                 kidx += increment;
             }
@@ -17,12 +21,14 @@ namespace TACTLib.Core.Product.Tank.CMF {
             return buffer;
         }
 
-        public byte[] IV(CMFHeader header, byte[] digest, int length) {
+        public byte[] IV(CMFHeader header, byte[] digest, int length)
+        {
             byte[] buffer = new byte[length];
 
             uint kidx = Constrain(header.m_buildVersion * length);
             uint increment = kidx % 13;
-            for (int i = 0; i != length; ++i) {
+            for (int i = 0; i != length; ++i)
+            {
                 buffer[i] = Keytable[kidx % 512];
                 kidx += increment;
                 buffer[i] ^= digest[(kidx + header.GetNonEncryptedMagic()) % SHA1_DIGESTSIZE];
@@ -31,7 +37,8 @@ namespace TACTLib.Core.Product.Tank.CMF {
             return buffer;
         }
 
-        private static readonly byte[] Keytable = {
+        private static readonly byte[] Keytable =
+        {
             0x1D, 0x3F, 0xF3, 0xB0, 0x14, 0x02, 0x6B, 0x8A, 0xBB, 0xB9, 0x15, 0x4A, 0xE3, 0xCE, 0x38, 0x01, 
             0xA8, 0xDB, 0xF0, 0x36, 0x22, 0xE2, 0xDA, 0xCB, 0x02, 0xAE, 0xDC, 0x89, 0x30, 0x51, 0xAF, 0xAE, 
             0xBC, 0x2E, 0x12, 0x8B, 0x4D, 0xED, 0xC3, 0xAC, 0x97, 0xDC, 0xA9, 0x55, 0x63, 0x76, 0x29, 0x20, 

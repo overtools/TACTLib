@@ -1,14 +1,18 @@
 ﻿using static TACTLib.Core.Product.Tank.ManifestCryptoHandler;
 using static TACTLib.Core.Product.Tank.ContentManifestFile;
 
-namespace TACTLib.Core.Product.Tank.CMF {
+namespace TACTLib.Core.Product.Tank.CMF
+{
     [ManifestCrypto(AutoDetectVersion = true, Product = TACTProduct.Overwatch)]
-    public class ProCMF_40763 : ICMFEncryptionProc {
-        public byte[] Key(CMFHeader header, int length) {
+    public class ProCMF_40763 : ICMFEncryptionProc
+    {
+        public byte[] Key(CMFHeader header, int length)
+        {
             byte[] buffer = new byte[length];
 
-            uint kidx = (uint) length * header.m_buildVersion;
-            for (int i = 0; i != length; ++i) {
+            uint kidx = (uint)length * header.m_buildVersion;
+            for (int i = 0; i != length; ++i)
+            {
                 buffer[i] = Keytable[kidx % 512];
                 kidx -= header.m_buildVersion & 511;
             }
@@ -16,21 +20,24 @@ namespace TACTLib.Core.Product.Tank.CMF {
             return buffer;
         }
 
-        public byte[] IV(CMFHeader header, byte[] digest, int length) {
+        public byte[] IV(CMFHeader header, byte[] digest, int length)
+        {
             byte[] buffer = new byte[length];
 
             uint kidx = Keytable[header.m_dataCount & 511];
             uint increment = kidx % 29;
-            for (int i = 0; i != length; ++i) {
+            for (int i = 0; i != length; ++i)
+            {
                 buffer[i] = Keytable[kidx % 512];
                 kidx += increment;
-                buffer[i] ^= (byte) (digest[(kidx + header.m_entryCount) % SHA1_DIGESTSIZE] + 1);
+                buffer[i] ^= (byte)(digest[(kidx + header.m_entryCount) % SHA1_DIGESTSIZE] + 1);
             }
 
             return buffer;
         }
 
-        private static readonly byte[] Keytable = {
+        private static readonly byte[] Keytable =
+        {
             0x50, 0x00, 0xE5, 0xCD, 0xEF, 0xD0, 0xA2, 0xBE, 0xD5, 0x1A, 0x19, 0x71, 0x4B, 0x43, 0x39, 0x63,
             0x87, 0xCB, 0x80, 0xF3, 0x86, 0x4B, 0xBE, 0xB8, 0xF4, 0x39, 0x55, 0x9E, 0xAB, 0x55, 0x8C, 0x77,
             0x36, 0x8C, 0x3E, 0x23, 0x09, 0x29, 0x2A, 0x67, 0x86, 0xDF, 0x07, 0x2C, 0xBC, 0x70, 0xF8, 0x17,

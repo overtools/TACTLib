@@ -1,24 +1,30 @@
 using static TACTLib.Core.Product.Tank.ManifestCryptoHandler;
 using static TACTLib.Core.Product.Tank.ContentManifestFile;
 
-namespace TACTLib.Core.Product.Tank.CMF {
+namespace TACTLib.Core.Product.Tank.CMF
+{
     [ManifestCrypto(AutoDetectVersion = true, Product = TACTProduct.Overwatch)]
-    public class ProCMF_63778 : ICMFEncryptionProc {
-        public byte[] Key(CMFHeader header, int length) {
+    public class ProCMF_63778 : ICMFEncryptionProc
+    {
+        public byte[] Key(CMFHeader header, int length)
+        {
             byte[] buffer = new byte[length];
             uint kidx = header.m_buildVersion * (uint)length;
-            for (uint i = 0; i != length; ++i) {
+            for (uint i = 0; i != length; ++i)
+            {
                 buffer[i] = Keytable[SignedMod(kidx, 512)];
-                kidx += (uint) header.m_entryCount;
+                kidx += (uint)header.m_entryCount;
             }
 
             return buffer;
         }
 
-        public byte[] IV(CMFHeader header, byte[] digest, int length) {
+        public byte[] IV(CMFHeader header, byte[] digest, int length)
+        {
             byte[] buffer = new byte[length];
             uint kidx = Keytable[SignedMod((2 * digest[13]) - length, 512)];
-            for (int i = 0; i != length; ++i) {
+            for (int i = 0; i != length; ++i)
+            {
                 buffer[i] = Keytable[SignedMod(kidx, 512)];
                 kidx += 3;
                 buffer[i] ^= digest[SignedMod(kidx - i, SHA1_DIGESTSIZE)];
@@ -27,7 +33,8 @@ namespace TACTLib.Core.Product.Tank.CMF {
             return buffer;
         }
 
-        private static readonly byte[] Keytable = {
+        private static readonly byte[] Keytable =
+        {
             0xBD, 0x5E, 0x95, 0x73, 0x20, 0x4F, 0x5B, 0xB9, 0xC4, 0xDC, 0x48, 0xCC, 0x51, 0xC2, 0x92, 0x09,
             0xA4, 0xB5, 0x7A, 0x06, 0x89, 0x97, 0xA2, 0x46, 0x40, 0xFE, 0x97, 0x23, 0x10, 0xAE, 0x46, 0xDE,
             0x98, 0x1A, 0x11, 0x88, 0xEE, 0x30, 0xA0, 0x0A, 0x90, 0xCC, 0x99, 0xCA, 0x1C, 0xD9, 0xC6, 0xF5,

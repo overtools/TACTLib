@@ -10,7 +10,7 @@ namespace TACTLib.Core.Product.Tank.TRG
         {
             byte[] buffer = new byte[length];
             uint kidx, okidx;
-            kidx = okidx = (uint) (length * header.m_buildVersion);
+            kidx = okidx = (uint)(length * header.m_buildVersion);
             for (uint i = 0; i != length; ++i)
             {
                 buffer[i] = Keytable[SignedMod(kidx, 512)];

@@ -1,7 +1,8 @@
 ﻿using static TACTLib.Core.Product.Tank.ManifestCryptoHandler;
 using static TACTLib.Core.Product.Tank.ContentManifestFile;
 
-namespace TACTLib.Core.Product.Tank.CMF {
+namespace TACTLib.Core.Product.Tank.CMF
+{
     [ManifestCrypto(AutoDetectVersion = true, Product = TACTProduct.Overwatch)]
     public class ProCMF_54052 : ICMFEncryptionProc
     {
@@ -15,15 +16,15 @@ namespace TACTLib.Core.Product.Tank.CMF {
                 buffer[i] = Keytable[SignedMod(kidx, 512)];
                 switch (SignedMod(kidx, 3))
                 {
-                    case 0:
-                        kidx += 103;
-                        break;
-                    case 1:
-                        kidx = (uint)SignedMod(4 * kidx, header.m_buildVersion);
-                        break;
-                    case 2:
-                        --kidx;
-                        break;
+                case 0:
+                    kidx += 103;
+                    break;
+                case 1:
+                    kidx = (uint)SignedMod(4 * kidx, header.m_buildVersion);
+                    break;
+                case 2:
+                    --kidx;
+                    break;
                 }
             }
 
@@ -34,17 +35,19 @@ namespace TACTLib.Core.Product.Tank.CMF {
         {
             byte[] buffer = new byte[length];
 
-            uint kidx = (uint) (2 * digest[5]);
-            for (int i = 0; i != length; ++i) {
+            uint kidx = (uint)(2 * digest[5]);
+            for (int i = 0; i != length; ++i)
+            {
                 buffer[i] = Keytable[SignedMod(kidx, 512)];
-                kidx += (uint) header.m_entryCount + digest[header.m_entryCount % SHA1_DIGESTSIZE];
+                kidx += (uint)header.m_entryCount + digest[header.m_entryCount % SHA1_DIGESTSIZE];
                 buffer[i] ^= digest[SignedMod(i + header.m_buildVersion, SHA1_DIGESTSIZE)];
             }
 
             return buffer;
         }
 
-        private static readonly byte[] Keytable = {
+        private static readonly byte[] Keytable =
+        {
             0x60, 0x03, 0x09, 0x34, 0xBC, 0x31, 0x93, 0x6B, 0x72, 0x44, 0x43, 0xD1, 0xC7, 0x57, 0xA7, 0x0D, 
             0x26, 0x55, 0xB0, 0xF8, 0x15, 0x41, 0x4E, 0xBB, 0xED, 0xAB, 0x49, 0x4C, 0x58, 0x18, 0x95, 0x23, 
             0x85, 0xFA, 0x92, 0xEB, 0x56, 0x6B, 0x61, 0xC4, 0x60, 0x67, 0xDB, 0x4E, 0x6C, 0x3B, 0x94, 0x43, 

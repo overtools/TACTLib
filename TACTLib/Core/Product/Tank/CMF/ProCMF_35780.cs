@@ -1,15 +1,19 @@
 ﻿using static TACTLib.Core.Product.Tank.ManifestCryptoHandler;
 using static TACTLib.Core.Product.Tank.ContentManifestFile;
 
-namespace TACTLib.Core.Product.Tank.CMF {
+namespace TACTLib.Core.Product.Tank.CMF
+{
     [ManifestCrypto(AutoDetectVersion = true, Product = TACTProduct.Overwatch)]
-    public class ProCMF_35780 : ICMFEncryptionProc {
-        public byte[] Key(CMFHeader header, int length) {
+    public class ProCMF_35780 : ICMFEncryptionProc
+    {
+        public byte[] Key(CMFHeader header, int length)
+        {
             byte[] buffer = new byte[length];
 
             uint kidx = 193;
             const uint increment = 319;
-            for (int i = 0; i != length; ++i) {
+            for (int i = 0; i != length; ++i)
+            {
                 buffer[i] = Keytable[kidx % 512];
                 kidx -= increment;
             }
@@ -17,11 +21,13 @@ namespace TACTLib.Core.Product.Tank.CMF {
             return buffer;
         }
 
-        public byte[] IV(CMFHeader header, byte[] digest, int length) {
+        public byte[] IV(CMFHeader header, byte[] digest, int length)
+        {
             byte[] buffer = new byte[length];
 
             uint kidx = Keytable[header.m_dataCount & 511];
-            for (int i = 0; i != length; ++i) {
+            for (int i = 0; i != length; ++i)
+            {
                 kidx += (uint)header.m_entryCount + digest[header.m_entryCount % SHA1_DIGESTSIZE];
                 buffer[i] = digest[kidx % SHA1_DIGESTSIZE];
             }
@@ -29,7 +35,8 @@ namespace TACTLib.Core.Product.Tank.CMF {
             return buffer;
         }
 
-        private static readonly byte[] Keytable = {
+        private static readonly byte[] Keytable =
+        {
             0x80, 0x8A, 0x26, 0xFC, 0x2E, 0xCC, 0x67, 0xEC, 0x9D, 0xEC, 0x33, 0xEC, 0xCA, 0xA8, 0x86, 0x38,
             0x54, 0x3F, 0x9E, 0xD3, 0x5A, 0xC4, 0xDC, 0x67, 0xA5, 0xE0, 0xB5, 0x06, 0x8D, 0xD7, 0xED, 0x5F, 
             0x4C, 0xE9, 0xF3, 0x28, 0x05, 0x19, 0x2E, 0xAF, 0x55, 0x15, 0x85, 0x34, 0x82, 0x82, 0xEA, 0xC3, 

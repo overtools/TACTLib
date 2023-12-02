@@ -1,7 +1,8 @@
 using static TACTLib.Core.Product.Tank.ManifestCryptoHandler;
 using static TACTLib.Core.Product.Tank.ContentManifestFile;
 
-namespace TACTLib.Core.Product.Tank.CMF {
+namespace TACTLib.Core.Product.Tank.CMF
+{
     [ManifestCrypto(AutoDetectVersion = true, Product = TACTProduct.Overwatch)]
     public class ProCMF_59573 : ICMFEncryptionProc
     {
@@ -15,7 +16,7 @@ namespace TACTLib.Core.Product.Tank.CMF {
                 buffer[i] = Keytable[SignedMod(kidx, 512)];
                 kidx = header.m_buildVersion - kidx;
             }
-            
+
             return buffer;
         }
 
@@ -25,7 +26,7 @@ namespace TACTLib.Core.Product.Tank.CMF {
 
             uint increment = Keytable[header.m_buildVersion & 511];
             uint kidx = increment;
-            
+
             for (int i = 0; i != length; ++i)
             {
                 buffer[i] = Keytable[SignedMod(kidx, 512)];
@@ -38,7 +39,8 @@ namespace TACTLib.Core.Product.Tank.CMF {
             return buffer;
         }
 
-        private static readonly byte[] Keytable = {
+        private static readonly byte[] Keytable =
+        {
             0x77, 0xFF, 0xF5, 0x20, 0xF2, 0x2C, 0x44, 0x43, 0x15, 0x5D, 0x48, 0x1A, 0xDF, 0x6A, 0x0A, 0xD2,
             0xC5, 0x1E, 0xB3, 0x30, 0x4E, 0xA9, 0xAB, 0xFF, 0xC1, 0xC8, 0x9B, 0x71, 0xAC, 0x57, 0xE9, 0x43,
             0x30, 0xC9, 0x5B, 0x67, 0x9C, 0x69, 0x06, 0xAF, 0x14, 0x14, 0x0C, 0x39, 0xB9, 0xF2, 0xBB, 0x29,

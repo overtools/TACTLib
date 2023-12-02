@@ -1,14 +1,18 @@
 ﻿using static TACTLib.Core.Product.Tank.ManifestCryptoHandler;
 using static TACTLib.Core.Product.Tank.ContentManifestFile;
 
-namespace TACTLib.Core.Product.Tank.CMF {
+namespace TACTLib.Core.Product.Tank.CMF
+{
     [ManifestCrypto(AutoDetectVersion = true, Product = TACTProduct.Overwatch)]
-    public class ProCMF_37865 : ICMFEncryptionProc {
-        public byte[] Key(CMFHeader header, int length) {
+    public class ProCMF_37865 : ICMFEncryptionProc
+    {
+        public byte[] Key(CMFHeader header, int length)
+        {
             byte[] buffer = new byte[length];
 
             uint kidx = Keytable[header.m_buildVersion & 511];
-            for (int i = 0; i != length; ++i) {
+            for (int i = 0; i != length; ++i)
+            {
                 buffer[i] = Keytable[kidx % 512];
                 kidx -= 489;
             }
@@ -16,11 +20,13 @@ namespace TACTLib.Core.Product.Tank.CMF {
             return buffer;
         }
 
-        public byte[] IV(CMFHeader header, byte[] digest, int length) {
+        public byte[] IV(CMFHeader header, byte[] digest, int length)
+        {
             byte[] buffer = new byte[length];
 
             uint kidx = Keytable[header.m_dataCount & 511];
-            for (int i = 0; i != length; ++i) {
+            for (int i = 0; i != length; ++i)
+            {
                 buffer[i] = Keytable[kidx % 512];
                 kidx = header.m_buildVersion - kidx;
                 buffer[i] ^= digest[(i + kidx) % SHA1_DIGESTSIZE];
@@ -29,7 +35,8 @@ namespace TACTLib.Core.Product.Tank.CMF {
             return buffer;
         }
 
-        private static readonly byte[] Keytable = {
+        private static readonly byte[] Keytable =
+        {
             0x29, 0x02, 0x18, 0x1D, 0xA1, 0xA3, 0x43, 0x4F, 0xDC, 0xF7, 0x5A, 0x9E, 0x86, 0x8D, 0xA9, 0xF8,
             0x7F, 0xFE, 0x83, 0x5C, 0x1F, 0x08, 0xC9, 0x35, 0x16, 0x26, 0xE4, 0x64, 0xB7, 0x14, 0x34, 0x93,
             0x64, 0x76, 0xF1, 0xDE, 0x8F, 0x38, 0xDB, 0xC7, 0xBA, 0x2B, 0xC2, 0x7F, 0xD3, 0x3C, 0xFA, 0x19,

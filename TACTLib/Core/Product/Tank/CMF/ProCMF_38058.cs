@@ -1,15 +1,19 @@
 ﻿using static TACTLib.Core.Product.Tank.ManifestCryptoHandler;
 using static TACTLib.Core.Product.Tank.ContentManifestFile;
 
-namespace TACTLib.Core.Product.Tank.CMF {
+namespace TACTLib.Core.Product.Tank.CMF
+{
     [ManifestCrypto(AutoDetectVersion = true, Product = TACTProduct.Overwatch)]
-    public class ProCMF_38058 : ICMFEncryptionProc {
-        public byte[] Key(CMFHeader header, int length) {
+    public class ProCMF_38058 : ICMFEncryptionProc
+    {
+        public byte[] Key(CMFHeader header, int length)
+        {
             byte[] buffer = new byte[length];
 
             uint kidx = Constrain(header.m_buildVersion * length);
             uint increment = kidx % 61;
-            for (int i = 0; i != length; ++i) {
+            for (int i = 0; i != length; ++i)
+            {
                 buffer[i] = Keytable[kidx % 512];
                 kidx += increment;
             }
@@ -17,13 +21,15 @@ namespace TACTLib.Core.Product.Tank.CMF {
             return buffer;
         }
 
-        public byte[] IV(CMFHeader header, byte[] digest, int length) {
+        public byte[] IV(CMFHeader header, byte[] digest, int length)
+        {
             byte[] buffer = new byte[length];
 
-            uint kidx = (uint) (digest[7] + (ushort) (header.m_dataCount & 511));
+            uint kidx = (uint)(digest[7] + (ushort)(header.m_dataCount & 511));
             uint increment = (uint)header.m_entryCount + digest[header.m_entryCount % SHA1_DIGESTSIZE];
             uint digestIdx = header.m_buildVersion;
-            for (int i = 0; i != length; ++i) {
+            for (int i = 0; i != length; ++i)
+            {
                 buffer[i] = Keytable[kidx % 512];
                 kidx += increment;
                 buffer[i] ^= digest[digestIdx % SHA1_DIGESTSIZE];
@@ -33,7 +39,8 @@ namespace TACTLib.Core.Product.Tank.CMF {
             return buffer;
         }
 
-        private static readonly byte[] Keytable = {
+        private static readonly byte[] Keytable =
+        {
             0xD6, 0x85, 0xF6, 0x42, 0x61, 0x04, 0x73, 0x1B, 0x4C, 0x69, 0x34, 0x9D, 0xDF, 0xFB, 0x07, 0xF4,
             0xE6, 0xD0, 0x94, 0xCD, 0x7E, 0xBB, 0x78, 0xCA, 0x23, 0x1C, 0xFA, 0xAA, 0x99, 0x9F, 0xAA, 0x1F,
             0xD8, 0x86, 0xDE, 0x0A, 0xC0, 0xA3, 0x0A, 0x93, 0x52, 0x0A, 0x18, 0x46, 0x41, 0x82, 0xDB, 0x62,

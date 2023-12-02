@@ -1,15 +1,19 @@
 ﻿using static TACTLib.Core.Product.Tank.ManifestCryptoHandler;
 using static TACTLib.Core.Product.Tank.ContentManifestFile;
 
-namespace TACTLib.Core.Product.Tank.CMF {
+namespace TACTLib.Core.Product.Tank.CMF
+{
     [ManifestCrypto(AutoDetectVersion = true, Product = TACTProduct.Overwatch)]
-    public class ProCMF_37664 : ICMFEncryptionProc {
-        public byte[] Key(CMFHeader header, int length) {
+    public class ProCMF_37664 : ICMFEncryptionProc
+    {
+        public byte[] Key(CMFHeader header, int length)
+        {
             byte[] buffer = new byte[length];
 
             uint kidx = Keytable[length + 256];
             uint increment = header.m_buildVersion * (uint)header.m_dataCount % 7;
-            for (int i = 0; i != length; ++i) {
+            for (int i = 0; i != length; ++i)
+            {
                 buffer[i] = Keytable[kidx % 512];
                 kidx += increment;
             }
@@ -17,11 +21,13 @@ namespace TACTLib.Core.Product.Tank.CMF {
             return buffer;
         }
 
-        public byte[] IV(CMFHeader header, byte[] digest, int length) {
+        public byte[] IV(CMFHeader header, byte[] digest, int length)
+        {
             byte[] buffer = new byte[length];
 
             uint kidx = Keytable[(Keytable[0] * digest[7]) & 511];
-            for (int i = 0; i != length; ++i) {
+            for (int i = 0; i != length; ++i)
+            {
                 buffer[i] = Keytable[kidx % 512];
                 kidx += 3;
                 buffer[i] ^= digest[(kidx - i) % SHA1_DIGESTSIZE];
@@ -30,7 +36,8 @@ namespace TACTLib.Core.Product.Tank.CMF {
             return buffer;
         }
 
-        private static readonly byte[] Keytable = {
+        private static readonly byte[] Keytable =
+        {
             0x92, 0x5B, 0xDD, 0x63, 0xAB, 0xD9, 0x1D, 0x84, 0x70, 0xAD, 0xF6, 0x07, 0xBF, 0xD8, 0x1A, 0x8C,
             0xAD, 0x14, 0x00, 0xD4, 0x9D, 0xE3, 0x03, 0xC6, 0x0A, 0xA6, 0xCE, 0xB4, 0xF6, 0xE6, 0x48, 0xCD,
             0x7E, 0x5C, 0x3B, 0x72, 0x9C, 0x4D, 0x76, 0xD6, 0x4E, 0x82, 0x3F, 0x52, 0xA2, 0x44, 0xC4, 0x82,

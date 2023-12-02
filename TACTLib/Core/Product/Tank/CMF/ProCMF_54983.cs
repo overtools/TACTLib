@@ -1,7 +1,8 @@
 ﻿using static TACTLib.Core.Product.Tank.ManifestCryptoHandler;
 using static TACTLib.Core.Product.Tank.ContentManifestFile;
 
-namespace TACTLib.Core.Product.Tank.CMF {
+namespace TACTLib.Core.Product.Tank.CMF
+{
     [ManifestCrypto(AutoDetectVersion = true, Product = TACTProduct.Overwatch)]
     public class ProCMF_54983 : ICMFEncryptionProc
     {
@@ -9,21 +10,21 @@ namespace TACTLib.Core.Product.Tank.CMF {
         {
             byte[] buffer = new byte[length];
 
-            uint kidx = (uint) (header.m_buildVersion * length);
+            uint kidx = (uint)(header.m_buildVersion * length);
             for (int i = 0; i != length; ++i)
             {
                 buffer[i] = Keytable[SignedMod(kidx, 512)];
                 switch (SignedMod(kidx, 3))
                 {
-                    case 0:
-                        kidx += 103;
-                        break;
-                    case 1:
-                        kidx = (uint)SignedMod(4 * kidx, header.m_buildVersion);
-                        break;
-                    case 2:
-                        --kidx;
-                        break;
+                case 0:
+                    kidx += 103;
+                    break;
+                case 1:
+                    kidx = (uint)SignedMod(4 * kidx, header.m_buildVersion);
+                    break;
+                case 2:
+                    --kidx;
+                    break;
                 }
             }
 
@@ -34,29 +35,31 @@ namespace TACTLib.Core.Product.Tank.CMF {
         {
             byte[] buffer = new byte[length];
 
-            uint kidx = (uint) (2 * digest[5]);
-            for (int i = 0; i != length; ++i) {
+            uint kidx = (uint)(2 * digest[5]);
+            for (int i = 0; i != length; ++i)
+            {
                 buffer[i] = Keytable[SignedMod(kidx, 512)];
                 switch (SignedMod(kidx, 3))
                 {
-                    case 0:
-                        kidx += 103;
-                        break;
-                    case 1:
-                        kidx = (uint)SignedMod(4 * kidx, header.m_buildVersion);
-                        break;
-                    case 2:
-                        --kidx;
-                        break;
+                case 0:
+                    kidx += 103;
+                    break;
+                case 1:
+                    kidx = (uint)SignedMod(4 * kidx, header.m_buildVersion);
+                    break;
+                case 2:
+                    --kidx;
+                    break;
                 }
-                
+
                 buffer[i] ^= digest[SignedMod(header.m_buildVersion + kidx, SHA1_DIGESTSIZE)];
             }
 
             return buffer;
         }
 
-        private static readonly byte[] Keytable = {
+        private static readonly byte[] Keytable =
+        {
             0xA1, 0x81, 0xCD, 0x19, 0x0B, 0x13, 0xE6, 0xC8, 0xBB, 0x73, 0x66, 0xD1, 0x79, 0x64, 0x06, 0x96, 
             0xA1, 0x13, 0x57, 0x3C, 0xB4, 0x6D, 0x18, 0x5C, 0x8A, 0x14, 0x59, 0x66, 0x59, 0x7E, 0x5C, 0x65, 
             0x25, 0xDF, 0x78, 0x05, 0xA7, 0x18, 0x93, 0xEB, 0xD6, 0x44, 0x19, 0xA5, 0x3A, 0x73, 0x57, 0xCB, 

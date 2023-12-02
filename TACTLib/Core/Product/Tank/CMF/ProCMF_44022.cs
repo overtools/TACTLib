@@ -1,15 +1,19 @@
 ﻿using static TACTLib.Core.Product.Tank.ManifestCryptoHandler;
 using static TACTLib.Core.Product.Tank.ContentManifestFile;
 
-namespace TACTLib.Core.Product.Tank.CMF {
+namespace TACTLib.Core.Product.Tank.CMF
+{
     [ManifestCrypto(AutoDetectVersion = true, Product = TACTProduct.Overwatch)]
-    public class ProCMF_44022 : ICMFEncryptionProc {
-        public byte[] Key(CMFHeader header, int length) {
+    public class ProCMF_44022 : ICMFEncryptionProc
+    {
+        public byte[] Key(CMFHeader header, int length)
+        {
             byte[] buffer = new byte[length];
 
             uint kidx = Keytable[SignedMod(length * Keytable[0], 512)];
-            uint increment = (uint) SignedMod(kidx, 61);
-            for (int i = 0; i != length; ++i) {
+            uint increment = (uint)SignedMod(kidx, 61);
+            for (int i = 0; i != length; ++i)
+            {
                 buffer[i] = Keytable[SignedMod(kidx, 512)];
                 kidx += increment;
             }
@@ -17,11 +21,13 @@ namespace TACTLib.Core.Product.Tank.CMF {
             return buffer;
         }
 
-        public byte[] IV(CMFHeader header, byte[] digest, int length) {
+        public byte[] IV(CMFHeader header, byte[] digest, int length)
+        {
             byte[] buffer = new byte[length];
 
             uint kidx = (digest[7] + (uint)header.m_dataCount) & 511;
-            for (int i = 0; i != length; ++i) {
+            for (int i = 0; i != length; ++i)
+            {
                 buffer[i] = Keytable[SignedMod(kidx, 512)];
                 kidx += 3;
                 buffer[i] ^= digest[SignedMod(kidx - i, SHA1_DIGESTSIZE)];
@@ -30,7 +36,8 @@ namespace TACTLib.Core.Product.Tank.CMF {
             return buffer;
         }
 
-        private static readonly byte[] Keytable = {
+        private static readonly byte[] Keytable =
+        {
             0xD0, 0x28, 0x8E, 0xB1, 0x31, 0x7C, 0x7C, 0x1C, 0x49, 0x55, 0xB4, 0x69, 0x91, 0x76, 0x27, 0xF4,
             0x32, 0xC8, 0x32, 0xFA, 0xBB, 0x31, 0xF8, 0x3B, 0x8B, 0x44, 0x09, 0xC4, 0xBE, 0x66, 0x58, 0x5C,
             0x06, 0x3F, 0x32, 0x3B, 0x1D, 0xF1, 0x27, 0x55, 0x6C, 0xFC, 0x22, 0x68, 0x91, 0x74, 0x99, 0x1C,

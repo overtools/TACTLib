@@ -1,15 +1,19 @@
 ﻿using static TACTLib.Core.Product.Tank.ManifestCryptoHandler;
 using static TACTLib.Core.Product.Tank.ContentManifestFile;
 
-namespace TACTLib.Core.Product.Tank.CMF {
+namespace TACTLib.Core.Product.Tank.CMF
+{
     [ManifestCrypto(AutoDetectVersion = true, Product = TACTProduct.Overwatch)]
-    public class ProCMF_38170 : ICMFEncryptionProc {
-        public byte[] Key(CMFHeader header, int length) {
+    public class ProCMF_38170 : ICMFEncryptionProc
+    {
+        public byte[] Key(CMFHeader header, int length)
+        {
             byte[] buffer = new byte[length];
 
             uint kidx = Keytable[header.m_buildVersion & 511];
             uint increment = kidx % 61;
-            for (int i = 0; i != length; ++i) {
+            for (int i = 0; i != length; ++i)
+            {
                 buffer[i] = Keytable[kidx % 512];
                 kidx += increment;
             }
@@ -17,11 +21,13 @@ namespace TACTLib.Core.Product.Tank.CMF {
             return buffer;
         }
 
-        public byte[] IV(CMFHeader header, byte[] digest, int length) {
+        public byte[] IV(CMFHeader header, byte[] digest, int length)
+        {
             byte[] buffer = new byte[length];
 
-            uint kidx = (uint) (digest[7] + (ushort) header.m_dataCount) & 511;
-            for (int i = 0; i != length; ++i) {
+            uint kidx = (uint)(digest[7] + (ushort)header.m_dataCount) & 511;
+            for (int i = 0; i != length; ++i)
+            {
                 buffer[i] = Keytable[kidx % 512];
                 kidx += 3;
                 buffer[i] ^= digest[(kidx - i) % SHA1_DIGESTSIZE];
@@ -30,7 +36,8 @@ namespace TACTLib.Core.Product.Tank.CMF {
             return buffer;
         }
 
-        private static readonly byte[] Keytable = {
+        private static readonly byte[] Keytable =
+        {
             0x78, 0x3F, 0xEC, 0x15, 0xEB, 0xDA, 0xF2, 0xB0, 0x62, 0xD7, 0x0D, 0xCD, 0x15, 0x06, 0x62, 0x94,
             0xA3, 0x25, 0x6E, 0x17, 0x0C, 0x6F, 0x80, 0xCB, 0xEA, 0x6D, 0x88, 0x1E, 0x28, 0xA5, 0x9D, 0xD5,
             0x33, 0x0C, 0x0C, 0xC3, 0x3D, 0x1F, 0x26, 0x0F, 0x65, 0x7C, 0x43, 0xEA, 0x1F, 0xAE, 0x1F, 0x14,

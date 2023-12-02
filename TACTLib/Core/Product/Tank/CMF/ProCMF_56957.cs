@@ -1,7 +1,8 @@
 ﻿using static TACTLib.Core.Product.Tank.ManifestCryptoHandler;
 using static TACTLib.Core.Product.Tank.ContentManifestFile;
 
-namespace TACTLib.Core.Product.Tank.CMF {
+namespace TACTLib.Core.Product.Tank.CMF
+{
     [ManifestCrypto(AutoDetectVersion = true, Product = TACTProduct.Overwatch)]
     public class ProCMF_56957 : ICMFEncryptionProc
     {
@@ -10,18 +11,20 @@ namespace TACTLib.Core.Product.Tank.CMF {
             byte[] buffer = new byte[length];
 
             uint kidx = Keytable[SignedMod(length * Keytable[0], 512)];
-            for (int i = 0; i != length; ++i) {
+            for (int i = 0; i != length; ++i)
+            {
                 buffer[i] = Keytable[SignedMod(kidx, 512)];
-                switch (SignedMod(kidx, 3)) {
-                    case 0:
-                        kidx += 103;
-                        break;
-                    case 1:
-                        kidx = (uint)SignedMod(4 * kidx, header.m_buildVersion);
-                        break;
-                    case 2:
-                        --kidx;
-                        break;
+                switch (SignedMod(kidx, 3))
+                {
+                case 0:
+                    kidx += 103;
+                    break;
+                case 1:
+                    kidx = (uint)SignedMod(4 * kidx, header.m_buildVersion);
+                    break;
+                case 2:
+                    --kidx;
+                    break;
                 }
             }
 
@@ -31,7 +34,7 @@ namespace TACTLib.Core.Product.Tank.CMF {
         public byte[] IV(CMFHeader header, byte[] digest, int length)
         {
             byte[] buffer = new byte[length];
-            
+
             int kidx = 2 * digest[5];
             for (int i = 0; i != length; ++i)
             {
@@ -39,11 +42,12 @@ namespace TACTLib.Core.Product.Tank.CMF {
                 kidx -= 43;
                 buffer[i] ^= digest[SignedMod(kidx + header.m_dataCount, SHA1_DIGESTSIZE)];
             }
-            
+
             return buffer;
         }
 
-        private static readonly byte[] Keytable = {
+        private static readonly byte[] Keytable =
+        {
             0xD2, 0x6B, 0xBE, 0xC4, 0x3E, 0x79, 0x3B, 0x91, 0x44, 0x52, 0x40, 0x07, 0xE9, 0xC7, 0x7B, 0xA0,
             0x4F, 0x70, 0xFC, 0x24, 0xBB, 0xA6, 0x54, 0x65, 0x87, 0xCB, 0x6E, 0x5F, 0xCD, 0x09, 0xEC, 0x2D,
             0xE2, 0xB2, 0x74, 0xCB, 0xDA, 0x50, 0x64, 0xD2, 0xBD, 0x4A, 0x20, 0x36, 0xE5, 0x74, 0x5E, 0x85,

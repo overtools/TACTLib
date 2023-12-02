@@ -1,14 +1,18 @@
 ﻿using static TACTLib.Core.Product.Tank.ManifestCryptoHandler;
 using static TACTLib.Core.Product.Tank.ContentManifestFile;
 
-namespace TACTLib.Core.Product.Tank.CMF {
+namespace TACTLib.Core.Product.Tank.CMF
+{
     [ManifestCrypto(AutoDetectVersion = true, Product = TACTProduct.Overwatch)]
-    public class ProCMF_39028 : ICMFEncryptionProc {
-        public byte[] Key(CMFHeader header, int length) {
+    public class ProCMF_39028 : ICMFEncryptionProc
+    {
+        public byte[] Key(CMFHeader header, int length)
+        {
             byte[] buffer = new byte[length];
 
             uint kidx = Constrain(length * header.m_buildVersion);
-            for (int i = 0; i != length; ++i) {
+            for (int i = 0; i != length; ++i)
+            {
                 buffer[i] = Keytable[kidx % 512];
                 kidx = Constrain(header.m_buildVersion - kidx);
             }
@@ -16,11 +20,13 @@ namespace TACTLib.Core.Product.Tank.CMF {
             return buffer;
         }
 
-        public byte[] IV(CMFHeader header, byte[] digest, int length) {
+        public byte[] IV(CMFHeader header, byte[] digest, int length)
+        {
             byte[] buffer = new byte[length];
 
             uint kidx = Keytable[header.m_buildVersion & 511];
-            for (int i = 0; i != length; ++i) {
+            for (int i = 0; i != length; ++i)
+            {
                 buffer[i] = Keytable[kidx % 512];
                 kidx += 3;
                 buffer[i] ^= digest[(kidx - i) % SHA1_DIGESTSIZE];
@@ -29,7 +35,8 @@ namespace TACTLib.Core.Product.Tank.CMF {
             return buffer;
         }
 
-        private static readonly byte[] Keytable = {
+        private static readonly byte[] Keytable =
+        {
             0x21, 0xC3, 0x55, 0x59, 0x94, 0x08, 0xC7, 0x70, 0xFB, 0x09, 0x4D, 0xD7, 0xB0, 0x71, 0x1D, 0x48,
             0xB5, 0xC8, 0x1A, 0xB5, 0xE2, 0xC7, 0x2F, 0xA4, 0x0E, 0x59, 0x97, 0x9F, 0x94, 0xA6, 0x43, 0x26,
             0x6A, 0xB9, 0xA9, 0x18, 0xE4, 0xC8, 0x64, 0x29, 0x93, 0x8A, 0x4C, 0x8B, 0x4F, 0xA3, 0x50, 0xC7,
