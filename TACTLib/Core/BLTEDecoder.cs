@@ -92,7 +92,8 @@ namespace TACTLib.Core
 
         private static void HandleDataBlock(ClientHandler client, Span<byte> inputData, Span<byte> outputData, int blockIndex)
         {
-            switch ((char)SpanHelper.ReadByte(ref inputData)) {
+            var blockType = (char)SpanHelper.ReadByte(ref inputData);
+            switch (blockType) {
                 case 'E': // E (encrypted)
                     var decrypted = Decrypt(client, inputData, blockIndex);
                     HandleDataBlock(client, decrypted, outputData, blockIndex);
@@ -107,15 +108,15 @@ namespace TACTLib.Core
                 case 'F': // F (frame, recursive)
                     throw new BLTEDecoderException(null, "DecoderFrame not implemented");
                 default:
-                    throw new BLTEDecoderException(null, "unknown BLTE block type {0} (0x{1:X2})!", (char) inputData[0], inputData[0]);
+                    throw new BLTEDecoderException(null, $"unknown BLTE block type {blockType} (0x{(byte)blockType:X2})!");
             }
         }
 
         private static Span<byte> Decrypt(ClientHandler client, Span<byte> data, int blockIndex)
         {
             var keyNameSize = SpanHelper.ReadByte(ref data);
-            if (keyNameSize == 0 || keyNameSize != 8)
-                throw new BLTEDecoderException(null, "keyNameSize == 0 || keyNameSize != 8");
+            if (keyNameSize != 8)
+                throw new BLTEDecoderException(null, $"keyNameSize != 8. got {keyNameSize}");
 
             var keyNameData = SpanHelper.Advance(ref data, keyNameSize);
             var keyName = BinaryPrimitives.ReadUInt64LittleEndian(keyNameData);
@@ -131,7 +132,7 @@ namespace TACTLib.Core
 
             var encType = SpanHelper.ReadByte(ref data);
             if (encType != EncryptionSalsa20 && encType != EncryptionArc4) // 'S' or 'A'
-                throw new BLTEDecoderException(null, "encType != ENCRYPTION_SALSA20 && encType != ENCRYPTION_ARC4");
+                throw new BLTEDecoderException(null, $"encType != ENCRYPTION_SALSA20 && encType != ENCRYPTION_ARC4. got {(char)encType}");
 
             // expand to 8 bytes
             Span<byte> iv = stackalloc byte[8];
@@ -149,7 +150,7 @@ namespace TACTLib.Core
                 return data;
             } else
             {
-                throw new BLTEDecoderException(null, $"encType {encType} not implemented");
+                throw new BLTEDecoderException(null, $"encType {(char)encType} not implemented");
             }
         }
 

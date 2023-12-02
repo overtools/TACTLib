@@ -1,8 +1,8 @@
 using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+using CommunityToolkit.HighPerformance;
 
 namespace TACTLib.Core
 {
@@ -52,7 +52,7 @@ namespace TACTLib.Core
         
         public void Transform(ReadOnlySpan<byte> input, Span<byte> output) {
             var hashOutput = new UIntArray();
-            var hashOutputBytes = MemoryMarshal.Cast<uint, byte>(hashOutput);
+            var hashOutputBytes = ((ReadOnlySpan<uint>)hashOutput).AsBytes();
             
             while (input.Length > 0) {
                 Hash(ref hashOutput, ref m_state);
