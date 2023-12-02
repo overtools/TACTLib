@@ -139,8 +139,6 @@ namespace TACTLib.Client {
             } else if (CreateArgs.VersionSource == ClientCreateArgs.InstallMode.Local) {
                 InstallationInfo = new InstallationInfo(InstallationInfoFile!.Values, ProductCode!);
             } else {
-                CreateArgs.OnlineRootHost = ClientCreateArgs.EU_NGDP;
-                
                 NGDPClientBase ngdpClient;
                 if (CreateArgs.OnlineRootHost.StartsWith("ribbit:")) {
                     ngdpClient = new RibbitClient(CreateArgs.OnlineRootHost);
