@@ -48,21 +48,22 @@ namespace TACTLib.Config {
             }))}])");
         }
 
-        public InstallationInfo(INetworkHandler netHandle, string region) {
-            Values = netHandle.CreateInstallationInfo(region);
-        }
-
         public static List<Dictionary<string, string>> ParseToDict(TextReader reader) {
             string[]? keys = null;
-            List<Dictionary<string, string>> ret = new List<Dictionary<string, string>>();
+            var valueDicts = new List<Dictionary<string, string>>();
 
             string? line;
             while ((line = reader.ReadLine()?.Trim()) != null) {
-                if (line.Length == 0) {
+                if (line.Length == 0)
+                {
+                    continue;
+                }
+                if (line.StartsWith("##"))
+                {
                     continue;
                 }
 
-                string[] tokens = line.Split('|');
+                var tokens = line.Split('|');
 
                 if (keys == null) {
                     keys = new string[tokens.Length];
@@ -71,16 +72,16 @@ namespace TACTLib.Config {
                         keys[j] = tokens[j].Split('!')[0].Replace(" ", "");
                     }
                 } else {
-                    Dictionary<string, string> vals = new Dictionary<string, string>();
+                    var values = new Dictionary<string, string>();
                     for (var j = 0; j < tokens.Length; ++j) {
-                        vals[keys[j]] = tokens[j];
+                        values[keys[j]] = tokens[j];
                     }
 
-                    ret.Add(vals);
+                    valueDicts.Add(values);
                 }
             }
 
-            return ret;
+            return valueDicts;
         }
     }
 }

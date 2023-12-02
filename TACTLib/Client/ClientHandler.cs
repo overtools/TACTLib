@@ -14,7 +14,6 @@ using TACTLib.Exceptions;
 using TACTLib.Helpers;
 using TACTLib.Protocol;
 using TACTLib.Protocol.NGDP;
-using TACTLib.Protocol.Ribbit;
 
 // ReSharper disable NotAccessedField.Global
 
@@ -56,7 +55,7 @@ namespace TACTLib.Client {
         /// <seealso cref="ClientCreateArgs.ProductDatabaseFilename"/>
         public readonly ProductInstall? AgentProduct;
 
-        public readonly INetworkHandler? NetHandle;
+        public readonly CDNClient? CDNClient;
 
         /// <summary>The base path of the container. E.g where the game executables are.</summary>
         public readonly string BasePath;
@@ -128,13 +127,9 @@ namespace TACTLib.Client {
                 InstallationInfoFile = new InstallationInfoFile(installationInfoPath);
             }
 
-            if (CreateArgs.Online) {
-                using var _ = new PerfCounter("INetworkHandler::ctor`ClientHandler");
-                if (CreateArgs.OnlineRootHost.StartsWith("ribbit:")) {
-                    NetHandle = new RibbitCDNClient(this);
-                } else {
-                    NetHandle = new NGDPClient(this);
-                }
+            if (CreateArgs.Online)
+            {
+                CDNClient = new CDNClient(this);
             }
 
             if (IsStaticContainer) {
@@ -144,8 +139,18 @@ namespace TACTLib.Client {
             } else if (CreateArgs.VersionSource == ClientCreateArgs.InstallMode.Local) {
                 InstallationInfo = new InstallationInfo(InstallationInfoFile!.Values, ProductCode!);
             } else {
-                using var _ = new PerfCounter("InstallationInfo::ctor`INetworkHandler");
-                InstallationInfo = new InstallationInfo(NetHandle!, CreateArgs.OnlineRegion);
+                CreateArgs.OnlineRootHost = ClientCreateArgs.EU_NGDP;
+                
+                NGDPClientBase ngdpClient;
+                if (CreateArgs.OnlineRootHost.StartsWith("ribbit:")) {
+                    ngdpClient = new RibbitClient(CreateArgs.OnlineRootHost);
+                } else {
+                    ngdpClient = new NGDPClient(CreateArgs.OnlineRootHost);
+                }
+                
+                using var _ = new PerfCounter("NGDPClientBase::CreateInstallationInfo`string`string");
+                var installationInfoData = ngdpClient.CreateInstallationInfo(GetProduct()!, CreateArgs.OnlineRegion);
+                InstallationInfo = new InstallationInfo(installationInfoData);
             }
 
             if (CreateArgs.OverrideBuildConfig != null) {
@@ -334,7 +339,7 @@ namespace TACTLib.Client {
         private Stream? TryOpenRemoteLooseFile(FullEKey fullKey) {
             if (CDNIndex == null) return null;
             if (!CDNIndex.IsLooseFile(fullKey)) return null;
-            var encodedData = NetHandle!.OpenData(fullKey);
+            var encodedData = CDNClient!.OpenData(fullKey);
             if (encodedData == null) throw new Exception($"failed to fetch loose cdn file {fullKey.ToHexString()}");
             return TryDecodeToStream(encodedData);
         }
@@ -360,7 +365,7 @@ namespace TACTLib.Client {
                 }
             }
 
-            return CreateArgs.Online ? NetHandle!.OpenConfig(key) : null;
+            return CreateArgs.Online ? CDNClient!.OpenConfig(key) : null;
         }
 
         public string? GetProduct() => ProductCode;

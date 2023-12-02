@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -6,60 +6,68 @@ using System.Net.Http.Headers;
 using TACTLib.Client;
 
 namespace TACTLib.Protocol {
-    public abstract class CDNClient : INetworkHandler {
-        protected readonly ClientHandler client;
-
+    public class CDNClient
+    {
         private static readonly HttpClientHandler s_httpClientHandler = new HttpClientHandler
         {
             // unlikely to be supported by cdn but...
             AutomaticDecompression = DecompressionMethods.All
         };
-        private static readonly HttpClient s_httpClient = new HttpClient(s_httpClientHandler);
+        public static readonly HttpClient s_httpClient = new HttpClient(s_httpClientHandler);
+        
+        private readonly ClientHandler m_client;
 
-        protected CDNClient(ClientHandler handler) {
-            client = handler;
+        public CDNClient(ClientHandler handler)
+        {
+            m_client = handler;
         }
 
-        public abstract Dictionary<string, string> CreateInstallationInfo(string region);
-
-        public byte[]? OpenData(CKey key) {
-            // todo: caching
+        public byte[]? OpenData(CKey key)
+        {
             return FetchCDN("data", key.ToHexString());
         }
 
-        public Stream? OpenConfig(string key) {
-            // todo: caching
+        public Stream? OpenConfig(string key)
+        {
             var data = FetchCDN("config", key);
             if (data == null) return null;
             return new MemoryStream(data);
         }
 
-        public byte[]? FetchCDN(string type, string key, (int, int)? range=null, string? suffix=null) {
-            key = key.ToLower();
-            var hosts = client.InstallationInfo.Values["CDNHosts"].Split(' ');
-            foreach (var host in hosts) {
-                try {
-                    if (host == "cdn.blizzard.com" || host == "us.cdn.blizzard.com") {
-                        continue; // satan was here
-                    }
-                    var url = $"http://{host}/{client.InstallationInfo.Values["CDNPath"]}/{type}/{key.Substring(0, 2)}/{key.Substring(2, 2)}/{key}";
-                    Logger.Info("CDN", $"Fetching file {url}");
-                    if (suffix != null) url += suffix;
+        public byte[]? FetchCDN(string type, string key, (int start, int end)? range=null, string? suffix=null)
+        {
+            key = key.ToLowerInvariant();
+            
+            var hosts = m_client.InstallationInfo.Values["CDNHosts"].Split(' ');
+            foreach (var host in hosts)
+            {
+                if (host.EndsWith("cdn.blizzard.com"))
+                {
+                    continue; // these still dont work very well..
+                }
+                
+                var url = $"http://{host}/{m_client.InstallationInfo.Values["CDNPath"]}/{type}/{key.AsSpan(0, 2)}/{key.AsSpan(2, 2)}/{key}{suffix}";
+                Logger.Info("CDN", $"Fetching file {url}");
 
-                    var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
-                    if (range != null)
-                    {
-                        requestMessage.Headers.Range = new RangeHeaderValue(range.Value.Item1, range.Value.Item2);
-                    }
-
+                var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+                if (range != null)
+                {
+                    requestMessage.Headers.Range = new RangeHeaderValue(range.Value.start, range.Value.end);
+                }
+                
+                try 
+                {
                     using var response = s_httpClient.Send(requestMessage, HttpCompletionOption.ResponseHeadersRead);
-                    if (!response.IsSuccessStatusCode) continue;
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        continue;
+                    }
                     
-                    var result = response.Content.ReadAsByteArrayAsync().Result;
-
+                    var result = response.Content.ReadAsByteArrayAsync().Result; // todo: async over sync
                     return result;
-                } catch {
+                } catch (Exception e) {
                     // ignored
+                    Logger.Debug("CDN", $"Error fetching {url}: {e}");
                 }
             }
 

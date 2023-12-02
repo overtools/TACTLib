@@ -1,65 +1,33 @@
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using TACTLib.Client;
-using TACTLib.Config;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace TACTLib.Protocol.NGDP {
-    public class NGDPClient : CDNClient {
-        public NGDPClient(ClientHandler handler) : base(handler) { }
-
-        private static Dictionary<string, string> RenameMapVersions = new Dictionary<string, string> {
-            {"Region", "Branch"},
-            {"BuildConfig", "BuildKey"},
-            {"CDNConfig", "CDNKey"},
-            {"KeyRing", "Keyring"},
-            {"VersionsName", "Version"},
-        };
-
-        private static Dictionary<string, string> RenameMapCDNs = new Dictionary<string, string> {
-            {"Path", "CDNPath"},
-            {"Hosts", "CDNHosts"},
-            {"Servers", "CDNServers"},
-        };
-
-        public override Dictionary<string, string> CreateInstallationInfo(string region) {
-            using (StreamReader cdnsReader = new StreamReader(GetRoot($"/{client.GetProduct()}/cdns"))) {
-                using (StreamReader versionReader = new StreamReader(GetRoot($"/{client.GetProduct()}/versions"))) {
-                    var cdns = InstallationInfo.ParseToDict(cdnsReader).FirstOrDefault(x => x["Name"] == region);
-                    var versions = InstallationInfo.ParseToDict(versionReader).FirstOrDefault(x => x["Region"] == region);
-                    var bi = new Dictionary<string, string> {
-                        {"Active", "1"},
-                        {"InstallKey", ""},
-                        {"IMSize", ""},
-                        {"Tags", "Online NGDP"},
-                        {"Armadillo", ""},
-                        {"LastActivated", "0"},
-                        {"BuildComplete", "1"}
-                    };
-
-                    if (versions != null) {
-                        foreach (var pair in RenameMapVersions) {
-                            bi[pair.Value] = versions[pair.Key];
-                        }
-                    }
-
-                    if (cdns != null) {
-                        foreach (var pair in RenameMapCDNs) {
-                            bi[pair.Value] = cdns[pair.Key];
-                        }
-                    }
-
-                    return bi;
-                }
-            }
+    public class NGDPClient : NGDPClientBase
+    {
+        private readonly string m_host;
+        
+        public NGDPClient(string host)
+        {
+            m_host = host;
         }
 
-        private Stream GetRoot(string url) {
-            Logger.Info("CDN", $"Fetching NGDP {url}");
-            using (WebClient web = new WebClient()) {
-                return web.OpenRead($"{client.CreateArgs.OnlineRootHost}{url}");
-            }
+        public override string Get(string query)
+        {
+            Logger.Info("CDN", $"Fetching NGDP {query}");
+            using var response = CDNClient.s_httpClient.Send(new HttpRequestMessage(HttpMethod.Get, $"{m_host}/{query}"));
+            return response.Content.ReadAsStringAsync().Result; // todo: async over sync
         }
+
+        public override async Task<string> GetAsync(string query, CancellationToken cancellationToken = default)
+        {
+            Logger.Info("CDN", $"Fetching NGDP {query}");
+            using var response = await CDNClient.s_httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Get, $"{m_host}/{query}"), cancellationToken);
+            return await response.Content.ReadAsStringAsync(cancellationToken);
+        }
+        
+        public override string GetVersionsQuery(string product) => $"{product}/versions";
+        public override string GetCDNsQuery(string product) => $"{product}/cdns";
+        public override string GetBGDLsQuery(string product) => $"{product}/bgdl";
     }
 }
