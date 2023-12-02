@@ -70,14 +70,7 @@ namespace TACTLib.Protocol.NGDP
             var cdns = GetCDN(product, region);
             var version = GetVersion(product, region);
             
-            var map = new Dictionary<string, string> {
-                {"Active", "1"},
-                {"InstallKey", ""},
-                {"IMSize", ""},
-                {"Armadillo", ""},
-                {"LastActivated", "0"},
-                {"BuildComplete", "1"}
-            };
+            var map = new Dictionary<string, string>();
 
             if (version != null) {
                 foreach (var remap in RenameMapVersions) {
