@@ -47,8 +47,11 @@ namespace TACTLib.Core.VFS {
                     return _client.OpenCKey(cFile.CKey);
                 }
 
-                throw new NotImplementedException("where esize?");
-                //return _client.OpenEKey(vfsFile.EKey);
+                if (_client.IsStaticContainer && vfsFile.ContentSize == 0) {
+                    throw new NotImplementedException("where esize?");
+                }
+
+                return _client.OpenEKey(vfsFile.EKey, vfsFile.ContentSize == 0 ? _client.EncodingHandler!.GetEncodedSize(vfsFile.EKey) : vfsFile.ContentSize);
             }
             throw new FileNotFoundException(file);
         }

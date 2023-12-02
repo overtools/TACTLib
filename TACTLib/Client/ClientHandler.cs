@@ -64,8 +64,10 @@ namespace TACTLib.Client {
         public readonly ClientCreateArgs CreateArgs;
 
         public readonly CDNIndexHandler? CDNIndex;
-        
+
         private bool _seenNonResidentAsset;
+
+        public bool IsStaticContainer;
 
         public ClientHandler(string? basePath, ClientCreateArgs createArgs) {
             CreateArgs = createArgs;
@@ -108,8 +110,8 @@ namespace TACTLib.Client {
             }
 
             var staticBuildConfigPath = Path.Combine(BasePath, "data", ".build.config"); // todo: um
-            var isStaticContainer = File.Exists(staticBuildConfigPath);
-            if (isStaticContainer) {
+            IsStaticContainer = File.Exists(staticBuildConfigPath);
+            if (IsStaticContainer) {
                 if (CreateArgs.VersionSource != ClientCreateArgs.InstallMode.Local) throw new Exception("only local version sources are supported for static containers (steam)");
                 CreateArgs.Online = false;
 
@@ -135,7 +137,7 @@ namespace TACTLib.Client {
                 }
             }
 
-            if (isStaticContainer) {
+            if (IsStaticContainer) {
                 InstallationInfo = new InstallationInfo(new Dictionary<string, string> {
                     {"Version", ConfigHandler!.BuildConfig.Values["build-name"][0]}
                 });
@@ -183,7 +185,7 @@ namespace TACTLib.Client {
 
             if (CreateArgs.UseContainer) {
                 Logger.Info("CASC", "Initializing...");
-                if (isStaticContainer) {
+                if (IsStaticContainer) {
                     ContainerHandler = new StaticContainerHandler(this);
                 } else {
                     using var _ = new PerfCounter("ContainerHandler::ctor`ClientHandler");
@@ -205,7 +207,7 @@ namespace TACTLib.Client {
                     CDNIndex = CDNIndexHandler.Initialize(this);
                 }
             }
-            
+
             // for testing local cdn index init but remote data:
             //ContainerHandler = null;
 
@@ -249,14 +251,14 @@ namespace TACTLib.Client {
             }
             return archivesMatch;
         }
-        
+
         public Stream? OpenEKey(FullEKey fullEKey, int eSize) {  // ekey = value of ckey in encoding table
             var fromContainer = TryOpenEKeyFromContainer(fullEKey, eSize);
             if (fromContainer != null) return fromContainer;
 
             return TryOpenEKeyFromRemote(fullEKey, eSize);
         }
-        
+
         public Stream? OpenCKey(CKey key) {
             // todo: EncodingHandler can't be null after constructor has finished, but can be during init
             if (EncodingHandler != null && EncodingHandler.TryGetEncodingEntry(key, out var eKeys) && eKeys.Length > 0) {
@@ -267,15 +269,15 @@ namespace TACTLib.Client {
                     Logger.Error("CASC", "Due to an issue with the Battle.net updater (and your install), DataTool has to download some game assets from the CDN. The tool will still work properly.");
                     _seenNonResidentAsset = true;
                 }
-                
+
                 // oopsie. it aint resident in local apparently. lets just try first from other sources
                 var first = eKeys[0];
                 return TryOpenEKeyFromRemote(first, EncodingHandler.GetEncodedSize(first));
             }
-            
+
             return TryOpenRemoteLooseFile(key);
         }
-        
+
         private Stream? TryOpenEKeyListFromContainer(ReadOnlySpan<FullEKey> eKeys) {
             if (ContainerHandler == null) return null;
             if (EncodingHandler == null) return null; // cant get here but okay
@@ -300,7 +302,7 @@ namespace TACTLib.Client {
             }
             return null;
         }
-        
+
         private Stream? OpenEKeyFromContainer(FullEKey fullEKey, int eSize) {  // ekey = value of ckey in encoding table
             if (ContainerHandler == null) return null;
             var fromContainer = ContainerHandler.OpenEKey(fullEKey, eSize);
@@ -310,7 +312,7 @@ namespace TACTLib.Client {
 
         private Stream? TryOpenEKeyFromRemote(FullEKey fullEKey, int eSize) {
             if (!CreateArgs.Online) return null;
-            
+
             var archiveResult = TryOpenRemoteArchivedFile(fullEKey);
             if (archiveResult != null) return archiveResult;
 

@@ -13,7 +13,7 @@ namespace TACTLib.Core.VFS {
         public const uint TVFS_FOLDER_SIZE_MASK = 0x7FFFFFFF;
         // ReSharper disable once InconsistentNaming
         public const uint TVFS_FOLDER_NODE = 0x80000000;     // Highest bit is set if a file node is a folder
-        
+
         [Flags]
         [SuppressMessage("ReSharper", "InconsistentNaming")]
         public enum ManifestFlags {
@@ -26,7 +26,7 @@ namespace TACTLib.Core.VFS {
             /// Write support. Include a table of encoding specifiers. This is required for writing files to the underlying storage. This bit is implied by the patch-support bit
             /// </summary>
             WRITE_SUPPORT = 0x0002,
-            
+
             /// <summary>
             /// Patch support. Include patch records in the content file records.
             /// </summary>
@@ -45,40 +45,40 @@ namespace TACTLib.Core.VFS {
             /// There is path separator before the name
             /// </summary>
             PATH_SEPARATOR_PRE = 0x0001,
-            
+
             /// <summary>
             /// There is path separator after the name
             /// </summary>
             PATH_SEPARATOR_POST = 0x0002,
-            
+
             /// <summary>
             /// The NodeValue in path table entry is valid
             /// </summary>
             NODE_VALUE = 0x0004
         }
-        
+
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public unsafe struct ManifestHeader {
             /// <summary>
             /// Magic identifier. "TVFS"/0x53465654
             /// </summary>
             public int Magic;
-            
+
             /// <summary>
             /// Version. Always 1
             /// </summary>
             public byte Version;
-            
+
             /// <summary>
             /// Header size. Always >= 0x26
             /// </summary>
             public byte HeaderSize;
-            
+
             /// <summary>
             /// Encoding Key size. Always 9
             /// </summary>
             public byte EKeySize;
-            
+
             /// <summary>
             /// Patch Key size. Always 9
             /// </summary>
@@ -90,32 +90,32 @@ namespace TACTLib.Core.VFS {
             /// Offset of the path table
             /// </summary>
             public UInt32BE PathTableOffset;
-            
+
             /// <summary>
             /// Size of the path table
             /// </summary>
             public UInt32BE PathTableSize;
-            
+
             /// <summary>
             /// Offset of the VFS table
             /// </summary>
             public UInt32BE VfsTableOffset;
-            
+
             /// <summary>
             /// Size of the VFS table
             /// </summary>
             public UInt32BE VfsTableSize;
-            
+
             /// <summary>
             /// Offset of the container file table
             /// </summary>
             public UInt32BE CftTableOffset;
-            
+
             /// <summary>
             /// Size of the container file table
             /// </summary>
             public UInt32BE CftTableSize;
-            
+
             /// <summary>
             /// The maximum depth of the path prefix tree stored in the path table
             /// </summary>
@@ -131,7 +131,7 @@ namespace TACTLib.Core.VFS {
             ///// The size of the encoding specifier table. Only if the write-support bit is set in the header flag
             ///// </summary>
             //public UInt32BE EstTableSize;
-            
+
             public ManifestFlags GetFlags() {
                 return (ManifestFlags)Flags.ToInt();
             }
@@ -139,7 +139,7 @@ namespace TACTLib.Core.VFS {
 
         public class Manifest {
             public readonly ManifestHeader Header;
-            
+
             public readonly ManifestFlags Flags;
             public readonly uint PathTableOffset;
             public readonly uint PathTableSize;
@@ -148,7 +148,7 @@ namespace TACTLib.Core.VFS {
             public readonly uint CftTableOffset;
             public readonly uint CftTableSize;
             public readonly ushort MaxDepth;
-            
+
             public readonly int CftOffsSize;
             //public readonly int EstOffsSize;
 
@@ -167,10 +167,10 @@ namespace TACTLib.Core.VFS {
                 MaxDepth = header.MaxDepth.ToInt();
                 CftOffsSize = GetOffsetFieldSize(CftTableSize);
                 //EstOffsSize = GetOffsetFieldSize(header.EstTableSize);
-                
+
                 Files = new List<VFSFile>();
             }
-        
+
             // Returns size of "container file table offset" files in the VFS.
             // - If the container file table is larger than 0xffffff bytes, it's 4 bytes
             // - If the container file table is larger than 0xffff bytes, it's 3 bytes
@@ -198,7 +198,7 @@ namespace TACTLib.Core.VFS {
             reader.BaseStream.Position -= 1;
             return value;
         }
-        
+
         private static PathEntry ReadPathEntry(BinaryReader reader, long pathTableEnd) {
             var pathEntry = new PathEntry();
 
@@ -223,7 +223,7 @@ namespace TACTLib.Core.VFS {
                 var check = PeekByte(reader);
                 if (check == 0xFF) { // Check for node value
                     reader.BaseStream.Position += 1;
-                    
+
                     pathEntry.NodeValue = reader.ReadInt32BE();
                     pathEntry.NodeFlags |= PathEntryFlags.NODE_VALUE;
                 } else {  // Non-0xFF after the name means path separator after
@@ -240,10 +240,10 @@ namespace TACTLib.Core.VFS {
             Manifest manifest = new Manifest(header);
 
             ParseDirectoryData(manifest, reader);
-            
+
             return manifest;
         }
-        
+
         private static void ParseDirectoryData(Manifest manifest, BinaryReader reader) {
             long rootDirPtr = manifest.PathTableOffset;
             var rootDirEnd = rootDirPtr + manifest.PathTableSize;
@@ -257,7 +257,7 @@ namespace TACTLib.Core.VFS {
                 var b = reader.ReadByte();
                 if (b == 0xFF) {
                     var nodeValue = reader.ReadInt32BE();
-                    
+
                     rootDirEnd = rootDirPtr + 1 + (nodeValue & TVFS_FOLDER_SIZE_MASK);
                     rootDirPtr = rootDirPtr + 1 + sizeof(int);
 
@@ -266,7 +266,7 @@ namespace TACTLib.Core.VFS {
                     }
                 }
             }
-            
+
             ParsePathFileTable(manifest, reader, rootDirPtr, rootDirEnd, "");
         }
 
@@ -279,7 +279,7 @@ namespace TACTLib.Core.VFS {
                 var entry = ReadPathEntry(reader, pathTableEnd);
 
                 pathBuffer = AppendNodeToPath(entry, pathBuffer);
-                
+
                 // Folder component
                 if ((entry.NodeFlags & PathEntryFlags.NODE_VALUE) != 0) {
                     // If the TVFS_FOLDER_NODE is set, then the path node is a directory,
@@ -287,10 +287,10 @@ namespace TACTLib.Core.VFS {
                     // contain the length of the directory (including the NodeValue!)
                     if ((entry.NodeValue & TVFS_FOLDER_NODE) != 0) {
                         var directoryEnd = reader.BaseStream.Position + (entry.NodeValue & TVFS_FOLDER_SIZE_MASK) - sizeof(int);
-                        
+
                         // Check the available data
                         Debug.Assert((entry.NodeValue & TVFS_FOLDER_SIZE_MASK) >= sizeof(int));
-                        
+
                         // Recursively call the folder parser on the same file
                         ParsePathFileTable(manifest, reader, reader.BaseStream.Position, directoryEnd, pathBuffer);
 
@@ -303,7 +303,7 @@ namespace TACTLib.Core.VFS {
                         reader.BaseStream.Position = before;
 
                         file.Name = pathBuffer;
-                        
+
                         manifest.Files.Add(file);
                     }
 
@@ -322,13 +322,13 @@ namespace TACTLib.Core.VFS {
 
             reader.BaseStream.Position = vfsFileEntry;
 
-            int spanCount = reader.ReadByte(); 
+            int spanCount = reader.ReadByte();
             // 1 - 224 = valid file, 225-254 = other file, 255 = deleted file
             // We will ignore all files with unsupported span count
             if (spanCount == 0 || spanCount > 224) {
                 throw new Exception();
             }
-            
+
             // todo: spanCount *can* be > 1 on viper
             // So far we've only saw entries with 1 span.
             // Need to test files with multiple spans. Ignore such files for now.
@@ -341,7 +341,7 @@ namespace TACTLib.Core.VFS {
 
             var fileOffset = reader.ReadInt32BE();
             spanSize = reader.ReadInt32BE();
-            
+
             var cftOffset = 0;
             if (manifest.CftOffsSize == 1) {
                 cftOffset = reader.ReadByte();
@@ -352,7 +352,7 @@ namespace TACTLib.Core.VFS {
             } else if (manifest.CftOffsSize == 4) {
                 cftOffset = reader.ReadInt32BE();
             }
-            
+
             var cftFileTable = manifest.CftTableOffset;
             var cftFileEntry = cftFileTable + cftOffset;
             //int cftFileEnd = cftFileTable + manifest.CftTableSize;
@@ -361,12 +361,13 @@ namespace TACTLib.Core.VFS {
             var eKey = reader.Read<CKey>();
             VFSFile file = new VFSFile {
                 Offset = fileOffset,
+                ContentSize = spanSize,
                 Name = null,
                 EKey = eKey
             };
             return file;
         }
-        
+
         private static string AppendNodeToPath(PathEntry entry, string path) {
             if ((entry.NodeFlags & PathEntryFlags.PATH_SEPARATOR_PRE) != 0)
                 path += "/";
