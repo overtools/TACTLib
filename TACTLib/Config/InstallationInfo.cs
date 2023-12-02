@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using TACTLib.Protocol;
 
 namespace TACTLib.Config {
     public class InstallationInfo {

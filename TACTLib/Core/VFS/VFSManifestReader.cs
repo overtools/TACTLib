@@ -58,7 +58,7 @@ namespace TACTLib.Core.VFS {
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public unsafe struct ManifestHeader {
+        public struct ManifestHeader {
             /// <summary>
             /// Magic identifier. "TVFS"/0x53465654
             /// </summary>
@@ -154,7 +154,7 @@ namespace TACTLib.Core.VFS {
 
             public readonly List<VFSFile> Files;
 
-            public unsafe Manifest(ManifestHeader header) {
+            public Manifest(ManifestHeader header) {
                 Header = header;
 
                 Flags = header.GetFlags();

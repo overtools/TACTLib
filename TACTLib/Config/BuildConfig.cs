@@ -33,7 +33,7 @@ namespace TACTLib.Config {
                 @out = null;
                 return;
             }
-            @out = GetFileRecord(Values[key]);
+            @out = GetFileRecord(list);
         }
         
         private void GetSizeRecord(string key, out SizeRecord? @out) {
