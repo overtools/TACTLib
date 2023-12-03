@@ -104,21 +104,20 @@ namespace TACTLib.Container {
             return data;
         }
 
-        public ArraySegment<byte>? OpenEKey(FullEKey ekey) {
-            return OpenEKey(ekey, true, "meta");
-        }
-
-        public ArraySegment<byte>? OpenEKey(FullEKey ekey, bool isBase, string? subtype) {
+        public ArraySegment<byte>? OpenEKey(FullEKey ekey, int eSize, bool isBase, string? subtype) {
             ExtractStorageLocation(ekey, out var chunk, out var archive, out var offset);
 
             // todo: is there a non satanic way to do this
             var path = GetFilePath(chunk, archive, isBase, subtype);
             if (!File.Exists(path)) {
                 path = GetFilePath(chunk, archive, !isBase, subtype);
-                if (!File.Exists(path) && archive > 0xFFFF && (archive & 0xFFFF) > 0) {
-                    path = GetFilePath(chunk, archive >> 16, isBase, ((archive & 0xFFFF) - 1).ToString("D4"));
+                if (!File.Exists(path) && archive > 0xFFFF) {
+                    if ((archive & 0xFFFF) > 0) {
+                        subtype = ((archive & 0xFFFF) - 1).ToString("D4");
+                    }
+                    path = GetFilePath(chunk, archive >> 16, isBase, subtype);
                     if (!File.Exists(path)) {
-                        path = GetFilePath(chunk, archive >> 16, !isBase, ((archive & 0xFFFF) - 1).ToString("D4"));
+                        path = GetFilePath(chunk, archive >> 16, !isBase, subtype);
                     }
                 }
             }
@@ -129,38 +128,9 @@ namespace TACTLib.Container {
 
             using var stream = File.OpenRead(path);
             stream.Position = (long) offset;
-            var eSize = 0;
-            if (m_client.ConfigHandler.BuildConfig.TryGetESpecRecord(ekey, out var espec)) {
-                eSize = espec.Size.EncodedSize;
-            } else { // guess BLTE?
-                try {
-                    eSize = BLTEStream.GetEncodedSize(stream);
-                } catch {
-                    // ignored
-                }
-            }
-
-            stream.Position = (long) offset;
-            if (eSize > 0) {
-                var data = new byte[eSize];
-                stream.DefinitelyRead(data);
-                return data;
-            }
-
-            var test = new byte[2];
-            stream.DefinitelyRead(test);
-            stream.Position = (long) offset;
-            if (test[0] != 0x78 && test[1] != 0x9C) {
-                var data = new byte[stream.Length - (long)offset];
-                stream.DefinitelyRead(data);
-                return data;
-            }
-
-            // this is ugly beyond sin.
-            using var zlib = new ZLibStream(stream, CompressionMode.Decompress);
-            using var ms = new MemoryStream();
-            zlib.CopyTo(ms);
-            return ms.ToArray();
+            var data = new byte[eSize];
+            stream.DefinitelyRead(data);
+            return data;
         }
 
         public bool CheckResidency(FullEKey ekey) {

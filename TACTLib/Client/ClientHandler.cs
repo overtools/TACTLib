@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Runtime.InteropServices;
 using TACTLib.Agent;
 using TACTLib.Agent.Protobuf;
 using TACTLib.Config;
@@ -229,7 +230,7 @@ namespace TACTLib.Client {
             if (ConfigHandler.BuildConfig.VFSRoot != null) {
                 using var _ = new PerfCounter("VFSFileTree::ctor`ClientHandler");
                 if (IsStaticContainer && ConfigHandler.BuildConfig.HasNoEncoding) {
-                    using var vfsStream = OpenStaticEKey(ConfigHandler.BuildConfig.VFSRoot!.EncodingKey, true, "meta");
+                    using var vfsStream = OpenStaticEKey(ConfigHandler.BuildConfig.VFSRoot!.EncodingKey, ConfigHandler.BuildConfig.VFSRootSize!.EncodedSize, ConfigHandler.BuildConfig.VFSRootEspec ?? "n", true, "meta")!;
                     VFS = new VFSFileTree(this, vfsStream);
                 } else {
                     using var vfsStream = OpenCKey(ConfigHandler.BuildConfig.VFSRoot!.ContentKey)!;
@@ -403,42 +404,58 @@ namespace TACTLib.Client {
             return null;
         }
 
-        public Stream? OpenStaticEKey(FullEKey ekey, bool isBase, string? meta) {
+        public Stream? OpenStaticEKey(FullEKey ekey, int esize, string? rawEspec, bool isBase, string? meta) {
             if (ContainerHandler is not StaticContainerHandler staticContainerHandler) {
                 return null;
             }
 
-            var arr = staticContainerHandler.OpenEKey(ekey, isBase, meta);
+            var arr = staticContainerHandler.OpenEKey(ekey, esize, isBase, meta);
             if (!arr.HasValue) {
                 return null;
             }
 
+            var trimmed = arr.Value[..esize];
+
             if (ConfigHandler.BuildConfig.TryGetESpecRecord(ekey, out var espec)) {
-                var ms = new MemoryStream(arr!.Value.Array!);
+                rawEspec = espec.ESpec;
+            }
+
+            if (trimmed.Count > 4) {
+                var initialMagic = BinaryPrimitives.ReadUInt32LittleEndian(trimmed);
+                if (initialMagic == BLTEStream.Magic) {
+                    return new MemoryStream(BLTEDecoder.Decode(this, trimmed.Array)) {
+                        Position = 0
+                    };
+                }
+            }
+
+            var isZlib = rawEspec?.Contains('z', StringComparison.Ordinal) ?? false; // todo: parse properly, this can be encrypted.
+            if (rawEspec?.Contains('e', StringComparison.Ordinal) ?? false) { // doomed, encryption not handled by BLTE.
+            #if DEBUG
+                Debugger.Break();
+            #endif
+                return null;
+            }
+
+            // apparently images can also be marked as Z without actually being compressed?
+            if (isZlib) {
+                if (trimmed[0] != 0x78 || trimmed[1] is not (0x9C or 0xDA)) {
+                    return null; // ????
+                }
+
+                var ms = new MemoryStream(trimmed.Array!);
                 ms.Position = 0;
 
-                if (espec.ESpec == 'N') {
-                    return ms;
-                }
-
-                if (espec.ESpec != 'Z') {
-                    throw new InvalidOperationException("not N or Z espec");
-                }
-
                 using var zlibStream = new ZLibStream(ms, CompressionMode.Decompress);
-                var memory = new MemoryStream(ConfigHandler.BuildConfig.VFSRootSize!.ContentSize);
+                using var memory = new MemoryStream(ConfigHandler.BuildConfig.VFSRootSize!.ContentSize);
                 zlibStream.CopyTo(memory);
                 memory.Position = 0;
                 ms.Dispose();
-                return memory;
+                trimmed = memory.ToArray();
             }
-
-            if (MemoryMarshal.Read<uint>(arr.Value) == BLTEStream.Magic) {
-                return new BLTEStream(this, arr.Value.Array, 0);
-            }
-
-            return new MemoryStream(arr.Value.Array!) {
-                Position = 0,
+            
+            return new MemoryStream(trimmed.ToArray()) {
+                Position = 0
             };
         }
     }

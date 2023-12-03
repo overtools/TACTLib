@@ -14,6 +14,7 @@ namespace TACTLib.Config {
         public SizeRecord? EncodingSize;
         public FileRecord? VFSRoot;
         public SizeRecord? VFSRootSize;
+        public string? VFSRootEspec;
         public List<ESpecRecord> ESpecRecords = [];
         public bool HasNoEncoding { get; }
 
@@ -25,6 +26,8 @@ namespace TACTLib.Config {
             GetFileRecord("encoding", out Encoding!);
             GetSizeRecord("encoding-size", out EncodingSize);
             GetFileRecord("vfs-root", out VFSRoot);
+            Values.TryGetValue("vfs-root-espec", out var rootEspec);
+            VFSRootEspec = rootEspec?.ElementAtOrDefault(0) ?? "n";
             GetSizeRecord("vfs-root-size", out VFSRootSize);
 
             var vfsIndex = 0;
@@ -39,7 +42,7 @@ namespace TACTLib.Config {
                 ESpecRecords.Add(new ESpecRecord {
                     Record = vfsRecord,
                     Size = vfsSize!,
-                    ESpec = (vfsEspecs?.ElementAtOrDefault(0) ?? "n").ToUpper()[0],
+                    ESpec = vfsEspecs?.ElementAtOrDefault(0) ?? "n",
                 });
             }
 
@@ -107,7 +110,7 @@ namespace TACTLib.Config {
         public class ESpecRecord {
             public FileRecord Record = null!;
             public SizeRecord Size = null!;
-            public char ESpec;
+            public string ESpec;
         }
     }
 }

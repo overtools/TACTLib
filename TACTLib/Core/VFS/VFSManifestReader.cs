@@ -121,16 +121,15 @@ namespace TACTLib.Core.VFS {
             /// </summary>
             public UInt16BE MaxDepth;
 
-            //todo: only when write
             ///// <summary>
             ///// The offset of the encoding specifier table. Only if the write-support bit is set in the header flag
             ///// </summary>
-            //public UInt32BE EstTableOffset;
+            public UInt32BE EstTableOffset;
             //
             ///// <summary>
             ///// The size of the encoding specifier table. Only if the write-support bit is set in the header flag
             ///// </summary>
-            //public UInt32BE EstTableSize;
+            public UInt32BE EstTableSize;
             
             public ManifestFlags GetFlags() {
                 return (ManifestFlags)Flags.ToInt();
@@ -147,10 +146,12 @@ namespace TACTLib.Core.VFS {
             public readonly uint VfsTableSize;
             public readonly uint CftTableOffset;
             public readonly uint CftTableSize;
+            public readonly uint EstTableOffset;
+            public readonly uint EstTableSize;
             public readonly ushort MaxDepth;
             
             public readonly int CftOffsSize;
-            //public readonly int EstOffsSize;
+            public readonly int EstOffsSize;
 
             public readonly List<VFSFile> Files;
 
@@ -166,8 +167,12 @@ namespace TACTLib.Core.VFS {
                 CftTableSize = header.CftTableSize.ToInt();
                 MaxDepth = header.MaxDepth.ToInt();
                 CftOffsSize = GetOffsetFieldSize(CftTableSize);
-                //EstOffsSize = GetOffsetFieldSize(header.EstTableSize);
-                
+                if (Flags.HasFlag(ManifestFlags.WRITE_SUPPORT) || Flags.HasFlag(ManifestFlags.PATCH_SUPPORT)) {
+                    EstTableOffset = header.EstTableOffset.ToInt();
+                    EstTableSize = header.EstTableSize.ToInt();
+                    EstOffsSize = GetOffsetFieldSize(EstTableSize);
+                }
+
                 Files = new List<VFSFile>();
             }
         
@@ -239,6 +244,7 @@ namespace TACTLib.Core.VFS {
             var header = reader.Read<ManifestHeader>();
             Manifest manifest = new Manifest(header);
 
+            reader.BaseStream.Position = manifest.Header.HeaderSize;
             ParseDirectoryData(manifest, reader);
             
             return manifest;
@@ -312,27 +318,27 @@ namespace TACTLib.Core.VFS {
             }
         }
 
+
         private static VFSFile ReadVfsSpanEntries(Manifest manifest, BinaryReader reader, out int spanSize, int vfsOffset) {
-            // Get the number of span entries
-            //if(!(pbVfsFileTable <= pbVfsFileEntry && pbVfsFileEntry <= pbVfsFileEnd))
-            //    return ERROR_INVALID_PARAMETER;
             long vfsFileTable = manifest.VfsTableOffset;
             var vfsFileEntry = vfsFileTable + vfsOffset;
-            //long vfsFileEnd = vfsFileTable + manifest.VfsTableSize;
 
             reader.BaseStream.Position = vfsFileEntry;
 
-            int spanCount = reader.ReadByte(); 
+            int spanCount = reader.ReadByte();
+            
             // 1 - 224 = valid file, 225-254 = other file, 255 = deleted file
             // We will ignore all files with unsupported span count
-            if (spanCount == 0 || spanCount > 224) {
+            if (spanCount is 0 or > 224) {
                 throw new Exception();
             }
-            
+
             // todo: spanCount *can* be > 1 on viper
             // So far we've only saw entries with 1 span.
             // Need to test files with multiple spans. Ignore such files for now.
-            //Debug.Assert(spanCount == 1);
+            if (spanCount > 1) {
+                throw new NotSupportedException("span > 1 what do");
+            }
 
             // Structure of the span entry:
             // (4bytes): Offset into the referenced file (big endian)
@@ -341,28 +347,56 @@ namespace TACTLib.Core.VFS {
 
             var fileOffset = reader.ReadInt32BE();
             spanSize = reader.ReadInt32BE();
-            
-            var cftOffset = 0;
-            if (manifest.CftOffsSize == 1) {
-                cftOffset = reader.ReadByte();
-            } else if (manifest.CftOffsSize == 2) {
-                cftOffset = reader.ReadInt16BE();
-            } else if (manifest.CftOffsSize == 3) {
-                cftOffset = reader.ReadInt24BE();
-            } else if (manifest.CftOffsSize == 4) {
-                cftOffset = reader.ReadInt32BE();
-            }
-            
+
+            var cftOffset = manifest.CftOffsSize switch {
+                                1 => reader.ReadByte(),
+                                2 => reader.ReadInt16BE(),
+                                3 => reader.ReadInt24BE(),
+                                4 => reader.ReadInt32BE(),
+                                _ => 0,
+                            };
+
             var cftFileTable = manifest.CftTableOffset;
             var cftFileEntry = cftFileTable + cftOffset;
-            //int cftFileEnd = cftFileTable + manifest.CftTableSize;
 
             reader.BaseStream.Position = cftFileEntry;
-            var eKey = reader.Read<CKey>();
-            VFSFile file = new VFSFile {
+            var eKey = new FullEKey();
+            reader.BaseStream.ReadExactly(eKey[..manifest.Header.EKeySize]);
+            var encodedLength = reader.ReadInt32BE();
+            var estOffset = manifest.EstOffsSize switch {
+                                1 => reader.ReadByte(),
+                                2 => reader.ReadInt16BE(),
+                                3 => reader.ReadInt24BE(),
+                                4 => reader.ReadInt32BE(),
+                                _ => 0,
+                            };
+            var contentLength = reader.ReadInt32BE();
+            var cKey = reader.Read<CKey>();
+
+            var espec = default(string);
+            if (manifest.EstTableOffset > 0) {
+                var estFileTable = manifest.EstTableOffset;
+                var estFileEntry = estFileTable + estOffset;
+                reader.BaseStream.Position = estFileEntry;
+                // todo: move this to a helper?
+                var sb = new StringBuilder();
+                char current;
+                while((current = (char) reader.ReadByte()) != 0) {
+                    sb.Append(current);
+                }
+
+                espec = sb.ToString();
+            }
+
+            var file = new VFSFile {
                 Offset = fileOffset,
+                SpanSize = spanSize,
+                ContentSize = contentLength,
+                EncodedSize = encodedLength,
                 Name = null,
-                EKey = eKey
+                EKey = eKey,
+                CKey = cKey,
+                ESpec = espec,
             };
             return file;
         }

@@ -158,10 +158,6 @@ namespace TACTLib.Container {
             return OpenEKey(ekey.AsTruncated());
         }
 
-        public ArraySegment<byte>? OpenEKey(FullEKey ekey) {
-            return OpenEKey(ekey.AsTruncated());
-        }
-
         public bool CheckResidency(FullEKey ekey) {
             return TryFindIndexEntry(ekey.AsTruncated(), out _);
         }
