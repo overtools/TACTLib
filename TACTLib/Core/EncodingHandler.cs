@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using TACTLib.Client;
 using TACTLib.Core.Key;
 using TACTLib.Helpers;
@@ -26,9 +27,14 @@ namespace TACTLib.Core {
         {
         }
 
-        public EncodingHandler(ClientHandler client, FullEKey eKey, int eSize) {
-            using var stream = client.OpenEKey(eKey, eSize)!;
-            using var reader = new BinaryReader(stream);
+        public EncodingHandler(ClientHandler client, FullEKey eKey, int eSize) : this(client.OpenEKey(eKey, eSize))
+        {
+        }
+        
+        public EncodingHandler(Stream? stream, bool leaveOpen=false)
+        {
+            ArgumentNullException.ThrowIfNull(stream);
+            using var reader = new BinaryReader(stream, Encoding.UTF8, leaveOpen);
             /*using (var outFile = File.OpenWrite("steam_encoding.bin")) {
                 stream.CopyTo(outFile);
             }
