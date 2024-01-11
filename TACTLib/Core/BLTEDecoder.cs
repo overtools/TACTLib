@@ -28,7 +28,7 @@ namespace TACTLib.Core
             public UInt24BE m_blockCount;
         }
 
-        public static unsafe byte[] Decode(ClientHandler client, Span<byte> src) {
+        public static unsafe byte[] Decode(ClientHandler? client, Span<byte> src) {
             if (src == null) throw new ArgumentNullException(nameof(src));
 
             var span = src;
@@ -90,7 +90,7 @@ namespace TACTLib.Core
             return output;
         }
 
-        private static void HandleDataBlock(ClientHandler client, Span<byte> inputData, Span<byte> outputData, int blockIndex)
+        private static void HandleDataBlock(ClientHandler? client, Span<byte> inputData, Span<byte> outputData, int blockIndex)
         {
             var blockType = (char)SpanHelper.ReadByte(ref inputData);
             switch (blockType) {
@@ -112,7 +112,7 @@ namespace TACTLib.Core
             }
         }
 
-        private static Span<byte> Decrypt(ClientHandler client, Span<byte> data, int blockIndex)
+        private static Span<byte> Decrypt(ClientHandler? client, Span<byte> data, int blockIndex)
         {
             var keyNameSize = SpanHelper.ReadByte(ref data);
             if (keyNameSize != 8)
@@ -121,6 +121,11 @@ namespace TACTLib.Core
             var keyNameData = SpanHelper.Advance(ref data, keyNameSize);
             var keyName = BinaryPrimitives.ReadUInt64LittleEndian(keyNameData);
 
+            if (client == null)
+            {
+                throw new Exception("ClientHandler was not passed to BLTEDecoder, decryption key lookup is not possible");
+            }
+            
             var key = client.ConfigHandler.Keyring.GetKey(keyName);
             if (key == null)
                 throw new BLTEKeyException(keyName);
