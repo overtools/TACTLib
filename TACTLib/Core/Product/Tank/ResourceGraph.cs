@@ -193,9 +193,11 @@ namespace TACTLib.Core.Product.Tank {
                 }
 
                 var version = m_header.GetVersion();
-                if (version != 5 && version != 6 && version != 7 && version != 8 && version != 9) {
-                    throw new UnsupportedBuildVersionException($"unable to parse TRG. invalid version {version}, expected 5, 6, 7, 8 or 9");
+                if (version != 5 && version != 6 && version != 7 && version != 8 && version != 9 && version != 10) {
+                    throw new UnsupportedBuildVersionException($"unable to parse TRG. invalid version {version}, expected 5, 6, 7, 8, 9 or 10");
                 }
+                
+                // version 10: added extra entries to skin assets.. for trg runtime overrides (instead of on the skin asset)
 
                 var isEnc = m_header.IsEncrypted();
 
