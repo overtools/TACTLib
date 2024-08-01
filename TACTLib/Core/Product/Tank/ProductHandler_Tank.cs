@@ -158,7 +158,7 @@ namespace TACTLib.Core.Product.Tank {
 
                     for (var j = 0; j < records.Length; j++) {
                         var record = records[j];
-                        //Console.Out.WriteLine($"{record.GUID:X8} {record.Unknown1} {record.Unknown2} {Manifests[0].ContentManifest.Exists(record.GUID)} {Manifests[1].ContentManifest.Exists(record.GUID)}");
+                        //Console.Out.WriteLine($"{record.GUID:X16} {record.Unknown1} {record.Unknown2} {Manifests[0].ContentManifest.Exists(record.GUID)} {Manifests[1].ContentManifest.Exists(record.GUID)}");
 
                         if (m_assets.ContainsKey(record.m_GUID)) continue;
                         m_assets[record.m_GUID] = new Asset(i, j);
