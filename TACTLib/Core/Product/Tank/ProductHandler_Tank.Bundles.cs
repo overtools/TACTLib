@@ -84,7 +84,7 @@ namespace TACTLib.Core.Product.Tank {
             var cache = GetBundleCache(bundleGuid);
             if (!cache.m_offsets.TryGetValue(guid, out var offset)) return null;
             
-            var hashData = GetHashData(bundleGuid);
+            var hashData = GetHashData(guid);
             var slice = cache.m_buffer.Slice((int)offset, (int)hashData.Size);
             return new MemoryStream(slice.ToArray());
         }
