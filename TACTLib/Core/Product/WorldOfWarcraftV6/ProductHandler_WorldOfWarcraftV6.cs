@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -44,40 +43,6 @@ namespace TACTLib.Core.Product.WorldOfWarcraftV6 {
             }
 
             Blocks = blocks.ToArray();
-        }
-
-        /// <inheritdoc />
-        public Stream OpenFile(object key) {
-            switch (key) {
-                case string path:
-                    return OpenFile(path);
-                case ulong lookup:
-                    return OpenFile(lookup);
-                default:
-                    throw new InvalidDataException(nameof(key));
-            }
-        }
-
-        /// <summary>
-        /// Open file by string path
-        /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        /// <exception cref="FileNotFoundException"></exception>
-        public Stream OpenFile(string path) {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Open file by Jenkins lookup3 hash
-        /// </summary>
-        /// <param name="lookup"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        /// <exception cref="FileNotFoundException"></exception>
-        public Stream OpenFile(ulong lookup) {
-            throw new NotImplementedException();
         }
     }
 }

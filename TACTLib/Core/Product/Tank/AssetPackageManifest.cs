@@ -7,7 +7,7 @@ using TACTLib.Client;
 using TACTLib.Helpers;
 
 namespace TACTLib.Core.Product.Tank {
-    public class ApplicationPackageManifest {
+    public class AssetPackageManifest {
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
         public struct APMHeader {
             public ulong m_buildVersion;
@@ -77,7 +77,7 @@ namespace TACTLib.Core.Product.Tank {
         public PackageRecord[][] m_packageRecords;
         public ulong[][] m_packageBundles;
         
-        public ApplicationPackageManifest(ClientHandler client, ProductHandler_Tank tankHandler, Stream stream, string name) {
+        public AssetPackageManifest(ClientHandler client, ProductHandler_Tank tankHandler, Stream stream, string name) {
             var cmf = tankHandler.m_rootContentManifest;
             
             using (BinaryReader reader = new BinaryReader(stream)) {
@@ -110,7 +110,7 @@ namespace TACTLib.Core.Product.Tank {
                             }
                         }
                     
-                        LoadPackage(i, client, cmf);
+                        LoadPackage(i, tankHandler);
                     });
                 
                 if (!Console.IsOutputRedirected) {
@@ -119,9 +119,9 @@ namespace TACTLib.Core.Product.Tank {
             }
         }
 
-        private void LoadPackage(int i, ClientHandler client, ContentManifestFile cmf) {
+        private void LoadPackage(int i, ProductHandler_Tank tankHandler) {
             var entry = m_packageEntries[i];
-            using (Stream packageStream = cmf.OpenFile(client, entry.m_packageGUID)!)
+            using (Stream packageStream = tankHandler.OpenFile(entry.m_packageGUID))
             using (BinaryReader packageReader = new BinaryReader(packageStream)) {
                 var package = packageReader.Read<PackageHeader>();
                 m_packages[i] = package;

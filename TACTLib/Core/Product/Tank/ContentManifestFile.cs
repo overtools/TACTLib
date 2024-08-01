@@ -92,7 +92,7 @@ namespace TACTLib.Core.Product.Tank {
 
         public CMFHeader m_header;
         
-        public ApplicationPackageManifest.Entry[] m_entries = null!;
+        public AssetPackageManifest.Entry[] m_entries = null!;
         public HashData[] m_hashList = null!;
 
         // ReSharper disable once InconsistentNaming
@@ -120,7 +120,7 @@ namespace TACTLib.Core.Product.Tank {
         }
 
         private void ParseEntries(BinaryReader reader) {
-            m_entries = reader.ReadArray<ApplicationPackageManifest.Entry>(m_header.m_entryCount);
+            m_entries = reader.ReadArray<AssetPackageManifest.Entry>(m_header.m_entryCount);
             if (m_header.m_buildVersion >= 57230) { // 1.35+
                 m_hashList = reader.ReadArray<HashData>(m_header.m_dataCount);
             } else {

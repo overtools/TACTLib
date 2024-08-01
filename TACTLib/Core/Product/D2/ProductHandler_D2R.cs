@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using TACTLib.Client;
 using TACTLib.Core.Product.CommonV2;
 
@@ -21,12 +20,6 @@ namespace TACTLib.Core.Product.D2
             {
                 m_rootFiles = RootFile.ParseList(reader).ToArray();
             }
-        }
-
-        /// <inheritdoc />
-        public Stream OpenFile(object key)
-        {
-            throw new NotImplementedException();
         }
     }
 }
