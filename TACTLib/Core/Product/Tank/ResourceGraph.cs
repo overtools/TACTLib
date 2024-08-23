@@ -101,8 +101,8 @@ namespace TACTLib.Core.Product.Tank {
             public int m_typeBundleIndexBlockSize; // 44
             public uint m_48; // 48
             public uint m_52; // 52
-            public uint m_56; // 56
-            public uint m_60; // 60
+            public uint m_56; // 56 - new
+            public uint m_60; // 60 - new
             public int m_graphBlockSize; // 64
             public uint m_footerMagic; // 68
 
@@ -229,9 +229,7 @@ namespace TACTLib.Core.Product.Tank {
                 if (IsPre152(m_header)) {
                     stream.Position = 0;
                     m_header = reader.Read<TRGHeader6>().Upgrade();
-                }
-
-                if (IsPre212(m_header)) {
+                } else if (IsPre212(m_header)) {
                     stream.Position = 0;
                     m_header = reader.Read<TRGHeader7>().Upgrade();
                 }
@@ -242,6 +240,7 @@ namespace TACTLib.Core.Product.Tank {
                 }
 
                 // version 10: added extra entries to skin assets.. for trg runtime overrides (instead of on the skin asset)
+                // version 11: 2 new header fields, unknown
 
                 var isEnc = m_header.IsEncrypted();
 
