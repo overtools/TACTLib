@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using static TACTLib.Helpers.Extensions;
 
 // https://raw.githubusercontent.com/WoW-Tools/CascLib/master/CascLib/RootHandlers/MNDXRootHandler.cs
 
