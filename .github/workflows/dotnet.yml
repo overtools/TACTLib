@@ -9,12 +9,12 @@ jobs:
         runs-on: windows-latest
         steps:
             -   name: Checkout
-                uses: actions/checkout@v2
+                uses: actions/checkout@v4
                 with:
                     fetch-depth: 0
                     submodules: 'recursive'
             -   name: Install .NET 8
-                uses: actions/setup-dotnet@v1
+                uses: actions/setup-dotnet@v4
                 with:
                     dotnet-version: 8.0.x
             -   name: Restore project
@@ -22,14 +22,14 @@ jobs:
             -   name: Build Release
                 run: dotnet publish -f net8.0 --configuration Release -r win-x64 --self-contained false -o dist/Release
             -   name: Upload Release
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v4
                 with:
                     name: TACTLib-release
                     path: dist/Release
             -   name: Build Debug
                 run: dotnet publish -f net8.0 --configuration Debug -r win-x64 --self-contained false -o dist/Debug
             -   name: Upload Debug
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v4
                 with:
                     name: TACTLib-debug
                     path: dist/Debug
