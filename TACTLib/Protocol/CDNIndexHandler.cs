@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using CommunityToolkit.HighPerformance;
 using Microsoft.Win32.SafeHandles;
@@ -30,7 +30,7 @@ namespace TACTLib.Protocol
         private SafeFileHandle ArchiveGroupFileHandle = new SafeFileHandle();
         private FullKey[] ArchiveGroupPageLastEKeys = Array.Empty<FullKey>();
         
-        private byte[][] LooseFilesPages = Array.Empty<byte[]>();
+        private LooseFileEntry[][] LooseFilesPages = Array.Empty<LooseFileEntry[]>();
         private FullKey[] LooseFilesLastEKeys = Array.Empty<FullKey>();
 
         private const int ARCHIVE_ID_GROUP = -1;
@@ -145,7 +145,7 @@ namespace TACTLib.Protocol
             GetTableParameters(footer, (int)br.BaseStream.Length, out var pageSize, out var pageCount);
             if (archiveIndex == ARCHIVE_ID_GROUP) footer.m_offsetBytes -= 2; // archive index is part of offset
             if (archiveIndex == ARCHIVE_ID_LOOSE) {
-                LooseFilesPages = new byte[pageCount][];
+                LooseFilesPages = new LooseFileEntry[pageCount][];
             }
 
             br.BaseStream.Position = 0;
@@ -154,14 +154,31 @@ namespace TACTLib.Protocol
                 br.DefinitelyRead(page);
 
                 if (archiveIndex == ARCHIVE_ID_LOOSE) {
-                    LooseFilesPages[pageIndex] = page.ToArray(); // dont store same array multiple times
+                    ReadOnlySpan<LooseFileEntry> pageEntries = MemoryMarshal.Cast<byte, LooseFileEntry>(page);
+                    for (var entryIdx = 0; entryIdx < pageEntries.Length; entryIdx++) {
+                        if (pageEntries[entryIdx].m_eKey.CompareTo(default) != 0) {
+                            // has value
+                            continue;
+                        } 
+
+                        // empty value detected (end of the list)
+                        // should only happen on the last page
+                        pageEntries = pageEntries.Slice(0, entryIdx);
+                        Debug.Assert(pageIndex == pageCount-1);
+                        break;
+                    }
+
+                    LooseFilesPages[pageIndex] = pageEntries.ToArray(); // dont store same array multiple times
                     continue;
                 }
 
                 var pageSpan = page.AsSpan();
                 while (pageSpan.Length >= 16) {
                     var key = SpanHelper.ReadStruct<FullKey>(ref pageSpan);
-                    if (key.CompareTo(default) == 0) break;
+                    if (key.CompareTo(default) == 0) {
+                        // has no value, end of the list
+                        break;
+                    }
 
                     uint size;
                     if (footer.m_sizeBytes == 4) size = SpanHelper.ReadStruct<UInt32BE>(ref pageSpan).ToInt();
@@ -274,7 +291,12 @@ namespace TACTLib.Protocol
             var pageOffset = ArchiveGroupFooter.PageSizeBytes * pageIndex;
             RandomAccess.Read(ArchiveGroupFileHandle, pageData, pageOffset);
 
-            ReadOnlySpan<ArchiveGroupEntry> pageEntries = MemoryMarshal.Cast<byte, ArchiveGroupEntry>(pageData);
+            // be careful not to read zeroed entries on the last page
+            var maxEntriesPerPage = ArchiveGroupFooter.PageSizeBytes/ArchiveGroupEntry.SIZE;
+            var remainingEntries = (int)ArchiveGroupFooter.m_numElements - maxEntriesPerPage*pageIndex;
+            var pageEntryCount = Math.Min(remainingEntries, maxEntriesPerPage);
+            ReadOnlySpan<ArchiveGroupEntry> pageEntries = MemoryMarshal.Cast<byte, ArchiveGroupEntry>(pageData).Slice(0, pageEntryCount);
+
             var speculativeEntry = new ArchiveGroupEntry {
                 m_eKey = eKey
             };
@@ -309,11 +331,10 @@ namespace TACTLib.Protocol
                 return false;
             }
             
-            ReadOnlySpan<LooseFileEntry> pageEntries = MemoryMarshal.Cast<byte, LooseFileEntry>(LooseFilesPages[pageIndex]);
             var speculativeEntry = new LooseFileEntry {
                 m_eKey = key
             };
-            var finalSearchResult = pageEntries.BinarySearch(speculativeEntry);
+            var finalSearchResult = LooseFilesPages[pageIndex].AsSpan().BinarySearch(speculativeEntry);
             return finalSearchResult >= 0;
         }
 
@@ -342,6 +363,8 @@ namespace TACTLib.Protocol
             public UInt32BE m_size;
             public UInt16BE m_archiveIndex;
             public UInt32BE m_offset;
+            
+            public static unsafe int SIZE => sizeof(ArchiveGroupEntry);
 
             public int CompareTo(ArchiveGroupEntry other) {
                 return m_eKey.CompareTo(other.m_eKey);
