@@ -98,25 +98,24 @@ namespace TACTLib.Protocol
         }
         
         private static FixedFooter ReadFooter(BinaryReader br) {
-            var footerHashSize = FixedFooter.MAX_CHECKSUM_SIZE;
-
-            while (true) {
-                if (footerHashSize < FixedFooter.MIN_CHECKSUM_SIZE) throw new Exception("unable to determine footer hash size");
-
+            for (var footerHashSize = FixedFooter.MAX_CHECKSUM_SIZE;
+                 footerHashSize >= FixedFooter.MIN_CHECKSUM_SIZE;
+                 footerHashSize--)
+            {
                 br.BaseStream.Position = br.BaseStream.Length - footerHashSize - FixedFooter.SIZE;
+                
                 var footer = br.Read<FixedFooter>();
-                if (footer.m_version != 1) goto NEXT;
-                if (footer.m_unk0x11 != 0) goto NEXT;
-                if (footer.m_unk0x12 != 0) goto NEXT;
-                if (footer.m_checksumSize != footerHashSize) goto NEXT;
+                if (footer.m_version != 1) continue;
+                if (footer.m_unk0x11 != 0) continue;
+                if (footer.m_unk0x12 != 0) continue;
+                if (footer.m_checksumSize != footerHashSize) continue;
                 // todo: more validation.. whar is hash
                 
                 //Console.Out.WriteLine($"he's {footerHashSize} ?");
                 return footer;
-                    
-                NEXT:
-                footerHashSize--;
             }
+            
+            throw new Exception("unable to determine footer hash size");
         }
 
         private static void GetTableParameters(FixedFooter footer, int length, out int pageSize, out int pageCount) {
