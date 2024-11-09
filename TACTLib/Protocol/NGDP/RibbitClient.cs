@@ -30,7 +30,7 @@ namespace TACTLib.Protocol.NGDP
             client.Connect(m_uri.Host, m_uri.Port);
                 
             using var stream = client.GetStream();
-            using (var writer = new StreamWriter(stream, Encoding.ASCII, -1, true))
+            using (var writer = new StreamWriter(stream, Encoding.ASCII, leaveOpen: true))
             {
                 writer.WriteLine(query);
                 writer.Flush();
@@ -48,7 +48,7 @@ namespace TACTLib.Protocol.NGDP
             await client.ConnectAsync(m_uri.Host, m_uri.Port, cancellationToken);
 
             await using var stream = client.GetStream();
-            await using (var writer = new StreamWriter(stream, Encoding.ASCII, -1, true))
+            await using (var writer = new StreamWriter(stream, Encoding.ASCII, leaveOpen: true))
             {
                 await writer.WriteLineAsync(query.AsMemory(), cancellationToken); // todo: why can't pass string + cancellationtoken? 
                 await writer.FlushAsync(cancellationToken);

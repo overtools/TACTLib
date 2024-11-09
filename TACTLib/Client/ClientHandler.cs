@@ -239,20 +239,22 @@ namespace TACTLib.Client {
             var cdnConfig = ConfigHandler.CDNConfig;
             var otherCDNConfig = other.ConfigHandler.CDNConfig;
 
-            var archivesMatch = otherCDNConfig.Archives.Count == cdnConfig.Archives.Count;
-
-            if (archivesMatch) {
-                // count is same, compare all archive hashes
-                for (int i = 0; i < cdnConfig.Archives.Count; i++) {
-                    archivesMatch &= otherCDNConfig.Archives[i] == cdnConfig.Archives[i];
-                    if (!archivesMatch) break;
-                }
-            }
+            var archivesMatch = CanShareCDNData(cdnConfig, otherCDNConfig);
 
             if (!archivesMatch) {
                 Logger.Warn("CDN", "Builds are using different CDN archives. Unable to share data");
             }
             return archivesMatch;
+        }
+        
+        private static bool CanShareCDNData(CDNConfig cdnConfig, CDNConfig otherCDNConfig) {
+            if (otherCDNConfig.Archives.Count != cdnConfig.Archives.Count) return false;
+            
+            for (var i = 0; i < cdnConfig.Archives.Count; i++) {
+                if (otherCDNConfig.Archives[i] != cdnConfig.Archives[i]) return false;
+            }
+            
+            return true;
         }
 
         public Stream? OpenEKey(FullEKey fullEKey, int eSize) {  // ekey = value of ckey in encoding table

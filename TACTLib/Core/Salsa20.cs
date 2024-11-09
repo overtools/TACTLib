@@ -55,9 +55,9 @@ namespace TACTLib.Core
             var hashOutputBytes = ((ReadOnlySpan<uint>)hashOutput).AsBytes();
             
             while (input.Length > 0) {
-                Hash(ref hashOutput, ref m_state);
-                m_state[8] = AddOne(m_state[8]);
-                if (m_state[8] == 0) m_state[9] = AddOne(m_state[9]);
+                Hash(ref hashOutput, in m_state);
+                m_state[8]++;
+                if (m_state[8] == 0) m_state[9]++;
 
                 var blockSize = Math.Min(BLOCK_SIZE, input.Length);
                 for (var i = 0; i < blockSize; i++)
@@ -116,10 +116,6 @@ namespace TACTLib.Core
 
         private static uint Add(uint v, uint w) {
             return v + w;
-        }
-        
-        private static uint AddOne(uint v) {
-            return v + 1;
         }
         
         private static uint ExtractU32(ReadOnlySpan<byte> input, int inputOffset) {

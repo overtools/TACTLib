@@ -9,12 +9,7 @@ namespace TACTLib.Helpers {
         
         public static void DefinitelyRead(this Stream stream, Span<byte> buffer)
         {
-            while (buffer.Length > 0)
-            {
-                var read = stream.Read(buffer);
-                if (read == 0) throw new EndOfStreamException();
-                buffer = buffer.Slice(read);
-            }
+            stream.ReadExactly(buffer);
         }
 
         public static void DefinitelyRead(this BinaryReader reader, Span<byte> buffer)
@@ -35,9 +30,9 @@ namespace TACTLib.Helpers {
         
         public static unsafe T Read<T>(this Stream stream) where T : unmanaged
         {
-            Span<byte> stackMemory = stackalloc byte[sizeof(T)];
-            stream.DefinitelyRead(stackMemory);
-            return MemoryMarshal.Read<T>(stackMemory);
+            var result = default(T);
+            stream.DefinitelyRead(new Span<byte>(&result, sizeof(T)));
+            return result;
         }
         
         /// <summary>
