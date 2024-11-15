@@ -55,7 +55,7 @@ namespace TACTLib.Client {
         /// <seealso cref="ClientCreateArgs.ProductDatabaseFilename"/>
         public readonly ProductInstall? AgentProduct;
 
-        public readonly CDNClient? CDNClient;
+        public readonly ICDNClient? CDNClient;
 
         /// <summary>The base path of the container. E.g where the game executables are.</summary>
         public readonly string BasePath;
@@ -129,7 +129,8 @@ namespace TACTLib.Client {
 
             if (CreateArgs.Online)
             {
-                CDNClient = new CDNClient(this);
+                CDNClient = createArgs.CustomCDNClient ?? new HttpCDNClient(null);
+                CDNClient.SetClientHandler(this);
             }
 
             if (IsStaticContainer) {
@@ -140,7 +141,9 @@ namespace TACTLib.Client {
                 InstallationInfo = new InstallationInfo(InstallationInfoFile!.Values, ProductCode!);
             } else {
                 NGDPClientBase ngdpClient;
-                if (CreateArgs.OnlineRootHost.StartsWith("ribbit:")) {
+                if (createArgs.CustomNGDPClient != null) {
+                    ngdpClient = createArgs.CustomNGDPClient;
+                } else if (CreateArgs.OnlineRootHost.StartsWith("ribbit:")) {
                     ngdpClient = new RibbitClient(CreateArgs.OnlineRootHost);
                 } else {
                     ngdpClient = new NGDPClient(CreateArgs.OnlineRootHost);
@@ -202,7 +205,7 @@ namespace TACTLib.Client {
                     ConfigHandler = ConfigHandler.ForDynamicContainer(this);
             }
 
-            if (CreateArgs.Online) {
+            if (CreateArgs.Online && createArgs.LoadCDNIndices) {
                 if (CanShareCDNData(CreateArgs.TryShareCDNIndexWithHandler)) {
                     CDNIndex = CreateArgs.TryShareCDNIndexWithHandler.CDNIndex;
                 } else {
@@ -339,7 +342,7 @@ namespace TACTLib.Client {
         private Stream? TryOpenRemoteLooseFile(FullEKey fullKey) {
             if (CDNIndex == null) return null;
             if (!CDNIndex.IsLooseFile(fullKey)) return null;
-            var encodedData = CDNClient!.OpenData(fullKey);
+            var encodedData = CDNClient!.FetchLooseData(fullKey);
             if (encodedData == null) throw new Exception($"failed to fetch loose cdn file {fullKey.ToHexString()}");
             return TryDecodeToStream(encodedData);
         }
@@ -365,7 +368,13 @@ namespace TACTLib.Client {
                 }
             }
 
-            return CreateArgs.Online ? CDNClient!.OpenConfig(key) : null;
+            if (CreateArgs.Online)
+            {
+                var data = CDNClient!.FetchConfig(key);
+                return data == null ? null : new MemoryStream(data);
+            }
+
+            return null;
         }
 
         public string? GetProduct() => ProductCode;

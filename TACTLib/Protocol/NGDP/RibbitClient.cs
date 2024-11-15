@@ -24,7 +24,7 @@ namespace TACTLib.Protocol.NGDP
         
         public override string Get(string query)
         {
-            Logger.Info("CDN", $"Fetching Ribbit {query}");
+            Logger.Info(nameof(RibbitClient), $"Fetching Ribbit {query}");
             
             using var client = new TcpClient();
             client.Connect(m_uri.Host, m_uri.Port);
@@ -42,7 +42,7 @@ namespace TACTLib.Protocol.NGDP
         
         public override async Task<string> GetAsync(string query, CancellationToken cancellationToken=default)
         {
-            Logger.Info("CDN", $"Fetching Ribbit {query}");
+            Logger.Info(nameof(RibbitClient), $"Fetching Ribbit {query}");
             
             using var client = new TcpClient();
             await client.ConnectAsync(m_uri.Host, m_uri.Port, cancellationToken);

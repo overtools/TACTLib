@@ -223,7 +223,7 @@ namespace TACTLib.Protocol
             try
             {
                 var cdn = Client.CDNClient!;
-                var indexData = cdn.FetchCDN("data", archive, null, ".index");
+                var indexData = cdn.FetchIndexFile(archive);
                 if (indexData == null) throw new Exception($"failed to fetch archive index data for {archive} (index {i})");
                 using var indexDataStream = new MemoryStream(indexData);
                 ParseIndex(indexDataStream, i);
@@ -342,7 +342,7 @@ namespace TACTLib.Protocol
             var archive = Client.ConfigHandler.CDNConfig.Archives[entry.Index];
 
             var cdn = Client.CDNClient!;
-            var stream = cdn.FetchCDN("data", archive, ((int)entry.Offset, (int)entry.Offset + (int)entry.Size - 1));
+            var stream = cdn.FetchIndexEntry(archive, entry);
             return stream;
         }
         

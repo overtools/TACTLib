@@ -1,5 +1,8 @@
 ﻿// ReSharper disable ConvertToConstant.Global
 
+using TACTLib.Protocol;
+using TACTLib.Protocol.NGDP;
+
 namespace TACTLib.Client {
     /// <summary>
     /// Client runtime args
@@ -108,6 +111,10 @@ namespace TACTLib.Client {
         public string? OverrideBuildConfig { get; set; }
         public string? OverrideVersionName { get; set; }
 
-        public ClientHandler? TryShareCDNIndexWithHandler { get; set; }
+        public ICDNClient? CustomCDNClient { get; set; } = null;
+        public NGDPClientBase? CustomNGDPClient { get; set; } = null;
+        
+        public bool LoadCDNIndices { get; set; } = true;
+        public ClientHandler? TryShareCDNIndexWithHandler { get; set; } = null;
     }
 }

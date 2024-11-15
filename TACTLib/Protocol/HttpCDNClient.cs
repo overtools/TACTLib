@@ -1,40 +1,32 @@
 using System;
-using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using TACTLib.Client;
 
 namespace TACTLib.Protocol {
-    public class CDNClient
+    public class HttpCDNClient : ICDNClient
     {
         private static readonly HttpClientHandler s_httpClientHandler = new HttpClientHandler
         {
             // unlikely to be supported by cdn but...
             AutomaticDecompression = DecompressionMethods.All
         };
-        public static readonly HttpClient s_httpClient = new HttpClient(s_httpClientHandler);
-        
-        private readonly ClientHandler m_client;
 
-        public CDNClient(ClientHandler handler)
+        private readonly HttpClient m_httpClient;
+        private ClientHandler m_client;
+
+        public HttpCDNClient(HttpClient? httpClient)
+        {
+            m_httpClient = httpClient ?? new HttpClient(s_httpClientHandler);
+        }
+
+        public virtual void SetClientHandler(ClientHandler handler)
         {
             m_client = handler;
         }
 
-        public byte[]? OpenData(CKey key)
-        {
-            return FetchCDN("data", key.ToHexString());
-        }
-
-        public Stream? OpenConfig(string key)
-        {
-            var data = FetchCDN("config", key);
-            if (data == null) return null;
-            return new MemoryStream(data);
-        }
-
-        public byte[]? FetchCDN(string type, string key, (int start, int end)? range=null, string? suffix=null)
+        public virtual byte[]? Fetch(string type, string key, Range? range=null, string? suffix=null)
         {
             key = key.ToLowerInvariant();
             
@@ -52,12 +44,12 @@ namespace TACTLib.Protocol {
                 var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
                 if (range != null)
                 {
-                    requestMessage.Headers.Range = new RangeHeaderValue(range.Value.start, range.Value.end);
+                    requestMessage.Headers.Range = new RangeHeaderValue(range.Value.Start.Value, range.Value.End.Value);
                 }
                 
                 try 
                 {
-                    using var response = s_httpClient.Send(requestMessage, HttpCompletionOption.ResponseHeadersRead);
+                    using var response = m_httpClient.Send(requestMessage, HttpCompletionOption.ResponseHeadersRead);
                     if (!response.IsSuccessStatusCode)
                     {
                         continue;
