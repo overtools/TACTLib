@@ -140,7 +140,7 @@ namespace TACTLib.Core
                 throw new BLTEDecoderException(null, $"encType != ENCRYPTION_SALSA20 && encType != ENCRYPTION_ARC4. got {(char)encType}");
 
             // expand to 8 bytes
-            Span<byte> iv = stackalloc byte[8];
+            Span<byte> iv = stackalloc byte[Salsa20.IV_SIZE];
             ivPart.CopyTo(iv);
 
             // augment low dword of iv using blockIndex
@@ -151,7 +151,7 @@ namespace TACTLib.Core
             if (encType == EncryptionSalsa20)
             {
                 var decryptor = new Salsa20(key, iv);
-                decryptor.Transform(data, data);
+                decryptor.TransformBlocks(data, data);
                 return data;
             } else
             {

@@ -182,8 +182,8 @@ namespace TACTLib.Core {
             var dataOffset = 0;
             
             var keyNameSize = data[dataOffset++];
-            if (keyNameSize == 0 || keyNameSize != 8)
-                throw new BLTEDecoderException(Dump(), "keyNameSize == 0 || keyNameSize != 8");
+            if (keyNameSize != 8)
+                throw new BLTEDecoderException(Dump(), $"keyNameSize != 8. got {keyNameSize}");
 
             var keyNameData = data.Slice(dataOffset, keyNameSize);
             var keyName = BinaryPrimitives.ReadUInt64LittleEndian(keyNameData);
@@ -205,10 +205,10 @@ namespace TACTLib.Core {
 
             var encType = data[dataOffset++];
             if (encType != EncryptionSalsa20 && encType != EncryptionArc4) // 'S' or 'A'
-                throw new BLTEDecoderException(Dump(), "encType != ENCRYPTION_SALSA20 && encType != ENCRYPTION_ARC4");
+                throw new BLTEDecoderException(Dump(), $"encType != ENCRYPTION_SALSA20 && encType != ENCRYPTION_ARC4. got {(char)encType}");
 
             // expand to 8 bytes
-            Span<byte> iv = stackalloc byte[8];
+            Span<byte> iv = stackalloc byte[Salsa20.IV_SIZE];
             ivPart.AsSpan().CopyTo(iv);
             
             // do some magic (knowledge passed down through generations)
@@ -220,7 +220,7 @@ namespace TACTLib.Core {
                 var bodySpan = bodyData.AsSpan();
 
                 var decryptor = new Salsa20(key, iv);
-                decryptor.Transform(bodySpan, bodySpan);
+                decryptor.TransformBlocks(bodySpan, bodySpan);
                 
                 return bodyData;
             } else
