@@ -1,8 +1,10 @@
 using System;
+using System.IO;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using CommunityToolkit.HighPerformance;
+using TACTLib.Helpers;
 
 namespace TACTLib.Core
 {
@@ -55,15 +57,17 @@ namespace TACTLib.Core
         
         public void TransformBlocks(ReadOnlySpan<byte> input, Span<byte> output) {
             while (input.Length > 0) {
-                TransformBlock(input, output);
-
                 var blockSize = Math.Min(BLOCK_SIZE, input.Length);
-                input = input.Slice(blockSize);
-                output = output.Slice(blockSize);
+                
+                var blockInput = SpanHelper.Advance(ref input, blockSize);
+                var blockOutput = SpanHelper.Advance(ref output, blockSize);
+                TransformBlock(blockInput, blockOutput);
             }
         }
         
         public void TransformBlock(ReadOnlySpan<byte> input, Span<byte> output) {
+            if (input.Length > 64) throw new InvalidDataException("should only be one block");
+            
             var hashOutput = new UIntArray();
             var hashOutputBytes = ((ReadOnlySpan<uint>)hashOutput).AsBytes();
             
@@ -73,8 +77,7 @@ namespace TACTLib.Core
 
             // todo: TensorPrimitives?
             // or.. full vectorized algorithm? https://github.com/HMBSbige/CryptoBase/blob/master/src/CryptoBase/SymmetricCryptos/StreamCryptos/Salsa20Utils.cs
-            var blockSize = Math.Min(BLOCK_SIZE, input.Length);
-            for (var i = 0; i < blockSize; i++)
+            for (var i = 0; i < input.Length; i++)
                 output[i] = (byte) (input[i] ^ hashOutputBytes[i]);
         }
 
