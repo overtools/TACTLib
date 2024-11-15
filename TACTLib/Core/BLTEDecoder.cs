@@ -148,23 +148,27 @@ namespace TACTLib.Core
             // alternative impl
             //for (int shift = 0, i = 0; i < sizeof(int); shift += 8, i++) iv2[i] ^= (byte) ((blockIndex >> shift) & 0xFF);
 
-            if (encType == EncryptionSalsa20)
+            switch (encType)
             {
-                var decryptor = new Salsa20(key, iv);
-                decryptor.TransformBlocks(data, data);
-                return data;
-            } else
-            {
-                throw new BLTEDecoderException(null, $"encType {(char)encType} not implemented");
+                case EncryptionSalsa20:
+                {
+                    var decryptor = new Salsa20(key, iv);
+                    decryptor.TransformBlocks(data, data);
+                    return data;
+                }
+                default:
+                {
+                    throw new BLTEDecoderException(null, $"encType {(char)encType} not implemented");
+                }
             }
         }
 
         private static unsafe void Decompress(ReadOnlySpan<byte> input, Span<byte> output)
         {
             fixed (byte* pBuffer = input) {
-                using var unmanagedInputStream = new UnmanagedMemoryStream(pBuffer, input.Length);
-                using var deflateStream = new ZLibStream(unmanagedInputStream, CompressionMode.Decompress);
-                deflateStream.DefinitelyRead(output);
+                using var unmanagedInputStream = new UnmanagedMemoryStream(pBuffer, input.Length, input.Length, FileAccess.Read);
+                using var zlibStream = new ZLibStream(unmanagedInputStream, CompressionMode.Decompress);
+                zlibStream.DefinitelyRead(output);
             }
         }
     }

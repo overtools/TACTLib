@@ -214,41 +214,27 @@ namespace TACTLib.Core {
             // do some magic (knowledge passed down through generations)
             for (int shift = 0, i = 0; i < sizeof(int); shift += 8, i++) iv[i] ^= (byte) ((index >> shift) & 0xFF);
 
-            if (encType == EncryptionSalsa20)
+            switch (encType)
             {
-                var bodyData = data.Slice(dataOffset);
-                var bodySpan = bodyData.AsSpan();
-
-                var decryptor = new Salsa20(key, iv);
-                decryptor.TransformBlocks(bodySpan, bodySpan);
-                
-                return bodyData;
-            } else
-            {
-                throw new BLTEDecoderException(Dump(), $"encType {encType} not implemented");
+                case EncryptionSalsa20:
+                {
+                    var bodyData = data.Slice(dataOffset);
+                    var decryptor = new Salsa20(key, iv);
+                    decryptor.TransformBlocks(bodyData, bodyData);
+                    return bodyData;
+                }
+                default:
+                {
+                    throw new BLTEDecoderException(Dump(), $"encType {encType} not implemented");
+                }
             }
         }
         
         private static void Decompress(ArraySegment<byte> data, Stream outputStream)
         {
-            // skip first 3 bytes (zlib)
-            
-            using (var memoryStream = new MemoryStream(data.Array!, data.Offset, data.Count))
-            using (var zlibStream = new ZLibStream(memoryStream, CompressionMode.Decompress)) {
-                NoAllocCopyTo(zlibStream, outputStream);
-            }
-        }
-
-        public static void NoAllocCopyTo(Stream dis, Stream destination, int bufferSize=81920)
-        {
-            var buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
-            try {
-                int count;
-                while ((count = dis.Read(buffer, 0, buffer.Length)) != 0)
-                    destination.Write(buffer, 0, count);
-            } finally {
-                ArrayPool<byte>.Shared.Return(buffer);
-            }
+            using var memoryStream = new MemoryStream(data.Array!, data.Offset, data.Count, false);
+            using var zlibStream = new ZLibStream(memoryStream, CompressionMode.Decompress);
+            zlibStream.CopyTo(outputStream);
         }
         
         public override void Flush()
