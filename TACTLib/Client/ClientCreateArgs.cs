@@ -7,7 +7,7 @@ namespace TACTLib.Client {
     /// <summary>
     /// Client runtime args
     /// </summary>
-    public class ClientCreateArgs {
+    public record ClientCreateArgs {
         public enum InstallMode {
             Local,
             Remote
@@ -116,5 +116,8 @@ namespace TACTLib.Client {
         
         public bool LoadCDNIndices { get; set; } = true;
         public ClientHandler? TryShareCDNIndexWithHandler { get; set; } = null;
+        
+        public bool LoadRoot { get; set; } = true;
+        public bool LoadVFS { get; set; } = true;
     }
 }

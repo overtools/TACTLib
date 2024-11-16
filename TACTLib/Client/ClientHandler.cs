@@ -220,13 +220,16 @@ namespace TACTLib.Client {
             using (var _ = new PerfCounter("EncodingHandler::ctor`ClientHandler"))
                 EncodingHandler = new EncodingHandler(this);
 
-            if (ConfigHandler.BuildConfig.VFSRoot != null) {
+            if (ConfigHandler.BuildConfig.VFSRoot != null && CreateArgs.LoadVFS) {
                 using var _ = new PerfCounter("VFSFileTree::ctor`ClientHandler");
                 using var vfsStream = OpenCKey(ConfigHandler.BuildConfig.VFSRoot!.ContentKey)!;
                 VFS = new VFSFileTree(this, vfsStream);
             }
 
-            ProductHandler = CreateProductHandler();
+            if (CreateArgs.LoadRoot)
+            {
+                ProductHandler = CreateProductHandler();
+            }
 
             Logger.Info("CASC", "Ready");
         }
