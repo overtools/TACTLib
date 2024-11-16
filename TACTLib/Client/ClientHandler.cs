@@ -361,7 +361,7 @@ namespace TACTLib.Client {
             }
 
             if (ContainerHandler is ContainerHandler dynamicContainer) {
-                var path = Path.Combine(dynamicContainer.ContainerDirectory, Container.ContainerHandler.ConfigDirectory, key.Substring(0, 2), key.Substring(2, 2), key);
+                var path = dynamicContainer.GetConfigFilePath(key);
                 if (File.Exists(path + CreateArgs.ExtraFileEnding)) {
                     return File.OpenRead(path + CreateArgs.ExtraFileEnding);
                 }

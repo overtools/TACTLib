@@ -241,9 +241,7 @@ namespace TACTLib.Protocol
         }
 
         private string GetArchiveIndexPath(string archive) {
-            var dir = ((ContainerHandler)Client.ContainerHandler!).ContainerDirectory;
-            var path = Path.Combine(dir, ContainerHandler.CDNIndicesDirectory, archive + ".index");
-            return path;
+            return ((ContainerHandler)Client.ContainerHandler!).GetCDNIndexFilePath(archive);
         }
 
         private bool OpenIndexFile(string archive, int archiveIndex) {

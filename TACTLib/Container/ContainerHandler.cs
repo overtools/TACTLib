@@ -273,6 +273,14 @@ namespace TACTLib.Container {
         public string GetDataFilePath(int index) {
             return Path.Combine(ContainerDirectory, DataDirectory, $"data.{index:D3}") + _client.CreateArgs.ExtraFileEnding;
         }
+        
+        public string GetConfigFilePath(string key) {
+            return Path.Combine(ContainerDirectory, ConfigDirectory, key.Substring(0, 2), key.Substring(2, 2), key);
+        }
+        
+        public string GetCDNIndexFilePath(string key) {
+            return Path.Combine(ContainerDirectory, CDNIndicesDirectory, $"{key}.index");
+        }
 
         /// <summary>
         /// Get container directory from product type
