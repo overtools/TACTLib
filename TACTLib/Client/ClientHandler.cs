@@ -205,7 +205,7 @@ namespace TACTLib.Client {
                     ConfigHandler = ConfigHandler.ForDynamicContainer(this);
             }
 
-            if (CreateArgs.Online && createArgs.LoadCDNIndices) {
+            if (CreateArgs.Online) {
                 if (CanShareCDNData(CreateArgs.TryShareCDNIndexWithHandler)) {
                     CDNIndex = CreateArgs.TryShareCDNIndexWithHandler.CDNIndex;
                 } else {

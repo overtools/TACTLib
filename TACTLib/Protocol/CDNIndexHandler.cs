@@ -61,6 +61,12 @@ namespace TACTLib.Protocol
             //    return;
             //}
             
+            if (!client.CreateArgs.LoadCDNIndices)
+            {
+                // we could download a million indices and that's quite expensive...
+                // only loose files will be available
+                return;
+            }
             for (var index = 0; index < client.ConfigHandler.CDNConfig.Archives.Count; index++)
             {
                 string archive = client.ConfigHandler.CDNConfig.Archives[index];
