@@ -135,7 +135,7 @@ namespace TACTLib.Client {
 
             if (IsStaticContainer) {
                 InstallationInfo = new InstallationInfo(new Dictionary<string, string> {
-                    {"Version", ConfigHandler!.BuildConfig.Values["build-name"][0]}
+                    {"Version", ConfigHandler!.BuildConfig.GetBuildName()}
                 });
             } else if (CreateArgs.VersionSource == ClientCreateArgs.InstallMode.Local) {
                 InstallationInfo = new InstallationInfo(InstallationInfoFile!.Values, ProductCode!);

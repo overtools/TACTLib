@@ -12,6 +12,8 @@ namespace TACTLib.Config {
         public SizeRecord? EncodingSize;
         public FileRecord? VFSRoot;
         
+        public string GetBuildName() => Values["build-name"][0];
+        
         public BuildConfig(Stream? stream) : base(stream) {
             GetFileRecord("root", out var root);
             GetFileRecord("install", out Install);
