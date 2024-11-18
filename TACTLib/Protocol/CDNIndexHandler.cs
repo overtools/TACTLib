@@ -99,9 +99,16 @@ namespace TACTLib.Protocol
             // converting to a frozen dictionary afterwards helps a bit but the arrays are still wasteful
             // also means the peak memory is higher during conversion
             // using IDictionary is also worse for lookup perf, but this keeps the code simpler for now
-            CDNIndexData = CDNIndexData.ToFrozenDictionary(CASCKeyComparer.Instance);
             // we could load each index into an array of entries and then merge sort into one giant array...
             // (also means higher building memory cost but maybe that's inevitable)
+            
+            if (!client.CreateArgs.ParallelCDNIndexLoading)
+            {
+                // ToFrozenDictionary doesn't like ConcurrentDictionary
+                // before processing it internally converts it to a normal Dictionary
+                // for a dictionary with 9 million entries, this is a perf disaster
+                CDNIndexData = CDNIndexData.ToFrozenDictionary(CASCKeyComparer.Instance);
+            }
         }
 
         private bool LoadGroupIndexFile(string hash) {
