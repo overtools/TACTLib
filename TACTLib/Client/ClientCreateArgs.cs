@@ -116,6 +116,8 @@ namespace TACTLib.Client {
         
         public bool LoadCDNIndices { get; set; } = true;
         public ClientHandler? TryShareCDNIndexWithHandler { get; set; } = null;
+        public bool ParallelCDNIndexLoading { get; set; } = false;
+        public int MaxCDNIndexLoadingParallelism { get; set; } = 4;
         
         public bool LoadRoot { get; set; } = true;
         public bool LoadVFS { get; set; } = true;

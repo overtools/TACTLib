@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using CommunityToolkit.HighPerformance;
 using Microsoft.Win32.SafeHandles;
 using TACTLib.Client;
@@ -25,7 +28,7 @@ namespace TACTLib.Protocol
     public class CDNIndexHandler
     {
         private readonly ClientHandler Client;
-        private readonly Dictionary<FullKey, IndexEntry> CDNIndexData = new Dictionary<FullKey, IndexEntry>(CASCKeyComparer.Instance);
+        private readonly IDictionary<FullKey, IndexEntry> CDNIndexData;
 
         private FixedFooter ArchiveGroupFooter;
         private SafeFileHandle ArchiveGroupFileHandle = new SafeFileHandle();
@@ -46,6 +49,13 @@ namespace TACTLib.Protocol
         private CDNIndexHandler(ClientHandler client)
         {
             Client = client;
+            if (client.CreateArgs.ParallelCDNIndexLoading) 
+            {
+                CDNIndexData = new ConcurrentDictionary<FullKey, IndexEntry>(CASCKeyComparer.Instance);
+            } else
+            {
+                CDNIndexData = new Dictionary<FullKey, IndexEntry>(CASCKeyComparer.Instance);
+            }
             
             // load loose files index so we dont have to hit the cdn just to get 404'd
             OpenOrDownloadIndexFile(client.ConfigHandler.CDNConfig.Values["file-index"][0], ARCHIVE_ID_LOOSE);
@@ -68,11 +78,30 @@ namespace TACTLib.Protocol
                 // only loose files will be available
                 return;
             }
-            for (var index = 0; index < client.ConfigHandler.CDNConfig.Archives.Count; index++)
+            if (client.CreateArgs.ParallelCDNIndexLoading)
             {
-                string archive = client.ConfigHandler.CDNConfig.Archives[index];
-                OpenOrDownloadIndexFile(archive, index);
+                Parallel.ForEach(client.ConfigHandler.CDNConfig.Archives, new ParallelOptions {
+                    MaxDegreeOfParallelism = client.CreateArgs.MaxCDNIndexLoadingParallelism
+                }, (archive, _, index) => {
+                    OpenOrDownloadIndexFile(archive, (int)index);
+                });
+            } else
+            {
+                for (var index = 0; index < client.ConfigHandler.CDNConfig.Archives.Count; index++)
+                {
+                    var archive = client.ConfigHandler.CDNConfig.Archives[index];
+                    OpenOrDownloadIndexFile(archive, index);
+                }
             }
+            
+            // todo: still not very happy about this system
+            // we create a giant dictionary (with no initial size) which can contain a lot of empty space (90+MB)
+            // converting to a frozen dictionary afterwards helps a bit but the arrays are still wasteful
+            // also means the peak memory is higher during conversion
+            // using IDictionary is also worse for lookup perf, but this keeps the code simpler for now
+            CDNIndexData = CDNIndexData.ToFrozenDictionary(CASCKeyComparer.Instance);
+            // we could load each index into an array of entries and then merge sort into one giant array...
+            // (also means higher building memory cost but maybe that's inevitable)
         }
 
         private bool LoadGroupIndexFile(string hash) {
@@ -229,8 +258,7 @@ namespace TACTLib.Protocol
         {
             try
             {
-                var cdn = Client.CDNClient!;
-                var indexData = cdn.FetchIndexFile(archive);
+                var indexData = Client.CDNClient!.FetchIndexFile(archive);
                 if (indexData == null) throw new Exception($"failed to fetch archive index data for {archive} (index {i})");
                 using var indexDataStream = new MemoryStream(indexData);
                 ParseIndex(indexDataStream, i);
@@ -344,11 +372,8 @@ namespace TACTLib.Protocol
 
         public byte[]? OpenIndexEntry(IndexEntry entry)
         {
-            var archive = Client.ConfigHandler.CDNConfig.Archives[entry.Index];
-
-            var cdn = Client.CDNClient!;
-            var stream = cdn.FetchIndexEntry(archive, entry);
-            return stream;
+            var archiveKey = Client.ConfigHandler.CDNConfig.Archives[entry.Index];
+            return Client.CDNClient!.FetchIndexEntry(archiveKey, entry);
         }
         
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
