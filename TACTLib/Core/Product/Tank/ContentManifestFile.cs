@@ -90,6 +90,7 @@ namespace TACTLib.Core.Product.Tank {
             }
         }
 
+        public string m_name;
         public CMFHeader m_header;
         
         public AssetPackageManifest.Entry[] m_entries = null!;
@@ -99,6 +100,7 @@ namespace TACTLib.Core.Product.Tank {
         public const int ENCRYPTED_MAGIC = 0x636D66; // todo: use the thingy again?
         
         public ContentManifestFile(ClientHandler client, Stream stream, string name) {
+            m_name = name;
             using (BinaryReader reader = new BinaryReader(stream)) {
                 m_header = reader.Read<CMFHeader>();
                 if (m_header.m_buildVersion < ProductHandler_Tank.VERSION_148_PTR) { // before 1.48

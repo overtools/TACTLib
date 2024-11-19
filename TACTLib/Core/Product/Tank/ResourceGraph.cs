@@ -209,6 +209,7 @@ namespace TACTLib.Core.Product.Tank {
             public uint m_wtf2;
         }
 
+        public string m_name;
         public TRGHeader m_header;
         public Dictionary<ulong, Package> m_packages;
         public Dictionary<ulong, Skin> m_skins;
@@ -224,6 +225,7 @@ namespace TACTLib.Core.Product.Tank {
         }
 
         public ResourceGraph(ClientHandler client, Stream stream, string name) {
+            m_name = name;
             using (BinaryReader reader = new BinaryReader(stream)) {
                 m_header = reader.Read<TRGHeader>();
                 if (IsPre152(m_header)) {

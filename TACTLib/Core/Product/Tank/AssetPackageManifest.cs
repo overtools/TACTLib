@@ -70,6 +70,7 @@ namespace TACTLib.Core.Product.Tank {
             Bundle = 0x40
         }
 
+        public string m_name;
         public APMHeader m_header;
         public Entry[] m_entries;
         public PackageEntry[] m_packageEntries;
@@ -78,6 +79,7 @@ namespace TACTLib.Core.Product.Tank {
         public ulong[][] m_packageBundles;
         
         public AssetPackageManifest(ClientHandler client, ProductHandler_Tank tankHandler, Stream stream, string name) {
+            m_name = name;
             var cmf = tankHandler.m_rootContentManifest;
             
             using (BinaryReader reader = new BinaryReader(stream)) {
