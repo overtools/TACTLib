@@ -14,12 +14,11 @@ namespace TACTLib.Core.Product.Tank {
             public byte Unknown;
             public CKey ContentKey;
 
-            public int CompareTo(HashData other)
-            {
+            public int CompareTo(HashData other) {
                 return GUID.CompareTo(other.GUID);
             }
         }
-        
+
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public struct HashData24 { // version 24?
             public ulong GUID;
@@ -60,7 +59,7 @@ namespace TACTLib.Core.Product.Tank {
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
-        public struct CMFHeader {  // 1.48+, version 26
+        public struct CMFHeader { // 1.48+, version 26
             public uint m_buildVersion;
             public uint m_unk04;
             public uint m_unk08;
@@ -73,32 +72,29 @@ namespace TACTLib.Core.Product.Tank {
             public int m_entryPatchRecordCount;
             public int m_entryCount;
             public uint m_magic;
-            
-            public uint GetNonEncryptedMagic()
-            {
-                return (uint)(0x00666D63u | (GetVersion() << 24));
+
+            public uint GetNonEncryptedMagic() {
+                return (uint) (0x00666D63u | (GetVersion() << 24));
             }
-            
-            public byte GetVersion()
-            {
-                return IsEncrypted() ? (byte)(m_magic & 0x000000FF) : (byte)((m_magic & 0xFF000000) >> 24);
+
+            public byte GetVersion() {
+                return IsEncrypted() ? (byte) (m_magic & 0x000000FF) : (byte) ((m_magic & 0xFF000000) >> 24);
             }
-            
-            public bool IsEncrypted()
-            {
+
+            public bool IsEncrypted() {
                 return (m_magic >> 8) == ENCRYPTED_MAGIC;
             }
         }
 
         public string m_name;
         public CMFHeader m_header;
-        
+
         public AssetPackageManifest.Entry[] m_entries = null!;
         public HashData[] m_hashList = null!;
 
         // ReSharper disable once InconsistentNaming
         public const int ENCRYPTED_MAGIC = 0x636D66; // todo: use the thingy again?
-        
+
         public ContentManifestFile(ClientHandler client, Stream stream, string name) {
             m_name = name;
             using (BinaryReader reader = new BinaryReader(stream)) {
@@ -107,8 +103,8 @@ namespace TACTLib.Core.Product.Tank {
                     stream.Position = 0;
                     m_header = reader.Read<CMFHeader25>().Upgrade();
                 }
-                
-                if(m_header.m_buildVersion >= 12923648 || m_header.m_buildVersion < 52320) {
+
+                if (m_header.m_buildVersion >= 12923648 || m_header.m_buildVersion < 52320) {
                     throw new NotSupportedException("Overwatch 1.29 or earlier is not supported");
                 }
 
@@ -135,16 +131,16 @@ namespace TACTLib.Core.Product.Tank {
         }
 
         public bool TryGet(ulong guid, out HashData hashData) {
-            var speculativeEntry = new HashData
-            {
+            var speculativeEntry = new HashData {
                 GUID = guid
             };
+
             var index = Array.BinarySearch(m_hashList, speculativeEntry);
-            if (index < 0 || index >= m_hashList.Length)
-            {
+            if (index < 0 || index >= m_hashList.Length) {
                 hashData = default;
                 return false;
             }
+
             hashData = m_hashList[index];
             return true;
         }
@@ -157,6 +153,7 @@ namespace TACTLib.Core.Product.Tank {
             if (TryGet(guid, out var data)) {
                 return data;
             }
+
             throw new FileNotFoundException($"{guid:X16}");
         }
 

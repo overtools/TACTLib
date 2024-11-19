@@ -24,7 +24,7 @@ namespace TACTLib.Core.Product.Tank {
         public readonly ContentManifestFile? m_textContentManifest;
         public readonly ContentManifestFile? m_speechContentManifest;
         public readonly ResourceGraph? m_resourceGraph;
-        
+
         public struct Asset {
             public int m_packageIdx;
             public int m_recordIdx;
@@ -34,6 +34,7 @@ namespace TACTLib.Core.Product.Tank {
                 m_recordIdx = recordIdx;
             }
         }
+
         public readonly ConcurrentDictionary<ulong, Asset> m_assets = null!;
         private readonly bool m_usingResourceGraph;
 
@@ -43,12 +44,12 @@ namespace TACTLib.Core.Product.Tank {
         public const int PACKAGE_IDX_FAKE_TEXT_CMF = -1;
         public const int PACKAGE_IDX_FAKE_SPEECH_CMF = -2;
         public const int PACKAGE_IDX_FAKE_ROOT_CMF = -3;
-        
+
         public const string REGION_DEV = "RDEV";
         public const string REGION_CN = "RCN";
         public const string SPEECH_MANIFEST_NAME = "speech";
         public const string TEXT_MANIFEST_NAME = "text";
-        
+
         public static string? GetManifestLocale(string name) {
             var tag = name.Split('_').Reverse().SingleOrDefault(v => v[0] == 'L' && v.Length >= 4);
             return tag?.Substring(1);
@@ -69,8 +70,8 @@ namespace TACTLib.Core.Product.Tank {
             if (!clientArgs.LoadManifest) return;
 
             var totalAssetCount = 0;
-            
-            foreach (var rootFile in m_rootFiles.Reverse()) {  // cmf first, then apm
+
+            foreach (var rootFile in m_rootFiles.Reverse()) { // cmf first, then apm
                 var extension = Path.GetExtension(rootFile.FileName!);
                 if (extension != ".cmf" && extension != ".apm" && extension != ".trg") {
                     // not a manifest
@@ -82,7 +83,7 @@ namespace TACTLib.Core.Product.Tank {
 
                 if (!manifestName.Contains(clientArgs.ManifestRegion ?? REGION_DEV)) continue; // is a CN (china) CMF
                 var manifestLocale = GetManifestLocale(manifestName);
-                
+
                 switch (extension) {
                     case ".cmf": {
                         var isSpeech = manifestName.Contains(SPEECH_MANIFEST_NAME);
@@ -94,7 +95,7 @@ namespace TACTLib.Core.Product.Tank {
                             // text or old root/text combo
                             if (manifestLocale != client.CreateArgs.TextLanguage) continue;
                         }
-                        
+
                         ContentManifestFile cmf;
                         try {
                             using var cmfStream = client.OpenCKey(rootFile.MD5)!;
@@ -107,8 +108,10 @@ namespace TACTLib.Core.Product.Tank {
                             if (Debugger.IsAttached) {
                                 Debugger.Break();
                             }
+
                             throw;
                         }
+
                         if (isSpeech) {
                             m_speechContentManifest = cmf;
                         } else if (isText) {
@@ -116,12 +119,13 @@ namespace TACTLib.Core.Product.Tank {
                         } else {
                             m_rootContentManifest = cmf;
                         }
+
                         totalAssetCount += cmf.m_header.m_dataCount;
                         break;
                     }
                     case ".apm": {
                         if (manifestLocale != client.CreateArgs.TextLanguage) break; // not relevant
-                        
+
                         using var apmStream = client.OpenCKey(rootFile.MD5)!;
                         m_packageManifest = new AssetPackageManifest(client, this, apmStream, manifestName);
                         break;
@@ -138,6 +142,7 @@ namespace TACTLib.Core.Product.Tank {
                             if (Debugger.IsAttached) {
                                 Debugger.Break();
                             }
+
                             throw;
                         }
 
@@ -165,7 +170,7 @@ namespace TACTLib.Core.Product.Tank {
                     }
                 }
             }
-            
+
             RegisterCMFAssets(m_rootContentManifest, PACKAGE_IDX_FAKE_ROOT_CMF);
             RegisterCMFAssets(m_textContentManifest, PACKAGE_IDX_FAKE_TEXT_CMF);
             RegisterCMFAssets(m_speechContentManifest, PACKAGE_IDX_FAKE_SPEECH_CMF);
@@ -176,14 +181,15 @@ namespace TACTLib.Core.Product.Tank {
                 DoBundleLookupHack();
             }
         }
-        
+
         public ContentManifestFile.HashData GetHashData(ulong guid) {
             if (!TryGetHashData(guid, out var hashData)) {
                 throw new FileNotFoundException($"{guid:X16}");
             }
+
             return hashData;
         }
-        
+
         public bool TryGetHashData(ulong guid, out ContentManifestFile.HashData hashData) {
             if (m_textContentManifest != null && m_textContentManifest.TryGet(guid, out hashData)) return true;
             if (m_speechContentManifest != null && m_speechContentManifest.TryGet(guid, out hashData)) return true;
@@ -204,7 +210,7 @@ namespace TACTLib.Core.Product.Tank {
                 var cmfAsset = contentManifestFile.m_hashList[j];
                 if (m_assets.ContainsKey(cmfAsset.GUID)) return;
                 m_assets[cmfAsset.GUID] = new Asset(fakePackageIdx, j);
-            }); 
+            });
         }
 
         public Stream? OpenFile(ContentManifestFile.HashData hashData) {
@@ -224,18 +230,18 @@ namespace TACTLib.Core.Product.Tank {
                 var hashData = GetHashData(guid);
                 return OpenFile(hashData)!;
             }
-            
+
             if (!m_assets.TryGetValue(guid, out var asset)) throw new FileNotFoundException($"{guid:X16}");
 
             if (m_hackedBundleLookup != null && m_hackedBundleLookup.TryGetValue(guid, out var bundleGUID)) {
                 return OpenFileFromBundle(bundleGUID, guid);
             }
-            
+
             var normalStream = OpenPackageFile(asset);
             // could be null here, if in encrypted bundle that the hack can't read
             return normalStream;
         }
-        
+
         /// <summary>
         /// Open an <see cref="Asset"/>
         /// </summary>
@@ -248,7 +254,7 @@ namespace TACTLib.Core.Product.Tank {
                 var hashData = GetHashData(record.m_GUID);
                 return OpenFile(hashData);
             }
-            
+
             var bundles = m_packageManifest!.m_packageBundles[asset.m_packageIdx];
             foreach (var bundleGuid in bundles) {
                 var foundStream = OpenFileFromBundle(bundleGuid, record.m_GUID);
@@ -256,9 +262,10 @@ namespace TACTLib.Core.Product.Tank {
                     return foundStream;
                 }
             }
+
             throw new Exception("bundle not found. :tim:");
         }
-        
+
         /// <summary>
         /// Unpacks asset indices to real data
         /// </summary>
@@ -269,7 +276,7 @@ namespace TACTLib.Core.Product.Tank {
                 record = m_packageManifest!.m_packageRecords[asset.m_packageIdx][asset.m_recordIdx];
                 return;
             }
-            
+
             ContentManifestFile? contentManifest;
 
             if (asset.m_packageIdx == PACKAGE_IDX_FAKE_ROOT_CMF) {

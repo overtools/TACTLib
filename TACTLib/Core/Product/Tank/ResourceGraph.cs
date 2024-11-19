@@ -110,11 +110,11 @@ namespace TACTLib.Core.Product.Tank {
             public const uint ENCRYPTED_MAGIC = 0x677274;
 
             public uint GetNonEncryptedMagic() {
-                return (uint)(UNENCRYPTED_MAGIC | (GetVersion() << 24));
+                return (uint) (UNENCRYPTED_MAGIC | (GetVersion() << 24));
             }
 
             public byte GetVersion() {
-                return IsEncrypted() ? (byte)(m_footerMagic & 0x000000FF) : (byte)((m_footerMagic & 0xFF000000) >> 24);
+                return IsEncrypted() ? (byte) (m_footerMagic & 0x000000FF) : (byte) ((m_footerMagic & 0xFF000000) >> 24);
             }
 
             public bool IsEncrypted() {

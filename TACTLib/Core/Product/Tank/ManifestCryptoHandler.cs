@@ -10,19 +10,20 @@ using TACTLib.Exceptions;
 namespace TACTLib.Core.Product.Tank {
     public static class ManifestCryptoHandler {
         #region Helpers
+
         // ReSharper disable once InconsistentNaming
         public const uint SHA1_DIGESTSIZE = 20;
 
         public static uint Constrain(long value) {
-            return (uint)(value % uint.MaxValue);
+            return (uint) (value % uint.MaxValue);
         }
 
-        public static int SignedMod(long p1, long p2)
-        {
-            var a = (int)p1;
-            var b = (int)p2;
+        public static int SignedMod(long p1, long p2) {
+            var a = (int) p1;
+            var b = (int) p2;
             return (a % b) < 0 ? (a % b + b) : (a % b);
         }
+
         #endregion
 
         public static bool AttemptFallbackManifests = false;
@@ -39,9 +40,11 @@ namespace TACTLib.Core.Product.Tank {
             if (!s_headerTypeToProviderType.TryGetValue(typeof(T), out var providerType)) {
                 throw new InvalidDataException($"[Manifest]: Unable to get crypto provider for {typeof(T)}");
             }
+
             if (!Providers.TryGetValue(product, out var cryptoTypeMap)) {
                 throw new InvalidDataException($"[Manifest]: {product} does not have any crypto providers?");
             }
+
             if (!cryptoTypeMap.TryGetValue(providerType, out var providerVersions)) {
                 throw new InvalidDataException($"[Manifest]: {product} does not have any {providerType} providers?");
             }
@@ -106,6 +109,7 @@ namespace TACTLib.Core.Product.Tank {
                 providerCryptoTypeMap = new Dictionary<Type, Dictionary<uint, object>>();
                 Providers[product] = providerCryptoTypeMap;
             }
+
             return providerCryptoTypeMap;
         }
 
@@ -116,14 +120,14 @@ namespace TACTLib.Core.Product.Tank {
                 typeVersionMap = new Dictionary<uint, object>();
                 providerCryptoTypeMap[t] = typeVersionMap;
             }
+
             return typeVersionMap;
         }
 
         public static void AddProvider(TACTProduct product, Type @interface, object provider, uint buildVersion) {
             if (!s_headerTypeToProviderType.ContainsKey(@interface)) {
-                var thisInterface = @interface.GetInterfaces().First(x =>
-                                                                                 x.IsGenericType &&
-                                                                                 x.GetGenericTypeDefinition() == typeof(IManifestCrypto<>));
+                var thisInterface = @interface.GetInterfaces().First(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IManifestCrypto<>));
+
                 s_headerTypeToProviderType[thisInterface.GetGenericArguments()[0]] = @interface;
             }
 
@@ -139,7 +143,7 @@ namespace TACTLib.Core.Product.Tank {
                 var metadata = tt.GetCustomAttribute<ManifestCryptoAttribute>();
                 if (metadata == null) continue;
 
-                var provider = (T)Activator.CreateInstance(tt)!;
+                var provider = (T) Activator.CreateInstance(tt)!;
                 if (metadata.AutoDetectVersion) {
                     AddProvider(metadata.Product, typeof(T), provider, uint.Parse(tt.Name.Split('_')[1]));
                 }

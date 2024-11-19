@@ -5,6 +5,6 @@ namespace TACTLib.Core.Product.Tank {
     }
 
     public interface ICMFEncryptionProc : IManifestCrypto<ContentManifestFile.CMFHeader> { }
-    
+
     public interface ITRGEncryptionProc : IManifestCrypto<ResourceGraph.TRGHeader> { }
 }

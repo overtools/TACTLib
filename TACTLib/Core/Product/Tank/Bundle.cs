@@ -14,35 +14,35 @@ namespace TACTLib.Core.Product.Tank {
             public int EntryCount;
             public int Flags;
             public byte OffsetSize;
-            
+
             public HeaderData148 To148() => new HeaderData148 {
                 EntryCount = EntryCount,
                 OffsetSize = OffsetSize
             };
         }
-        
+
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public struct HeaderData148 {
             public int EntryCount;
             public byte OffsetSize;
         }
-        
+
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 9)]
         public struct Entry1 {
             public ulong GUID;
-            public byte Offset;  // 1
+            public byte Offset; // 1
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 10)]
         public struct Entry2 {
             public ulong GUID;
-            public ushort Offset;  // 2
+            public ushort Offset; // 2
         }
-        
+
         [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
         public struct Entry4 {
             public ulong GUID;
-            public uint Offset;  // 4
+            public uint Offset; // 4
         }
 
         public Bundle(Stream? stream, bool is148) {
@@ -50,6 +50,7 @@ namespace TACTLib.Core.Product.Tank {
                 Entries = Array.Empty<Entry4>();
                 return;
             }
+
             using (BinaryReader reader = new BinaryReader(stream)) {
                 if (is148) {
                     Header = reader.Read<HeaderData148>();
@@ -75,6 +76,6 @@ namespace TACTLib.Core.Product.Tank {
                     // this should never happen
                 }
             }
-        } 
+        }
     }
 }

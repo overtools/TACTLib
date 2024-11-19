@@ -20,14 +20,14 @@ namespace TACTLib.Core.Product.Tank {
             public int m_entryCount;
             public uint m_checksum; // ?
         }
-            
+
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
         public struct Entry {
             public uint m_index;
             public ulong m_hashA;
             public ulong m_hashB;
         }
-        
+
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
         public struct PackageEntry {
             public ulong m_packageGUID; // 077 file
@@ -35,30 +35,30 @@ namespace TACTLib.Core.Product.Tank {
             public uint m_unknown1;
             public uint m_unknown2;
         }
-        
+
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
         public struct PackageHeader {
-            public long m_offsetRecords;  // 0
+            public long m_offsetRecords; // 0
             public long m_offset8; // 8
             public long m_offset16; // 16
             public long m_offset24; // 24
-            public long m_offsetBundles;  // 32
+            public long m_offsetBundles; // 32
             public long m_offset40; // 40
-            
-            public uint m_recordCount;  // 48
+
+            public uint m_recordCount; // 48
             public uint m_count52; // 52
-            public uint m_count56;  // 56
-            public uint m_count60;  // 60
-            public uint m_count64;  // 64
+            public uint m_count56; // 56
+            public uint m_count60; // 60
+            public uint m_count64; // 64
             public uint m_count68; // 68
-            public uint m_bundleCount;  // 72
+            public uint m_bundleCount; // 72
         }
 
-        [StructLayout(LayoutKind.Explicit, Pack = 1, Size = 12)]  // size = 12
+        [StructLayout(LayoutKind.Explicit, Pack = 1, Size = 12)] // size = 12
         public struct PackageRecord {
             [FieldOffset(0)] public ulong m_GUID;
             [FieldOffset(8)] public uint m_flagsReal;
-            
+
             [FieldOffset(8)] public short m_unknown1;
             [FieldOffset(10)] public byte m_unknown2;
             [FieldOffset(11)] public RecordFlags m_flags;
@@ -77,25 +77,25 @@ namespace TACTLib.Core.Product.Tank {
         public PackageHeader[] m_packages;
         public PackageRecord[][] m_packageRecords;
         public ulong[][] m_packageBundles;
-        
+
         public AssetPackageManifest(ClientHandler client, ProductHandler_Tank tankHandler, Stream stream, string name) {
             m_name = name;
             var cmf = tankHandler.m_rootContentManifest;
-            
+
             using (BinaryReader reader = new BinaryReader(stream)) {
                 m_header = reader.Read<APMHeader>();
 
-                if(m_header.m_buildVersion >= 12923648 || m_header.m_buildVersion < 52320) {
+                if (m_header.m_buildVersion >= 12923648 || m_header.m_buildVersion < 52320) {
                     throw new NotSupportedException("Overwatch 1.29 or earlier is not supported");
                 }
-                
+
                 m_entries = reader.ReadArray<Entry>(m_header.m_entryCount);
                 m_packageEntries = reader.ReadArray<PackageEntry>(m_header.m_packageCount);
 
                 if (!VerifyEntries(cmf)) {
                     Logger.Debug("APM", "Entry hash invalid. IV may be wrong");
                 }
-                
+
                 m_packages = new PackageHeader[m_header.m_packageCount];
                 m_packageRecords = new PackageRecord[m_header.m_packageCount][];
                 m_packageBundles = new ulong[m_header.m_packageCount][];
@@ -108,15 +108,15 @@ namespace TACTLib.Core.Product.Tank {
                         c++;
                         if (c % 1000 == 0) {
                             if (!Console.IsOutputRedirected) {
-                                Console.Out.Write($"Loading packages: {Math.Floor(c / (float)m_header.m_packageCount * 10000) / 100:F0}% ({c}/{m_header.m_packageCount})\r");
+                                Console.Out.Write($"Loading packages: {Math.Floor(c / (float) m_header.m_packageCount * 10000) / 100:F0}% ({c}/{m_header.m_packageCount})\r");
                             }
                         }
-                    
+
                         LoadPackage(i, tankHandler);
                     });
-                
+
                 if (!Console.IsOutputRedirected) {
-                    Console.Write(new string(' ', Console.WindowWidth-1)+"\r");
+                    Console.Write(new string(' ', Console.WindowWidth - 1) + "\r");
                 }
             }
         }
@@ -132,10 +132,10 @@ namespace TACTLib.Core.Product.Tank {
                     m_packageRecords[i] = Array.Empty<PackageRecord>();
                     return;
                 }
-                
+
                 if (package.m_bundleCount > 0) {
                     packageStream.Position = package.m_offsetBundles;
-                    m_packageBundles[i] = packageReader.ReadArray<ulong>((int)package.m_bundleCount);
+                    m_packageBundles[i] = packageReader.ReadArray<ulong>((int) package.m_bundleCount);
                 }
 
                 packageStream.Position = package.m_offsetRecords;
