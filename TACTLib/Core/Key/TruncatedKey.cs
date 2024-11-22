@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Buffers.Binary;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using TACTLib.Helpers;
@@ -11,6 +12,7 @@ namespace TACTLib.Core.Key {
     /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     [InlineArray(CASC_TRUNCATED_KEY_SIZE)]
+    [SuppressMessage("ReSharper", "UseSymbolAlias")]
     public struct TruncatedKey : IComparable<TruncatedKey>  {
         // ReSharper disable once InconsistentNaming
         /// <summary>Encoding Key size, in bytes</summary>
@@ -48,7 +50,7 @@ namespace TACTLib.Core.Key {
             return MemoryMarshal.Read<TruncatedKey>(array);
         }
         
-        public int CompareTo(TruncatedKey other) {
+        public readonly int CompareTo(TruncatedKey other) {
             return TruncatedKeyCompare(this, other);
         }
 

@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -28,7 +26,10 @@ namespace TACTLib.Protocol
     public class CDNIndexHandler
     {
         private readonly ClientHandler Client;
-        private readonly IDictionary<FullKey, IndexEntry> CDNIndexData;
+        private readonly List<string> Archives;
+        private readonly IntermediateIndexEntry[][][]? IntermediateArchiveIndices;
+        
+        private readonly Dictionary<FullKey, IndexEntry> CDNIndexMap;
 
         private FixedFooter ArchiveGroupFooter;
         private SafeFileHandle ArchiveGroupFileHandle = new SafeFileHandle();
@@ -49,28 +50,18 @@ namespace TACTLib.Protocol
         private CDNIndexHandler(ClientHandler client)
         {
             Client = client;
-            if (client.CreateArgs.ParallelCDNIndexLoading) 
-            {
-                CDNIndexData = new ConcurrentDictionary<FullKey, IndexEntry>(CASCKeyComparer.Instance);
-            } else
-            {
-                CDNIndexData = new Dictionary<FullKey, IndexEntry>(CASCKeyComparer.Instance);
-            }
+            Archives = Client.ConfigHandler.CDNConfig.Archives;
+            CDNIndexMap = new Dictionary<FullKey, IndexEntry>(CASCKeyComparer.Instance);
             
             // load loose files index so we dont have to hit the cdn just to get 404'd
             OpenOrDownloadIndexFile(client.ConfigHandler.CDNConfig.Values["file-index"][0], ARCHIVE_ID_LOOSE);
 
             var archiveGroupHash = client.ConfigHandler.CDNConfig.Values["archive-group"][0];
             if (LoadGroupIndexFile(archiveGroupHash)) {
-                // new paging impl
+                // if agent already created the group index locally, use it
+                // it contains the data from all indices merged into one linear data stream
                 return;
             }
-            
-            // using shared impl...
-            //if (m_client.ContainerHandler != null && OpenIndexFile(archiveGroupHash, ARCHIVE_ID_GROUP)) {
-            //    // no need to load individual indices
-            //    return;
-            //}
             
             if (!client.CreateArgs.LoadCDNIndices)
             {
@@ -78,36 +69,68 @@ namespace TACTLib.Protocol
                 // only loose files will be available
                 return;
             }
+            
+            IntermediateArchiveIndices = new IntermediateIndexEntry[Archives.Count][][];
             if (client.CreateArgs.ParallelCDNIndexLoading)
             {
-                Parallel.ForEach(client.ConfigHandler.CDNConfig.Archives, new ParallelOptions {
+                Parallel.ForEach(Archives, new ParallelOptions {
                     MaxDegreeOfParallelism = client.CreateArgs.MaxCDNIndexLoadingParallelism
                 }, (archive, _, index) => {
                     OpenOrDownloadIndexFile(archive, (int)index);
                 });
             } else
             {
-                for (var index = 0; index < client.ConfigHandler.CDNConfig.Archives.Count; index++)
+                for (var index = 0; index < Archives.Count; index++)
                 {
-                    var archive = client.ConfigHandler.CDNConfig.Archives[index];
-                    OpenOrDownloadIndexFile(archive, index);
+                    OpenOrDownloadIndexFile(Archives[index], index);
                 }
             }
             
-            // todo: still not very happy about this system
-            // we create a giant dictionary (with no initial size) which can contain a lot of empty space (90+MB)
-            // converting to a frozen dictionary afterwards helps a bit but the arrays are still wasteful
-            // also means the peak memory is higher during conversion
-            // using IDictionary is also worse for lookup perf, but this keeps the code simpler for now
-            // we could load each index into an array of entries and then merge sort into one giant array...
-            // (also means higher building memory cost but maybe that's inevitable)
-            
-            if (!client.CreateArgs.ParallelCDNIndexLoading)
+            var totalIndexEntryCount = 0;
+            foreach (var archivePages in IntermediateArchiveIndices!)
             {
-                // ToFrozenDictionary doesn't like ConcurrentDictionary
-                // before processing it internally converts it to a normal Dictionary
-                // for a dictionary with 9 million entries, this is a perf disaster
-                CDNIndexData = CDNIndexData.ToFrozenDictionary(CASCKeyComparer.Instance);
+                foreach (var page in archivePages)
+                {
+                    totalIndexEntryCount += page.Length;
+                }
+            }
+            
+            if (true)
+            {
+                ConstructHashMap(totalIndexEntryCount);
+                
+                // todo: ToFrozenDictionary is still quite.. slow
+                // initializing the hash map with an initial capacity is already helping memory a lot
+                //CDNIndexMap = CDNIndexMap.ToFrozenDictionary(CASCKeyComparer.Instance);
+            } else
+            {
+                // implementing group index construction isn't a no-brainer yet...
+                // it works pretty well but perf varies a lot
+                // is really slow in Debug + current FullKey.CompareTo impl
+            }
+            IntermediateArchiveIndices = null;
+        }
+        
+        private void ConstructHashMap(int totalIndexEntryCount)
+        {
+            using var _ = new PerfCounter("CDNIndexHandler::ConstructHashMap");
+
+            CDNIndexMap.EnsureCapacity(totalIndexEntryCount);
+            for (var archiveIdx = 0; archiveIdx < IntermediateArchiveIndices!.Length; archiveIdx++)
+            {
+                var pages = IntermediateArchiveIndices[archiveIdx];
+                foreach (var page in pages)
+                {
+                    foreach (var entry in page)
+                    {
+                        CDNIndexMap[entry.m_fullEKey] = new IndexEntry
+                        {
+                            Index = (ushort)archiveIdx,
+                            Offset = entry.m_offset,
+                            Size = entry.m_size
+                        };
+                    }
+                }
             }
         }
 
@@ -183,16 +206,20 @@ namespace TACTLib.Protocol
         {
             using var br = new BinaryReader(stream);
             var footer = ReadFooter(br);
+            if (footer.m_keyBytes != 16) throw new InvalidDataException($"footer.m_keyBytes != 16. got {footer.m_keyBytes}");
             
             GetTableParameters(footer, (int)br.BaseStream.Length, out var pageSize, out var pageCount);
-            if (archiveIndex == ARCHIVE_ID_GROUP) footer.m_offsetBytes -= 2; // archive index is part of offset
             if (archiveIndex == ARCHIVE_ID_LOOSE) {
                 LooseFilesPages = new LooseFileEntry[pageCount][];
+            } else if (archiveIndex >= 0) {
+                IntermediateArchiveIndices![archiveIndex] = new IntermediateIndexEntry[pageCount][];
+            } else {
+                throw new InvalidDataException("group archive not supported in ParseIndex");
             }
 
             br.BaseStream.Position = 0;
             var page = new byte[pageSize];
-            for (int pageIndex = 0; pageIndex < pageCount; pageIndex++) {
+            for (var pageIndex = 0; pageIndex < pageCount; pageIndex++) {
                 br.DefinitelyRead(page);
 
                 if (archiveIndex == ARCHIVE_ID_LOOSE) {
@@ -213,12 +240,21 @@ namespace TACTLib.Protocol
                     LooseFilesPages[pageIndex] = pageEntries.ToArray(); // dont store same array multiple times
                     continue;
                 }
+                
+                // group index no longer supported here
+                Debug.Assert(archiveIndex >= 0);
 
                 var pageSpan = page.AsSpan();
-                while (pageSpan.Length >= 16) {
+                var bytesPerEntry = footer.m_sizeBytes + footer.m_offsetBytes + footer.m_keyBytes;
+                var maxEntryCount = pageSpan.Length / bytesPerEntry;
+                IntermediateArchiveIndices![archiveIndex][pageIndex] = new IntermediateIndexEntry[maxEntryCount];
+                ref var intermediateEntries = ref IntermediateArchiveIndices[archiveIndex][pageIndex];
+            
+                for (var entryIdx = 0; entryIdx < maxEntryCount; entryIdx++) {
                     var key = SpanHelper.ReadStruct<FullKey>(ref pageSpan);
                     if (key.CompareTo(default) == 0) {
                         // has no value, end of the list
+                        intermediateEntries = intermediateEntries.AsSpan(0, entryIdx).ToArray();
                         break;
                     }
 
@@ -226,22 +262,16 @@ namespace TACTLib.Protocol
                     if (footer.m_sizeBytes == 4) size = SpanHelper.ReadStruct<UInt32BE>(ref pageSpan).ToInt();
                     else throw new Exception($"unhandled `size` size: {footer.m_sizeBytes}");
 
-                    ushort entryArchiveIndex = (ushort)archiveIndex;
-                    if (archiveIndex == ARCHIVE_ID_GROUP) {
-                        entryArchiveIndex = SpanHelper.ReadStruct<UInt16BE>(ref pageSpan).ToInt();
-                    }
-                    
                     uint offset;
                     if (footer.m_offsetBytes == 4) offset = SpanHelper.ReadStruct<UInt32BE>(ref pageSpan).ToInt();
                     else throw new Exception($"unhandled `offset` size: {footer.m_offsetBytes}");
                     
-                    var entry = new IndexEntry
+                    intermediateEntries[entryIdx] = new IntermediateIndexEntry
                     {
-                        Index = entryArchiveIndex,
-                        Size = size,
-                        Offset = offset
+                        m_fullEKey = key,
+                        m_size = size,
+                        m_offset = offset
                     };
-                    CDNIndexData[key] = entry;
                 }
             }
 
@@ -253,12 +283,8 @@ namespace TACTLib.Protocol
             br.BaseStream.Position += pageCount * footer.m_checksumSize;
             br.BaseStream.Position += footer.DynamicSize;
             if (br.BaseStream.Position != br.BaseStream.Length) {
-                throw new Exception($"didnt wrong length data read from index. pos: {br.BaseStream.Position}. len: {br.BaseStream.Length}");
+                throw new Exception($"wrong length data read from index. pos: {br.BaseStream.Position}. len: {br.BaseStream.Length}");
             }
-            
-            //var lastEKeys = br.ReadArray<FullEKey>(pageCount);
-            //var test = lastEKeys.Select(x => x.ToHexString()).ToArray();
-            //Console.Out.WriteLine(test);
         }
 
         private void DownloadIndexFile(string archive, int i)
@@ -362,7 +388,7 @@ namespace TACTLib.Protocol
                 return true;
             }
             
-            return CDNIndexData.TryGetValue(eKey, out indexEntry);
+            return CDNIndexMap.TryGetValue(eKey, out indexEntry);
         }
 
         public bool IsLooseFile(FullKey key) {
@@ -379,8 +405,15 @@ namespace TACTLib.Protocol
 
         public byte[]? OpenIndexEntry(IndexEntry entry)
         {
-            var archiveKey = Client.ConfigHandler.CDNConfig.Archives[entry.Index];
+            var archiveKey = Archives[entry.Index];
             return Client.CDNClient!.FetchIndexEntry(archiveKey, entry);
+        }
+        
+        private struct IntermediateIndexEntry
+        {
+            public FullEKey m_fullEKey;
+            public uint m_size;
+            public uint m_offset;
         }
         
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
