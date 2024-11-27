@@ -13,21 +13,21 @@ jobs:
                 with:
                     fetch-depth: 0
                     submodules: 'recursive'
-            -   name: Install .NET 8
+            -   name: Install .NET 9
                 uses: actions/setup-dotnet@v4
                 with:
-                    dotnet-version: 8.0.x
+                    dotnet-version: 9.0.x
             -   name: Restore project
                 run: dotnet restore TACTLib.sln --verbosity m -r win-x64
             -   name: Build Release
-                run: dotnet publish -f net8.0 --configuration Release -r win-x64 --self-contained false -o dist/Release
+                run: dotnet publish -f net9.0 --configuration Release -r win-x64 --self-contained false -o dist/Release
             -   name: Upload Release
                 uses: actions/upload-artifact@v4
                 with:
                     name: TACTLib-release
                     path: dist/Release
             -   name: Build Debug
-                run: dotnet publish -f net8.0 --configuration Debug -r win-x64 --self-contained false -o dist/Debug
+                run: dotnet publish -f net9.0 --configuration Debug -r win-x64 --self-contained false -o dist/Debug
             -   name: Upload Debug
                 uses: actions/upload-artifact@v4
                 with:
