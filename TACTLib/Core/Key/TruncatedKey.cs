@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Buffers.Binary;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -12,8 +13,9 @@ namespace TACTLib.Core.Key {
     /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     [InlineArray(CASC_TRUNCATED_KEY_SIZE)]
+    [DebuggerDisplay("{ToHexString()}")]
     [SuppressMessage("ReSharper", "UseSymbolAlias")]
-    public struct TruncatedKey : IComparable<TruncatedKey>  {
+    public struct TruncatedKey : IComparable<TruncatedKey> {
         // ReSharper disable once InconsistentNaming
         /// <summary>Encoding Key size, in bytes</summary>
         public const int CASC_TRUNCATED_KEY_SIZE = 9;
@@ -23,7 +25,7 @@ namespace TACTLib.Core.Key {
         /// <summary>
         /// Convert to a hex string
         /// </summary>
-        /// <returns>Hex stirng</returns>
+        /// <returns>Hex string</returns>
         public readonly string ToHexString() {
             return Extensions.ToHexString(this);
         }
@@ -31,7 +33,7 @@ namespace TACTLib.Core.Key {
         /// <summary>
         /// Create from a hex string
         /// </summary>
-        /// <param name="string">Source stirng</param>
+        /// <param name="string">Source string</param>
         /// <returns>Created EKey</returns>
         public static TruncatedKey FromString(ReadOnlySpan<char> @string) {
             return FromByteArray(StringToByteArray(@string));
@@ -49,15 +51,14 @@ namespace TACTLib.Core.Key {
 
             return MemoryMarshal.Read<TruncatedKey>(array);
         }
-        
+
         public readonly int CompareTo(TruncatedKey other) {
             return TruncatedKeyCompare(this, other);
         }
 
-        public static int TruncatedKeyCompare(TruncatedKey left, TruncatedKey right)
-        {
-            var leftSpan = (ReadOnlySpan<byte>)left;
-            var rightSpan = (ReadOnlySpan<byte>)right;
+        public static int TruncatedKeyCompare(TruncatedKey left, TruncatedKey right) {
+            var leftSpan = (ReadOnlySpan<byte>) left;
+            var rightSpan = (ReadOnlySpan<byte>) right;
 
             var leftU0 = BinaryPrimitives.ReadUInt64BigEndian(leftSpan);
             var rightU0 = BinaryPrimitives.ReadUInt64BigEndian(rightSpan);
