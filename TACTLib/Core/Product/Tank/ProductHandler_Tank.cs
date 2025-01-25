@@ -44,9 +44,7 @@ namespace TACTLib.Core.Product.Tank {
         public const int PACKAGE_IDX_FAKE_TEXT_CMF = -1;
         public const int PACKAGE_IDX_FAKE_SPEECH_CMF = -2;
         public const int PACKAGE_IDX_FAKE_ROOT_CMF = -3;
-
-        public const string REGION_DEV = "RDEV";
-        public const string REGION_CN = "RCN";
+        
         public const string SPEECH_MANIFEST_NAME = "speech";
         public const string TEXT_MANIFEST_NAME = "text";
 
@@ -81,7 +79,17 @@ namespace TACTLib.Core.Product.Tank {
                 var manifestName = Path.GetFileNameWithoutExtension(rootFile.FileName!); // for matching
                 var manifestFileName = Path.GetFileName(rootFile.FileName!); // for crypto
 
-                if (!manifestName.Contains(clientArgs.ManifestRegion ?? REGION_DEV)) continue; // is a CN (china) CMF
+                if (!manifestFileName.StartsWith($"{clientArgs.ManifestPlatform}_", StringComparison.OrdinalIgnoreCase)) {
+                    // filter for data platform
+                    continue;
+                }
+
+                var regionName = $"R{clientArgs.ManifestRegion ?? ClientCreateArgs_Tank.REGION_DEV}";
+                if (!manifestFileName.Contains(regionName, StringComparison.OrdinalIgnoreCase)) {
+                    // filter for data region (china or global)
+                    continue;
+                }
+                
                 var manifestLocale = GetManifestLocale(manifestName);
 
                 switch (extension) {
