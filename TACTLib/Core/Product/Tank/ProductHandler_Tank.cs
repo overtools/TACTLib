@@ -49,7 +49,7 @@ namespace TACTLib.Core.Product.Tank {
         public const string TEXT_MANIFEST_NAME = "text";
 
         public static string? GetManifestLocale(string name) {
-            var tag = Enumerable.Reverse(name.Split('_')).SingleOrDefault(v => v[0] == 'L' && v.Length >= 4);
+            var tag = name.Split('_').Reverse().SingleOrDefault(v => v[0] == 'L' && v.Length >= 4);
             return tag?.Substring(1);
         }
 
@@ -69,7 +69,7 @@ namespace TACTLib.Core.Product.Tank {
 
             var totalAssetCount = 0;
 
-            foreach (var rootFile in Enumerable.Reverse(m_rootFiles)) { // cmf first, then apm
+            foreach (var rootFile in m_rootFiles.Reverse()) { // cmf first, then apm
                 var extension = Path.GetExtension(rootFile.FileName!);
                 if (extension != ".cmf" && extension != ".apm" && extension != ".trg") {
                     // not a manifest
