@@ -22,7 +22,7 @@ namespace TACTLib.Container {
         /// Container directory. Where the data, config, indices etc subdirectories are located.
         /// </summary>
         public readonly string ContainerDirectory;
-        
+
         public const string DataDirectory = "data";
         public const string ConfigDirectory = "config";
         public const string CDNIndicesDirectory = "indices";
@@ -130,7 +130,7 @@ namespace TACTLib.Container {
             if (!CASCKeyComparer.Instance.Equals(entry.EKey, key)) {
                 throw new Exception("key failed Equals check"); // todo: temp
             }
-            return true; 
+            return true;
         }
 
         public IEnumerable<KeyValuePair<EKey, IndexEntry>> GetIndexEntries() {
@@ -193,20 +193,20 @@ namespace TACTLib.Container {
                 return buffer;
             }
 
-            ref var fileHeader = ref MemoryMarshal.AsRef<DataHeader>(buffer);
+            var fileHeader = MemoryMarshal.AsRef<DataHeader>(buffer);
             if (fileHeader.m_size != indexEntry.EncodedSize) {
                 // header struct: https://github.com/ladislav-zezula/CascLib/blob/22b558e710d730edaa7b1610349081fce7fb0f7a/src/CascStructs.h#L244
-                
+
                 // header check: https://github.com/ladislav-zezula/CascLib/blob/22b558e710d730edaa7b1610349081fce7fb0f7a/src/CascReadFile.cpp#L177
                 // also validating size matches
                 // BUT
                 // apparently the data can just blte with no DataHeader?
                 // lets collect a fourCC to try debug the crashes here
-                
+
                 if (!BinaryPrimitives.TryReadUInt32LittleEndian(buffer.AsSpan(sizeof(DataHeader)), out var fourCC)) {
                     fourCC = 0xDEADBEEFu;
                 }
-                
+
                 // todo: i was checking for just zeroed here.. but some headers are invalid data
                 // from aini:
                 // Size Wrong Other Samples[0]:
@@ -216,7 +216,7 @@ namespace TACTLib.Container {
                 //   FourCC: 45544C42
                 //   Expected Size: 30581
                 //   Offset: 0x1FDEA87E
-                
+
                 // && headerSpan.SequenceEqual(ZEROED_HEADER)
                 var headerSpan = buffer.AsSpan(0, sizeof(DataHeader));
                 if (ALLOW_CORRUPT_HEADER && fourCC == BLTEStream.Magic) {
@@ -241,7 +241,7 @@ namespace TACTLib.Container {
         }
 
         public unsafe bool OpenIndexEntryForDebug(IndexEntry indexEntry, out DataHeader header, out uint fourCC) {
-            
+
             header = default;
             fourCC = 0xDEADBEEFu;
 
@@ -252,7 +252,7 @@ namespace TACTLib.Container {
                 // give me fourCC
                 sizeToRead += 4;
             }
-            
+
             var dataHandle = m_dataFiles[indexEntry.Index];
             var buffer = new byte[sizeToRead];
             var bytesRead = RandomAccess.Read(dataHandle, buffer, indexEntry.Offset);
@@ -273,11 +273,11 @@ namespace TACTLib.Container {
         public string GetDataFilePath(int index) {
             return Path.Combine(ContainerDirectory, DataDirectory, $"data.{index:D3}") + _client.CreateArgs.ExtraFileEnding;
         }
-        
+
         public string GetConfigFilePath(string key) {
             return Path.Combine(ContainerDirectory, ConfigDirectory, key.Substring(0, 2), key.Substring(2, 2), key);
         }
-        
+
         public string GetCDNIndexFilePath(string key) {
             return Path.Combine(ContainerDirectory, CDNIndicesDirectory, $"{key}.index");
         }
@@ -298,8 +298,8 @@ namespace TACTLib.Container {
             if (product == TACTProduct.Hearthstone)
                 return "Hearthstone_Data";
 
-            if (product == TACTProduct.Warcraft3 || product == TACTProduct.WorldOfWarcraft || 
-                product == TACTProduct.Diablo2 || product == TACTProduct.Diablo3 || product == TACTProduct.Diablo4 || 
+            if (product == TACTProduct.Warcraft3 || product == TACTProduct.WorldOfWarcraft ||
+                product == TACTProduct.Diablo2 || product == TACTProduct.Diablo3 || product == TACTProduct.Diablo4 ||
                 product == TACTProduct.BlackOps4 || product == TACTProduct.ModernWarfare)
                 return "Data";
 
