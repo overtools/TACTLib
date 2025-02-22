@@ -154,6 +154,12 @@ namespace TACTLib.Client {
                 InstallationInfo = new InstallationInfo(installationInfoData);
             }
 
+            if (CreateArgs.OverrideCDNServer != null) {
+                InstallationInfo.Values["CDNHosts"] = CreateArgs.OverrideCDNServer;
+            }
+            if (CreateArgs.OverrideCDNConfig != null) {
+                InstallationInfo.Values["CDNKey"] = CreateArgs.OverrideCDNConfig;
+            }
             if (CreateArgs.OverrideBuildConfig != null) {
                 InstallationInfo.Values["BuildKey"] = CreateArgs.OverrideBuildConfig;
             }

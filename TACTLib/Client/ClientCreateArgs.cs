@@ -108,6 +108,8 @@ namespace TACTLib.Client {
         /// </summary>
         public string? RemoteKeyringUrl { get; set; }
 
+        public string? OverrideCDNServer { get; set; }
+        public string? OverrideCDNConfig { get; set; }
         public string? OverrideBuildConfig { get; set; }
         public string? OverrideVersionName { get; set; }
 
