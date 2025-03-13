@@ -20,7 +20,7 @@ namespace TACTLib.Core {
         private readonly FullEKey[] EKeyESpecHeaderKeys;
         private readonly EKeyESpecEntry[][] EKeyESpecPages;
 
-        //public readonly string[] ESpecs;
+        private readonly byte[] ESpecBlock;
 
         public EncodingHandler(ClientHandler client) : this(client,
             client.ConfigHandler.BuildConfig.Encoding.EncodingKey, client.ConfigHandler.BuildConfig.EncodingSize!.EncodedSize)
@@ -46,18 +46,12 @@ namespace TACTLib.Core {
                 header.Version != 1) {
                 throw new InvalidDataException($"EncodingHandler: encoding header invalid (magic: {header.Signature:X4}, csize: {header.CKeySize}, esize: {header.EKeySize})");
             }
-
-            var cKeyEKeyPageSize = header.m_ckeyEKeyPageSize.ToInt();
-            var eKeyESpecPageSize = header.m_eKeyESpecPageSize.ToInt();
-
-            var cKeyEKeyPageCount = header.m_cKeyEKeyPageCount.ToInt();
-            var eKeyEspecPageCount = header.m_eKeyEspecPageCount.ToInt();
-
             Debug.Assert(header.m_unknown == 0); // asserted by agent
 
-            //ESpecs = Encoding.ASCII.GetString(reader.ReadBytes((int)header.m_especBlockSize.ToInt())).Split(new[] { '\0' }, StringSplitOptions.RemoveEmptyEntries);
-            stream.Position += header.m_especBlockSize.ToInt();
+            ESpecBlock = reader.ReadBytes((int)header.m_especBlockSize.ToInt());
 
+            var cKeyEKeyPageSize = header.m_ckeyEKeyPageSize.ToInt();
+            var cKeyEKeyPageCount = header.m_cKeyEKeyPageCount.ToInt();
             var cKeyEKeyHeaders = reader.ReadArray<PageHeader>((int)cKeyEKeyPageCount);
             CKeyEKeyHeaderKeys = cKeyEKeyHeaders.Select(x => x.FirstKey).ToArray();
             CKeyEKeyPages_CKeys = new LinearCKeyEntry[cKeyEKeyHeaders.Length][];
@@ -95,7 +89,9 @@ namespace TACTLib.Core {
                 
                 CKeyEKeyPages_CKeys[pageIdx] = CKeyEKeyPages_CKeys[pageIdx].AsSpan(0, entryIdx).ToArray();
             }
-
+            
+            var eKeyESpecPageSize = header.m_eKeyESpecPageSize.ToInt();
+            var eKeyEspecPageCount = header.m_eKeyEspecPageCount.ToInt();
             var eKeyESpecHeaders = reader.ReadArray<PageHeader>((int)eKeyEspecPageCount);
             EKeyESpecHeaderKeys = eKeyESpecHeaders.Select(x => x.FirstKey).ToArray();
             EKeyESpecPages = new EKeyESpecEntry[eKeyESpecHeaders.Length][];
@@ -197,6 +193,22 @@ namespace TACTLib.Core {
                 foreach (var entry in page) {
                     yield return entry.CKey;
                 }
+            }
+        }
+
+        public IEnumerable<string> GetESpecs() {
+            var pos = 0;
+            while (pos < ESpecBlock.Length) {
+                var span = ESpecBlock.AsSpan(pos);
+                var terminatorIdx = span.IndexOf((byte)0);
+                Debug.Assert(terminatorIdx != -1);
+                Debug.Assert(terminatorIdx != 0);
+                
+                var especAscii = span.Slice(0, terminatorIdx);
+                var espec = Encoding.ASCII.GetString(especAscii);
+                yield return espec;
+                
+                pos += terminatorIdx + 1;
             }
         }
 
