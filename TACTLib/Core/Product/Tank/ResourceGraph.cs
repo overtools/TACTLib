@@ -1,5 +1,7 @@
 using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -110,11 +112,19 @@ namespace TACTLib.Core.Product.Tank {
             public const uint ENCRYPTED_MAGIC = 0x677274;
 
             public uint GetNonEncryptedMagic() {
-                return (uint) (UNENCRYPTED_MAGIC | (GetVersion() << 24));
+                if (!IsEncrypted()) return m_footerMagic;
+                return BinaryPrimitives.ReverseEndianness(m_footerMagic);
             }
 
             public byte GetVersion() {
-                return IsEncrypted() ? (byte) (m_footerMagic & 0x000000FF) : (byte) ((m_footerMagic & 0xFF000000) >> 24);
+                var shift = IsPost217(this) ? 25 : 24; // todo: why?
+                
+                var magic = GetNonEncryptedMagic();
+                var version = magic >> shift;
+                
+                // if we see version lower than 11 with new shift, build check is wrong
+                Debug.Assert(shift < 25 || version >= 11);
+                return (byte)version;
             }
 
             public bool IsEncrypted() {
@@ -223,6 +233,10 @@ namespace TACTLib.Core.Product.Tank {
         public static bool IsPre212(TRGHeader header) {
             return header.m_buildVersion < 128702; // 128702 = 2.12 on pro
         }
+        
+        public static bool IsPost217(TRGHeader header) {
+            return header.m_buildVersion >= 139475; // 139475 = 2.17 on pro
+        }
 
         public ResourceGraph(ClientHandler client, Stream stream, string name) {
             m_name = name;
@@ -241,8 +255,10 @@ namespace TACTLib.Core.Product.Tank {
                     throw new UnsupportedBuildVersionException($"unable to parse TRG. invalid version {version}, expected 5, 6, 7, 8, 9, 10, or 11");
                 }
 
+                // version 7: type bundle index added
                 // version 10: added extra entries to skin assets.. for trg runtime overrides (instead of on the skin asset)
                 // version 11: 2 new header fields, unknown
+                // s17: no version change but 1 bit was stolen from magic (shift for version number changed)...
 
                 var isEnc = m_header.IsEncrypted();
 
