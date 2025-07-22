@@ -148,7 +148,7 @@ namespace TACTLib.Client {
                 } else {
                     ngdpClient = new NGDPClient(CreateArgs.OnlineRootHost);
                 }
-                
+
                 using var _ = new PerfCounter("NGDPClientBase::CreateInstallationInfo`string`string");
                 var installationInfoData = ngdpClient.CreateInstallationInfo(GetProduct()!, CreateArgs.OnlineRegion);
                 InstallationInfo = new InstallationInfo(installationInfoData);
@@ -242,7 +242,7 @@ namespace TACTLib.Client {
 
         public IProductHandler? CreateProductHandler() {
             using var _ = new PerfCounter("ProductHandlerFactory::GetHandler`TACTProduct`ClientHandler`Stream");
-            return ProductHandlerFactory.GetHandler(Product, this, OpenCKey(ConfigHandler.BuildConfig.Root.ContentKey)!);
+            return ProductHandlerFactory.GetHandler(Product, this, ConfigHandler.BuildConfig.Root.ContentKey == default ? null : OpenCKey(ConfigHandler.BuildConfig.Root.ContentKey)!);
         }
 
         private bool CanShareCDNData([NotNullWhen(true)] ClientHandler? other) {
@@ -258,14 +258,14 @@ namespace TACTLib.Client {
             }
             return archivesMatch;
         }
-        
+
         private static bool CanShareCDNData(CDNConfig cdnConfig, CDNConfig otherCDNConfig) {
             if (otherCDNConfig.Archives.Count != cdnConfig.Archives.Count) return false;
-            
+
             for (var i = 0; i < cdnConfig.Archives.Count; i++) {
                 if (otherCDNConfig.Archives[i] != cdnConfig.Archives[i]) return false;
             }
-            
+
             return true;
         }
 

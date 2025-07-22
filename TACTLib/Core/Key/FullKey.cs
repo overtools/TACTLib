@@ -15,7 +15,7 @@ namespace TACTLib.Core.Key {
     [InlineArray(CASC_FULL_KEY_SIZE)]
     [DebuggerDisplay("{ToHexString()}")]
     [SuppressMessage("ReSharper", "UseSymbolAlias")]
-    public struct FullKey : IComparable<FullKey> {
+    public struct FullKey : IComparable<FullKey>, IEquatable<FullKey> {
         // ReSharper disable once InconsistentNaming
         /// <summary>Content Key size, in bytes</summary>
         public const int CASC_FULL_KEY_SIZE = 16;
@@ -73,6 +73,23 @@ namespace TACTLib.Core.Key {
             var leftU1 = BinaryPrimitives.ReadUInt64BigEndian(leftSpan.Slice(8));
             var rightU1 = BinaryPrimitives.ReadUInt64BigEndian(rightSpan.Slice(8));
             return leftU1.CompareTo(rightU1);
+        }
+
+        public bool Equals(FullKey other) {
+            var span = MemoryMarshal.Cast<byte, ulong>(this);
+            var otherSpan = MemoryMarshal.Cast<byte, ulong>(this);
+            return span[0] == otherSpan[0] && span[1] == otherSpan[1];
+        }
+
+        public override bool Equals(object? obj) => obj is FullKey other && Equals(other);
+
+        public static bool operator ==(FullKey left, FullKey right) => left.Equals(right);
+        public static bool operator !=(FullKey left, FullKey right) => !(left == right);
+
+        public override int GetHashCode() {
+            var h = new HashCode();
+            h.AddBytes(this);
+            return h.ToHashCode();
         }
     }
 }
