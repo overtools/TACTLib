@@ -77,7 +77,7 @@ namespace TACTLib.Core.Key {
 
         public bool Equals(FullKey other) {
             var span = MemoryMarshal.Cast<byte, ulong>(this);
-            var otherSpan = MemoryMarshal.Cast<byte, ulong>(this);
+            var otherSpan = MemoryMarshal.Cast<byte, ulong>(other);
             return span[0] == otherSpan[0] && span[1] == otherSpan[1];
         }
 
