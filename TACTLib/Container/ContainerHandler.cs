@@ -193,7 +193,7 @@ namespace TACTLib.Container {
                 return buffer;
             }
 
-            ref var fileHeader = ref MemoryMarshal.AsRef<DataHeader>(buffer);
+            ref var fileHeader = ref MemoryMarshal.AsRef<DataHeader>(buffer.AsSpan());
             if (fileHeader.m_size != indexEntry.EncodedSize) {
                 // header struct: https://github.com/ladislav-zezula/CascLib/blob/22b558e710d730edaa7b1610349081fce7fb0f7a/src/CascStructs.h#L244
                 
