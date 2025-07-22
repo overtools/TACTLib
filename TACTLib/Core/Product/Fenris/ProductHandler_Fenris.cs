@@ -21,7 +21,7 @@ public class ProductHandler_Fenris : IProductHandler {
     public ReplacedSnos ReplacedSnos { get; }
     public SharedPayloadsMapping SharedPayloads { get; }
     public CoreTOC TOC { get; }
-    public Dictionary<ulong, EncryptedNameDict> EncryptedNameDicts = new();
+    public Dictionary<ulong, EncryptedNameDict> EncryptedNameDicts = [];
 
 #endregion
 
@@ -164,6 +164,23 @@ public class ProductHandler_Fenris : IProductHandler {
         }
 
         return null;
+    }
+
+    public SnoHandle LocateHandle(uint id) {
+        // i assume if replacedId is zero then it's deleted
+        if (ReplacedSnos.Lookup.TryGetValue(id, out var replacedId)) {
+            id = replacedId;
+        }
+
+        if (id is 0 or uint.MaxValue) { // 0 = null
+            if (LogLevel >= 1) {
+                Logger.Debug("Fenris", $"{id} is deleted");
+            }
+
+            return SnoHandle.Invalid;
+        }
+
+        return TOC.Files.Keys.FirstOrDefault(file => file.Id == id, SnoHandle.Invalid);
     }
 
     // logLevel 2 logs reads, logLevel 1 logs missing.

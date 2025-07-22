@@ -10,7 +10,7 @@ namespace TACTLib.Core.Product.Fenris;
 
 public class CoreTOC {
     [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 0xC)]
-    public struct TOCEntry {
+    public record struct TOCEntry {
         public SnoHandle Sno;
         public int NameOffset;
     }
@@ -18,8 +18,9 @@ public class CoreTOC {
     public int[] GroupCounts { get; }
     public int[] GroupOffsets { get; }
     public int[] GroupCounts2 { get; }
+    public uint[] GroupFormats { get; }
     public uint PrimaryId { get; }
-    public Dictionary<SnoHandle, string> Files { get; } = new();
+    public Dictionary<SnoHandle, string> Files { get; } = [];
 
     public CoreTOC(Stream? stream, EncryptedSnos encrypted) {
         using var _ = new PerfCounter("CoreTOC::cctor`Stream`EncryptedSnos");
@@ -27,19 +28,26 @@ public class CoreTOC {
             throw new ArgumentNullException(nameof(stream));
         }
 
+        var magic = stream.Read<uint>();
+        var isNew = magic == 0xBCDE6611;
+        if (!isNew) {
+            stream.Position = 0;
+        }
+
         var count = stream.Read<int>();
         GroupCounts = stream.ReadArray<int>(count);
         GroupOffsets = stream.ReadArray<int>(count);
         GroupCounts2 = stream.ReadArray<int>(count);
+        GroupFormats = isNew ? stream.ReadArray<uint>(count) : [];
 
         PrimaryId = stream.Read<uint>();
 
         var baseOffset = stream.Position;
 
-        Span<byte> stringBuffer = stackalloc byte[0xFF];
+        Span<byte> stringBuffer = stackalloc byte[0x1FF];
         for (var i = 0; i < count; ++i) {
             // I'm assuming that GroupCounts2 is the count but with replaced files included.
-            Debug.Assert(GroupCounts[i] == GroupCounts2[i], "GroupCounts[i] == GroupCounts2[i]");
+            Debug.Assert(GroupCounts[i] == GroupCounts2[i]);
             stream.Position = baseOffset + GroupOffsets[i];
 
             var stringOffset = baseOffset + GroupOffsets[i] + 0xC * GroupCounts[i];

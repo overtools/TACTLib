@@ -7,7 +7,7 @@ using TACTLib.Helpers;
 namespace TACTLib.Core.Product.Fenris;
 
 public class EncryptedNameDict {
-    public Dictionary<SnoHandle, string> Files { get; } = new();
+    public Dictionary<SnoHandle, string> Files { get; } = [];
 
     public EncryptedNameDict(Stream stream) {
         var magic = stream.Read<uint>();

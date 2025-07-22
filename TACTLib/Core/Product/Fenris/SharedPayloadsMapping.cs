@@ -5,8 +5,8 @@ using TACTLib.Helpers;
 namespace TACTLib.Core.Product.Fenris;
 
 public class SharedPayloadsMapping {
-    public Dictionary<uint, uint> SharedPayloads { get; set; } = new();
-    public Dictionary<SnoChild, SnoChild> SharedChildren { get; set; } = new();
+    public Dictionary<uint, uint> SharedPayloads { get; set; } = [];
+    public Dictionary<SnoChild, SnoChild> SharedChildren { get; set; } = [];
 
     public SharedPayloadsMapping(Stream? stream) {
         using var _ = new PerfCounter("SharedPayloadsMapping::cctor`Stream");

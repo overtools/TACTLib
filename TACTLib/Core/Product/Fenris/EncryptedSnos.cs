@@ -9,18 +9,18 @@ namespace TACTLib.Core.Product.Fenris;
 
 public class EncryptedSnos {
     [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 0x10)]
-    public struct EncryptedSno {
+    public record struct EncryptedSno {
         public SnoHandle Sno;
         public ulong KeyId;
     }
 
     public EncryptedSno[] Entries { get; }
-    public Dictionary<SnoHandle, ulong> Lookup = new();
+    public Dictionary<SnoHandle, ulong> Lookup = [];
 
     public EncryptedSnos(Stream? stream) {
         using var _ = new PerfCounter("EncryptedSnos::cctor`Stream");
         if (stream == null) {
-            Entries = Array.Empty<EncryptedSno>();
+            Entries = [];
             return;
         }
 

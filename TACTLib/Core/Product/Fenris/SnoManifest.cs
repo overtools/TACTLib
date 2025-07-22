@@ -13,17 +13,20 @@ public enum SnoManifestRole {
 }
 
 public class SnoManifest {
-
     public Locale Locale { get; set; }
     public SnoManifestRole Role { get; set; }
     public HashSet<uint> SnoIds { get; }
+    public HashSet<uint> SnoIds2 { get; }
     public HashSet<SnoChild> ChildIds { get; }
+    public HashSet<SnoChild> ChildIds2 { get; }
 
     public SnoManifest(Stream? stream) { // used to assist lookups, i think.
         using var _ = new PerfCounter("SnoManifest::cctor`Stream");
         if (stream == null) {
-            SnoIds = new HashSet<uint>();
-            ChildIds = new HashSet<SnoChild>();
+            SnoIds = [];
+            ChildIds = [];
+            SnoIds2 = [];
+            ChildIds2 = [];
             return;
         }
 
@@ -39,13 +42,30 @@ public class SnoManifest {
         count = stream.Read<int>();
         var childIds = stream.ReadArray<SnoChild>(count);
         ChildIds = new HashSet<SnoChild>(childIds);
+
+        if (stream.Position == stream.Length) {
+            SnoIds2 = [];
+            ChildIds2 = [];
+            return;
+        }
+
+        count = stream.Read<int>();
+        var childIds2 = stream.ReadArray<SnoChild>(count);
+        ChildIds2 = new HashSet<SnoChild>(childIds2);
+
+        count = stream.Read<int>();
+        var snoIds2 = stream.ReadArray<uint>(count);
+        SnoIds2 = new HashSet<uint>(snoIds2);
     }
 
     public bool ContainsChild(uint id, uint subId) =>
-        ChildIds.Contains(new SnoChild() {
+        ChildIds.Contains(new SnoChild {
+            SnoId = id,
+            SubId = subId,
+        }) || ChildIds2.Contains(new SnoChild {
             SnoId = id,
             SubId = subId,
         });
 
-    public bool Contains(uint id) => SnoIds.Contains(id);
+    public bool Contains(uint id) => SnoIds.Contains(id) || SnoIds2.Contains(id);
 }

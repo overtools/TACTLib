@@ -16,12 +16,12 @@ public class ReplacedSnos {
     }
     
     public ReplacedSno[] Entries { get; }
-    public Dictionary<uint, uint> Lookup = new();
+    public Dictionary<uint, uint> Lookup = [];
 
     public ReplacedSnos(Stream? stream) {
         using var _ = new PerfCounter("ReplacedSnos::cctor`Stream");
         if (stream == null) {
-            Entries = Array.Empty<ReplacedSno>();
+            Entries = [];
             return;
         }
         
