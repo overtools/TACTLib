@@ -76,9 +76,7 @@ namespace TACTLib.Core.Key {
         }
 
         public bool Equals(FullKey other) {
-            var span = MemoryMarshal.Cast<byte, ulong>(this);
-            var otherSpan = MemoryMarshal.Cast<byte, ulong>(other);
-            return span[0] == otherSpan[0] && span[1] == otherSpan[1];
+            return FullKeyCompare(this, other) == 0;
         }
 
         public override bool Equals(object? obj) => obj is FullKey other && Equals(other);

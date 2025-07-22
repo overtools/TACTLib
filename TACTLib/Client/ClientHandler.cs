@@ -242,7 +242,7 @@ namespace TACTLib.Client {
 
         public IProductHandler? CreateProductHandler() {
             using var _ = new PerfCounter("ProductHandlerFactory::GetHandler`TACTProduct`ClientHandler`Stream");
-            return ProductHandlerFactory.GetHandler(Product, this, ConfigHandler.BuildConfig.Root.ContentKey == default ? null : OpenCKey(ConfigHandler.BuildConfig.Root.ContentKey)!);
+            return ProductHandlerFactory.GetHandler(Product, this, OpenCKey(ConfigHandler.BuildConfig.Root.ContentKey));
         }
 
         private bool CanShareCDNData([NotNullWhen(true)] ClientHandler? other) {

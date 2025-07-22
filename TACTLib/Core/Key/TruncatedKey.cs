@@ -15,7 +15,7 @@ namespace TACTLib.Core.Key {
     [InlineArray(CASC_TRUNCATED_KEY_SIZE)]
     [DebuggerDisplay("{ToHexString()}")]
     [SuppressMessage("ReSharper", "UseSymbolAlias")]
-    public struct TruncatedKey : IComparable<TruncatedKey> {
+    public struct TruncatedKey : IComparable<TruncatedKey>, IEquatable<TruncatedKey> {
         // ReSharper disable once InconsistentNaming
         /// <summary>Encoding Key size, in bytes</summary>
         public const int CASC_TRUNCATED_KEY_SIZE = 9;
@@ -69,6 +69,21 @@ namespace TACTLib.Core.Key {
             var leftU1 = MemoryMarshal.Read<byte>(leftSpan.Slice(8));
             var rightU1 = MemoryMarshal.Read<byte>(rightSpan.Slice(8));
             return leftU1.CompareTo(rightU1);
+        }
+        
+        public bool Equals(TruncatedKey other) {
+            return TruncatedKeyCompare(this, other) == 0;
+        }
+
+        public override bool Equals(object? obj) => obj is TruncatedKey other && Equals(other);
+
+        public static bool operator ==(TruncatedKey left, TruncatedKey right) => left.Equals(right);
+        public static bool operator !=(TruncatedKey left, TruncatedKey right) => !(left == right);
+
+        public override int GetHashCode() {
+            var h = new HashCode();
+            h.AddBytes(this);
+            return h.ToHashCode();
         }
     }
 }

@@ -225,7 +225,7 @@ namespace TACTLib.Protocol
                 if (archiveIndex == ARCHIVE_ID_LOOSE) {
                     ReadOnlySpan<LooseFileEntry> pageEntries = MemoryMarshal.Cast<byte, LooseFileEntry>(page);
                     for (var entryIdx = 0; entryIdx < pageEntries.Length; entryIdx++) {
-                        if (pageEntries[entryIdx].m_eKey.CompareTo(default) != 0) {
+                        if (pageEntries[entryIdx].m_eKey != default) {
                             // has value
                             continue;
                         } 
@@ -252,7 +252,7 @@ namespace TACTLib.Protocol
             
                 for (var entryIdx = 0; entryIdx < maxEntryCount; entryIdx++) {
                     var key = SpanHelper.ReadStruct<FullKey>(ref pageSpan);
-                    if (key.CompareTo(default) == 0) {
+                    if (key == default) {
                         // has no value, end of the list
                         intermediateEntries = intermediateEntries.AsSpan(0, entryIdx).ToArray();
                         break;
