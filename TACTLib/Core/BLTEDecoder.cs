@@ -77,7 +77,7 @@ namespace TACTLib.Core
             {
                 decodedSize += block.m_decodedSize;
             }
-            var output = new byte[decodedSize];
+            var output = GC.AllocateUninitializedArray<byte>(decodedSize);
             var outputSlice = output.AsSpan();
 
             for (var i = 0; i < blocks.Length; i++)
@@ -86,6 +86,12 @@ namespace TACTLib.Core
                 var encodedBlockData = SpanHelper.Advance(ref span, block.m_encodedSize);
                 var blockOutput = SpanHelper.Advance(ref outputSlice, block.m_decodedSize);
                 HandleDataBlock(client, encodedBlockData, blockOutput, i);
+            }
+            
+            if (!outputSlice.IsEmpty)
+            {
+                // don't let uninitialized data leak back to caller
+                throw new InvalidDataException("remaining data after decoding all blocks");
             }
             return output;
         }

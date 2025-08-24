@@ -181,7 +181,7 @@ namespace TACTLib.Container {
             var dataHandle = m_dataFiles[indexEntry.Index];
 
             var size = indexEntry.EncodedSize;
-            var buffer = new byte[size];
+            var buffer = GC.AllocateUninitializedArray<byte>((int)size);
             var bytesRead = RandomAccess.Read(dataHandle, buffer, indexEntry.Offset);
             if (bytesRead != buffer.Length)
             {

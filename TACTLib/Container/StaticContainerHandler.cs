@@ -82,7 +82,7 @@ namespace TACTLib.Container {
             
             using var stream = File.OpenRead(GetFilePath(chunk, archive));
             stream.Position = (long)offset;
-            var data = new byte[eSize];
+            var data = GC.AllocateUninitializedArray<byte>(eSize);
             stream.DefinitelyRead(data);
 
             return data;
