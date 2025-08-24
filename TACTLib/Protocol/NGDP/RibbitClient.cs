@@ -37,7 +37,7 @@ namespace TACTLib.Protocol.NGDP
             }
                 
             var message = MimeMessage.Load(stream);
-            return message.GetTextBody(TextFormat.Text);
+            return GetTextBody(message);
         }
         
         public override async Task<string> GetAsync(string query, CancellationToken cancellationToken=default)
@@ -55,7 +55,21 @@ namespace TACTLib.Protocol.NGDP
             }
                 
             var message = await MimeMessage.LoadAsync(stream, cancellationToken);
-            return message.GetTextBody(TextFormat.Text);
+            return GetTextBody(message);
+        }
+        
+        private static string GetTextBody(MimeMessage message)
+        {
+            // return message.GetTextBody(TextFormat.Text);
+            // todo: using this (^) pulls in HtmlEntityDecoder which is about 500kb in size
+            // mimekit needs an overload where the encoding can be specified instead of auto-detecting
+            
+            var body = (MultipartAlternative)message.Body;
+            if (!body.TryGetValue(TextFormat.Plain, out var textPart))
+            {
+                throw new InvalidDataException("ribbit message had no text part");
+            }
+            return textPart.GetText(Encoding.UTF8);
         }
         
         public override string GetVersionsQuery(string product) => $"v1/products/{product}/versions";
