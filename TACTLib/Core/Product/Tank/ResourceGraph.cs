@@ -117,12 +117,13 @@ namespace TACTLib.Core.Product.Tank {
             }
 
             public byte GetVersion() {
-                var shift = IsPost217(this) ? 25 : 24; // todo: why?
+                var shift = 24;
+                if (Is217(this)) shift = 25; // todo: why did this happen
                 
                 var magic = GetNonEncryptedMagic();
                 var version = magic >> shift;
                 
-                // if we see version lower than 11 with new shift, build check is wrong
+                // if we see version lower than 11 with s17 shift, build check is wrong
                 Debug.Assert(shift < 25 || version >= 11);
                 return (byte)version;
             }
@@ -234,8 +235,9 @@ namespace TACTLib.Core.Product.Tank {
             return header.m_buildVersion < 128702; // 128702 = 2.12 on pro
         }
         
-        public static bool IsPost217(TRGHeader header) {
-            return header.m_buildVersion >= 139475; // 139475 = 2.17 on pro
+        public static bool Is217(TRGHeader header) {
+            return header.m_buildVersion >= 139475 && // 139475 = 2.17 on pro
+                   header.m_buildVersion < 141395; // 141395 = 2.18 on pro
         }
 
         public ResourceGraph(ClientHandler client, Stream stream, string name) {
@@ -251,14 +253,15 @@ namespace TACTLib.Core.Product.Tank {
                 }
 
                 var version = m_header.GetVersion();
-                if (version is < 5 or > 11) {
-                    throw new UnsupportedBuildVersionException($"unable to parse TRG. invalid version {version}, expected 5, 6, 7, 8, 9, 10, or 11");
+                if (version is < 5 or > 12) {
+                    throw new UnsupportedBuildVersionException($"unable to parse TRG. invalid version {version}, expected 5, 6, 7, 8, 9, 10, 11 or 12");
                 }
 
                 // version 7: type bundle index added
                 // version 10: added extra entries to skin assets.. for trg runtime overrides (instead of on the skin asset)
                 // version 11: 2 new header fields, unknown
                 // s17: no version change but 1 bit was stolen from magic (shift for version number changed)...
+                // version 12(s18): shift change undone, graph changed to raise size limit
 
                 var isEnc = m_header.IsEncrypted();
 
