@@ -145,7 +145,11 @@ namespace TACTLib.Protocol
 
             var maxFooterSize = FixedFooter.SIZE + FixedFooter.MAX_CHECKSUM_SIZE; // (we only care about the end checksum, not start)
             var maxFooterBuffer = new byte[maxFooterSize];
-            RandomAccess.Read(ArchiveGroupFileHandle, maxFooterBuffer, length-maxFooterSize);
+            var readHeaderSize = RandomAccess.Read(ArchiveGroupFileHandle, maxFooterBuffer, length-maxFooterSize);
+            if (readHeaderSize != maxFooterSize)
+            {
+                throw new IOException($"short footer read: {readHeaderSize} bytes (expected {maxFooterSize})");
+            }
             
             using (var maxFooterReader = new BinaryReader(new MemoryStream(maxFooterBuffer))) {
                 ArchiveGroupFooter = ReadFooter(maxFooterReader);
@@ -158,7 +162,13 @@ namespace TACTLib.Protocol
             
             var lastEKeyArrayOffset = pageCount * pageSize;
             ArchiveGroupPageLastEKeys = new FullEKey[pageCount];
-            RandomAccess.Read(ArchiveGroupFileHandle, ArchiveGroupPageLastEKeys.AsSpan().AsBytes(), lastEKeyArrayOffset);
+            
+            var ekeysBuffer = ArchiveGroupPageLastEKeys.AsSpan().AsBytes();
+            var readEKeysSize = RandomAccess.Read(ArchiveGroupFileHandle, ekeysBuffer, lastEKeyArrayOffset);
+            if (readEKeysSize != ekeysBuffer.Length)
+            {
+                throw new IOException($"short ekeys read: {readEKeysSize} bytes (expected {ekeysBuffer.Length})");
+            }
 
             return true;
         }
