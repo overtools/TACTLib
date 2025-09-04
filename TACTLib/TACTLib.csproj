@@ -9,8 +9,8 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.4.0" />
-    <PackageReference Include="Google.Protobuf" Version="3.30.2" />
-    <PackageReference Include="MimeKitLite" Version="4.11.0" />
+    <PackageReference Include="Google.Protobuf" Version="3.32.0" />
+    <PackageReference Include="MimeKitLite" Version="4.13.0" />
   </ItemGroup>
   <Target Name="SetSourceRevisionIdGit" BeforeTargets="BeforeBuild">
     <Exec Command="git describe --long --always --dirty --exclude=* --abbrev=8" ConsoleToMSBuild="True" IgnoreExitCode="False" ContinueOnError="True">
