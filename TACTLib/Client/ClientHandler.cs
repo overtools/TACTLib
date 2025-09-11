@@ -143,8 +143,10 @@ namespace TACTLib.Client {
                 NGDPClientBase ngdpClient;
                 if (createArgs.CustomNGDPClient != null) {
                     ngdpClient = createArgs.CustomNGDPClient;
+                } else if (CreateArgs.OnlineRootHost.StartsWith("https:")) {
+                    ngdpClient = new RibbitHttpClient(CreateArgs.OnlineRootHost);
                 } else if (CreateArgs.OnlineRootHost.StartsWith("ribbit:")) {
-                    ngdpClient = new RibbitClient(CreateArgs.OnlineRootHost);
+                    ngdpClient = new RibbitTcpClient(CreateArgs.OnlineRootHost);
                 } else {
                     ngdpClient = new NGDPClient(CreateArgs.OnlineRootHost);
                 }

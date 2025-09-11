@@ -19,11 +19,11 @@ namespace TACTLib.Client {
         public const string KR_NGDP = "http://kr.patch.battle.net:1119";
         public const string TW_NGDP = "http://tw.patch.battle.net:1119";
 
-        public const string US_RIBBIT = "ribbit://us.version.battle.net:1119";
-        public const string EU_RIBBIT = "ribbit://eu.version.battle.net:1119";
-        public const string CN_RIBBIT = "ribbit://cn.version.battle.net:1119";
-        public const string KR_RIBBIT = "ribbit://kr.version.battle.net:1119";
-        public const string TW_RIBBIT = "ribbit://tw.version.battle.net:1119";
+        public const string US_RIBBIT = "https://us.version.battle.net";
+        public const string EU_RIBBIT = "https://eu.version.battle.net";
+        public const string CN_RIBBIT = "https://cn.version.battle.net";
+        public const string KR_RIBBIT = "https://kr.version.battle.net";
+        public const string TW_RIBBIT = "https://tw.version.battle.net";
 
         /// <summary>
         /// Root host for online download
@@ -35,6 +35,7 @@ namespace TACTLib.Client {
         /// </summary>
         /// <seealso cref="TACTLib.Client.HandlerArgs.ClientCreateArgs_Tank"/>
         /// <seealso cref="TACTLib.Client.HandlerArgs.ClientCreateArgs_WorldOfWarcraftV6"/>
+        /// <seealso cref="TACTLib.Client.HandlerArgs.ClientCreateArgs_Fenris"/>
         public IHandlerArgs? HandlerArgs { get; set; } = null;
 
         public InstallMode VersionSource { get; set; } = InstallMode.Local;

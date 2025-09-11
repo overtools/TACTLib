@@ -26,10 +26,12 @@ namespace TACTLib.Protocol.NGDP
             return InstallationInfo.ParseToDict(streamReader);
         }
         
+        public abstract string GetSummaryQuery();
         public abstract string GetVersionsQuery(string product);
         public abstract string GetCDNsQuery(string product);
         public abstract string GetBGDLsQuery(string product);
         
+        public List<Dictionary<string, string>> GetSummary() => GetKV(GetSummaryQuery());
         public List<Dictionary<string, string>> GetVersions(string product) => GetKV(GetVersionsQuery(product));
         public List<Dictionary<string, string>> GetCDNs(string product) => GetKV(GetCDNsQuery(product));
         public List<Dictionary<string, string>> GetBGDLs(string product) => GetKV(GetBGDLsQuery(product));
@@ -38,6 +40,7 @@ namespace TACTLib.Protocol.NGDP
         public Dictionary<string, string>? GetCDN(string product, string region) => GetCDNs(product).FirstOrDefault(x => x["Name"] == region);
         public Dictionary<string, string>? GetBGDL(string product, string region) => GetBGDLs(product).FirstOrDefault(x => x["Region"] == region);
         
+        public Task<List<Dictionary<string, string>>> GetSummaryAsync(CancellationToken cancellationToken=default) => GetKVAsync(GetSummaryQuery(), cancellationToken);
         public Task<List<Dictionary<string, string>>> GetVersionsAsync(string product, CancellationToken cancellationToken=default) => GetKVAsync(GetVersionsQuery(product), cancellationToken);
         public Task<List<Dictionary<string, string>>> GetCDNsAsync(string product, CancellationToken cancellationToken=default) => GetKVAsync(GetCDNsQuery(product), cancellationToken);
         public Task<List<Dictionary<string, string>>> GetBGDLsAsync(string product, CancellationToken cancellationToken=default) => GetKVAsync(GetBGDLsQuery(product), cancellationToken);

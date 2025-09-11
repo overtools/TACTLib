@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
@@ -10,11 +9,12 @@ using MimeKit.Text;
 
 namespace TACTLib.Protocol.NGDP
 {
-    public class RibbitClient : NGDPClientBase
+    [Obsolete("Blizzard's Ribbit TCP server is no longer online")]
+    public class RibbitTcpClient : NGDPClientBase
     {
         public readonly Uri m_uri;
         
-        public RibbitClient(string host)
+        public RibbitTcpClient(string host)
         {
             if (!Uri.TryCreate(host, UriKind.RelativeOrAbsolute, out var uri)) {
                 throw new Exception($"unable to create uri from ribbit host: \"{host}\"");
@@ -24,7 +24,7 @@ namespace TACTLib.Protocol.NGDP
         
         public override string Get(string query)
         {
-            Logger.Info(nameof(RibbitClient), $"Fetching Ribbit {query}");
+            Logger.Info(nameof(RibbitTcpClient), $"Fetching Ribbit {query}");
             
             using var client = new TcpClient();
             client.Connect(m_uri.Host, m_uri.Port);
@@ -42,7 +42,7 @@ namespace TACTLib.Protocol.NGDP
         
         public override async Task<string> GetAsync(string query, CancellationToken cancellationToken=default)
         {
-            Logger.Info(nameof(RibbitClient), $"Fetching Ribbit {query}");
+            Logger.Info(nameof(RibbitTcpClient), $"Fetching Ribbit {query}");
             
             using var client = new TcpClient();
             await client.ConnectAsync(m_uri.Host, m_uri.Port, cancellationToken);
@@ -72,11 +72,9 @@ namespace TACTLib.Protocol.NGDP
             return textPart.GetText(Encoding.UTF8);
         }
         
+        public override string GetSummaryQuery() => "v1/summary";
         public override string GetVersionsQuery(string product) => $"v1/products/{product}/versions";
         public override string GetCDNsQuery(string product) => $"v1/products/{product}/cdns";
         public override string GetBGDLsQuery(string product) => $"v1/products/{product}/bgdl";
-        
-        public List<Dictionary<string, string>> GetSummary() => GetKV("v1/summary");
-        public Task<List<Dictionary<string, string>>> GetSummaryAsync(CancellationToken cancellationToken=default) => GetKVAsync("v1/summary", cancellationToken);
     }
 }
