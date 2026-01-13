@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using TACTLib.Helpers;
 
 namespace TACTLib.Core.Product.Tank {
@@ -51,7 +52,7 @@ namespace TACTLib.Core.Product.Tank {
                 return;
             }
 
-            using (BinaryReader reader = new BinaryReader(stream)) {
+            using (BinaryReader reader = new BinaryReader(stream, Encoding.UTF8, true)) {
                 if (is148) {
                     Header = reader.Read<HeaderData148>();
                 } else {
