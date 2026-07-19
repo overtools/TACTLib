@@ -88,7 +88,7 @@ namespace TACTLib.Core.Product.Tank {
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
-        public struct TRGHeader { // version 11
+        public struct TRGHeader11 { // version 11 & 12
             public uint m_0; // 0
             public uint m_buildVersion; // 4
             public uint m_8; // 8
@@ -107,6 +107,53 @@ namespace TACTLib.Core.Product.Tank {
             public uint m_60; // 60 - new
             public int m_graphBlockSize; // 64
             public uint m_footerMagic; // 68
+            
+            public TRGHeader Upgrade() => new TRGHeader {
+                m_0 = m_0,
+                m_buildVersion = m_buildVersion,
+                m_8 = m_8,
+                m_12 = m_12,
+                m_16 = m_16,
+                m_20 = m_20,
+                m_packageCount = m_packageCount,
+                m_packageBlockSize = m_packageBlockSize,
+                m_skinCount = m_skinCount,
+                m_skinBlockSize = m_skinBlockSize,
+                m_typeBundleIndexCount = m_typeBundleIndexCount,
+                m_typeBundleIndexBlockSize = m_typeBundleIndexBlockSize,
+                m_48 = m_48,
+                m_52 = m_52,
+                m_56 = m_56,
+                m_60 = m_60,
+                m_graphBlockSize = m_graphBlockSize,
+                m_footerMagic = m_footerMagic
+            };
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
+        public struct TRGHeader { // version 13
+            public uint m_0; // 0
+            public uint m_buildVersion; // 4
+            public uint m_8; // 8
+            public uint m_12; // 12
+            public uint m_16; // 16
+            public uint m_20; // 20
+            public int m_packageCount; // 24
+            public int m_packageBlockSize; // 28
+            public int m_skinCount; // 32
+            public int m_skinBlockSize; // 36
+            public int m_typeBundleIndexCount; // 40
+            public int m_typeBundleIndexBlockSize; // 44
+            public uint m_48; // 48
+            public uint m_52; // 52
+            public uint m_56; // 56 - new
+            public uint m_60; // 60 - new
+            public int m_graphBlockSize; // 64
+            public uint m_ver13_a; // new
+            public uint m_ver13_b; // new
+            public uint m_ver13_c; // new
+            public uint m_footerMagic; // 76
+            public uint m_ver13_d; // probably padding
 
             public const uint UNENCRYPTED_MAGIC = 0x747267;
             public const uint ENCRYPTED_MAGIC = 0x677274;
@@ -226,35 +273,69 @@ namespace TACTLib.Core.Product.Tank {
         public Dictionary<ulong, Skin> m_skins;
         public byte[] m_graphBlock;
         public byte[]? m_typeBundleIndexBlock;
-
-        public static bool IsPre152(TRGHeader header) {
-            return header.m_buildVersion < ProductHandler_Tank.VERSION_152_PTR || header.m_buildVersion == 72604; // 72604 = 1.51 on proc2
-        }
-
-        public static bool IsPre212(TRGHeader header) {
-            return header.m_buildVersion < 128702; // 128702 = 2.12 on pro
-        }
         
         public static bool Is217(TRGHeader header) {
             return header.m_buildVersion >= 139475 && // 139475 = 2.17 on pro
                    header.m_buildVersion < 141395; // 141395 = 2.18 on pro
         }
+        
+        private static bool TryReadHeader(Stream stream, Func<Stream, TRGHeader> readHeader, byte minVersion, out TRGHeader header)
+        {
+            stream.Position = 0;
+            header = readHeader(stream);
+
+            var magic = header.m_footerMagic >> 8;
+            if (magic != TRGHeader.ENCRYPTED_MAGIC && magic != TRGHeader.UNENCRYPTED_MAGIC)
+            {
+                // footer magic isn't in the right place, we can't check the version
+                return false;
+            }
+
+            var version = header.GetVersion();
+            if (version == 0)
+            {
+                // sanity check
+                return false;
+            }
+            if (version < minVersion)
+            {
+                // in case the structures happen to have the same offsets
+                return false;
+            }
+
+            return true;
+        }
+
+        public static TRGHeader ReadHeader(Stream stream)
+        {
+            // todo: this should be ordered by what?
+            // header size, or version
+            // todo: alt strategy: look for magic then check version
+            
+            TRGHeader header;
+            if (!TryReadHeader(stream, static stream => stream.Read<TRGHeader>(), 13, out header) &&
+                !TryReadHeader(stream, static stream => stream.Read<TRGHeader11>().Upgrade(), 11, out header) &&
+                !TryReadHeader(stream, static stream => stream.Read<TRGHeader7>().Upgrade(), 7, out header) &&
+                !TryReadHeader(stream, static stream => stream.Read<TRGHeader6>().Upgrade(), 6, out header))
+            {
+                // whatever, just try
+                stream.Position = 0;
+                header = stream.Read<TRGHeader>();
+                
+                Logger.Error(nameof(ResourceGraph), $"TRG header not recognised - 0x{header.m_footerMagic:X8}");
+            }
+
+            return header;
+        }
 
         public ResourceGraph(ClientHandler client, Stream stream, string name) {
             m_name = name;
             using (BinaryReader reader = new BinaryReader(stream)) {
-                m_header = reader.Read<TRGHeader>();
-                if (IsPre152(m_header)) {
-                    stream.Position = 0;
-                    m_header = reader.Read<TRGHeader6>().Upgrade();
-                } else if (IsPre212(m_header)) {
-                    stream.Position = 0;
-                    m_header = reader.Read<TRGHeader7>().Upgrade();
-                }
+                m_header = ReadHeader(stream);
 
                 var version = m_header.GetVersion();
-                if (version is < 5 or > 12) {
-                    throw new UnsupportedBuildVersionException($"unable to parse TRG. invalid version {version}, expected 5, 6, 7, 8, 9, 10, 11 or 12");
+                if (version is < 5 or > 13) {
+                    throw new UnsupportedBuildVersionException($"unable to parse TRG. invalid version {version}, expected 5, 6, 7, 8, 9, 10, 11, 12 or 13");
                 }
 
                 // version 7: type bundle index added
@@ -262,6 +343,7 @@ namespace TACTLib.Core.Product.Tank {
                 // version 11: 2 new header fields, unknown
                 // s17: no version change but 1 bit was stolen from magic (shift for version number changed)...
                 // version 12(s18): shift change undone, graph changed to raise size limit
+                // version 13: 2 u32 (+1 u32, likely padding)
 
                 var isEnc = m_header.IsEncrypted();
 
