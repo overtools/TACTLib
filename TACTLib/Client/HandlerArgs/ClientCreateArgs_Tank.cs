@@ -28,6 +28,7 @@ namespace TACTLib.Client.HandlerArgs {
         
         public const string REGION_DEV = "DEV";
         public const string REGION_CN = "CN";
+        public const string REGION_KR = "KR";
 
         public const string PLATFORM_WIN = "Win";
         public const string PLATFORM_WINPRISM = "WinPrism";
