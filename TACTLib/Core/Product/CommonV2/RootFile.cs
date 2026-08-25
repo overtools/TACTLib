@@ -69,6 +69,7 @@ namespace TACTLib.Core.Product.CommonV2 {
 
             var columns = header.Substring(1).Split('|');
             while (reader.ReadLine() is { } row) {
+                if (string.IsNullOrWhiteSpace(row)) continue;
                 var rootFile = new RootFile(columns, row);
                 files.Add(rootFile);
             }
