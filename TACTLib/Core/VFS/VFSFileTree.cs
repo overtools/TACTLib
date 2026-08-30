@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using TACTLib.Client;
 
@@ -35,25 +37,41 @@ namespace TACTLib.Core.VFS {
             Files = Array.AsReadOnly(_files.Keys.ToArray());
         }
 
+		/// <summary>
+		/// Checks if a stream is a VFS file
+		/// </summary>
+		/// <param name="stream"></param>
+		/// <returns></returns>
+		public static bool IsVFSFile(Stream stream) {
+			if (stream.Length - stream.Position < Unsafe.SizeOf<VFSManifestReader.ManifestHeader>()) {
+				return false;
+			}
+
+			var magic = 0u;
+			stream.ReadExactly(MemoryMarshal.AsBytes(new Span<uint>(ref magic)));
+			return magic == 0x53465654;
+		}
+
         /// <summary>
         /// Open file by path
         /// </summary>
         /// <param name="file"></param>
         /// <returns></returns>
-        /// <exception cref="FileNotFoundException"></exception>
+        /// <exception cref="NotImplementedException">where esize?</exception>
         public Stream? Open(string file) {
-            if (_files.TryGetValue(file, out var vfsFile)) {
-                if (vfsFile is VFSCFile cFile) {
-                    return _client.OpenCKey(cFile.CKey);
-                }
+			if (!_files.TryGetValue(file, out var vfsFile)) {
+				return null;
+			}
 
-                if (_client.IsStaticContainer && vfsFile.ContentSize == 0) {
-                    throw new NotImplementedException("where esize?");
-                }
+			if (vfsFile is VFSCFile cFile) {
+				return _client.OpenCKey(cFile.CKey);
+			}
 
-                return _client.OpenEKey(vfsFile.EKey, vfsFile.ContentSize == 0 ? _client.EncodingHandler!.GetEncodedSize(vfsFile.EKey) : vfsFile.ContentSize);
-            }
-            throw new FileNotFoundException(file);
-        }
+			if (_client.IsStaticContainer && vfsFile.ContentSize == 0) {
+				throw new NotImplementedException("where esize?");
+			}
+
+			return _client.OpenEKey(vfsFile.EKey, vfsFile.ContentSize == 0 ? _client.EncodingHandler!.GetEncodedSize(vfsFile.EKey) : vfsFile.ContentSize);
+		}
     }
 }
