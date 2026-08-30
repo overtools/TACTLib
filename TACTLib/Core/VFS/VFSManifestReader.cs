@@ -237,6 +237,10 @@ namespace TACTLib.Core.VFS {
 
         public static Manifest Read(BinaryReader reader) {
             var header = reader.Read<ManifestHeader>();
+			if (header.Magic != 0x53465654) {
+				throw new InvalidDataException();
+			}
+
             Manifest manifest = new Manifest(header);
 
             ParseDirectoryData(manifest, reader);
