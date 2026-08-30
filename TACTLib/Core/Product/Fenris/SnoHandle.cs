@@ -4,9 +4,9 @@ namespace TACTLib.Core.Product.Fenris;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 0x8)]
 public record struct SnoHandle {
-	public static SnoHandle Invalid { get; } = new() { Group = uint.MaxValue };
+	public static SnoHandle Invalid { get; } = new() { Group = SnoGroup.None };
 
-	public uint Group { get; set; } // 0xFFFFFFFF if none
+	public SnoGroup Group { get; set; } // 0xFFFFFFFF if none
 	public uint Id { get; set; } // 0 if none
-	public bool IsInvalid => Group == uint.MaxValue && Id == 0;
+	public bool IsInvalid => Group == SnoGroup.None && Id == 0;
 }

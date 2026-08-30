@@ -65,6 +65,7 @@ public class ProductHandler_Fenris : IProductHandler {
 			SharedPayloads = new SharedPayloadsMapping(shared);
 		}
 
+		LoadGlobalSno();
 		LoadLocale();
 	}
 
@@ -96,8 +97,11 @@ public class ProductHandler_Fenris : IProductHandler {
 		var loadedBase = CoreManifest[(int) SnoManifestRole.Base]?.Locale ?? Locale.Unused;
 		var loadedSpeech = CoreManifest[(int) SnoManifestRole.Speech]?.Locale ?? Locale.Unused;
 		var loadedText = CoreManifest[(int) SnoManifestRole.Text]?.Locale ?? Locale.Unused;
+		var shouldReloadBase = loadedBase != BaseLocale;
+		var shouldReloadSpeech = loadedSpeech != SpeechLocale;
+		var shouldReloadText = loadedText != TextLocale;
 
-		if (loadedBase != BaseLocale) {
+		if (shouldReloadBase) {
 			if (BaseLocale is Locale.Unused) {
 				CoreVFS[(int) SnoManifestRole.Base] = null;
 				CoreManifest[(int) SnoManifestRole.Base] = null;
@@ -107,9 +111,10 @@ public class ProductHandler_Fenris : IProductHandler {
 			}
 
 			BaseLocale = CoreManifest[(int) SnoManifestRole.Base]?.Locale ?? Locale.Unused;
+			ReloadLocalizedGlobalSno(SnoManifestRole.Base, BaseLocale);
 		}
 
-		if (loadedSpeech != SpeechLocale) {
+		if (shouldReloadSpeech) {
 			if (SpeechLocale is Locale.Unused) {
 				CoreVFS[(int) SnoManifestRole.Speech] = null;
 				CoreManifest[(int) SnoManifestRole.Speech] = null;
@@ -119,10 +124,10 @@ public class ProductHandler_Fenris : IProductHandler {
 			}
 
 			SpeechLocale = CoreManifest[(int) SnoManifestRole.Speech]?.Locale ?? Locale.Unused;
+			ReloadLocalizedGlobalSno(SnoManifestRole.Speech, SpeechLocale);
 		}
 
-		// ReSharper disable once InvertIf
-		if (loadedText != TextLocale) {
+		if (shouldReloadText) {
 			if (TextLocale is Locale.Unused) {
 				CoreVFS[(int) SnoManifestRole.Text] = null;
 				CoreManifest[(int) SnoManifestRole.Text] = null;
@@ -132,7 +137,89 @@ public class ProductHandler_Fenris : IProductHandler {
 			}
 
 			TextLocale = CoreManifest[(int) SnoManifestRole.Text]?.Locale ?? Locale.Unused;
+			ReloadLocalizedGlobalSno(SnoManifestRole.Text, TextLocale);
 		}
+	}
+
+	private void ReloadLocalizedGlobalSno(SnoManifestRole role, Locale locale) {
+		foreach (var (_, value) in GlobalLocalizedSnoData) {
+			value.Remove(role);
+		}
+
+		var core = CoreVFS[(int) SnoManifestRole.Core];
+		if (core == null) {
+			return;
+		}
+
+		foreach (var group in Enum.GetValues<SnoGroup>()) {
+			if (group is <= SnoGroup.Null or >= SnoGroup.Max) {
+				continue;
+			}
+
+			var prefix = $"{group}-{role}-{locale}";
+
+			using var publicStream = core.Open($"{prefix}.dat");
+			if (publicStream != null) {
+				LoadGlobalSno(GlobalLocalizedSnoData, group, role, publicStream);
+			}
+
+			foreach (var key in Client.ConfigHandler.Keyring.Keys.Keys) {
+				using var stream = core.Open($"{prefix}-0x{BinaryPrimitives.ReverseEndianness(key):x16}.dat");
+				if (stream == null) {
+					continue;
+				}
+
+				LoadGlobalSno(GlobalLocalizedSnoData, group, role, stream);
+			}
+		}
+	}
+
+	private void LoadGlobalSno() {
+		var core = CoreVFS[(int) SnoManifestRole.Core];
+		if (core == null) {
+			return;
+		}
+
+		foreach (var role in Enum.GetValues<SnoManifestRole>()) {
+			foreach (var group in Enum.GetValues<SnoGroup>()) {
+				if (group is <= SnoGroup.Null or >= SnoGroup.Max) {
+					continue;
+				}
+
+				var prefix = $"{group}-{role}-Global";
+
+				using var publicStream = core.Open($"{prefix}.dat");
+				if (publicStream != null) {
+					LoadGlobalSno(GlobalSnoData, group, role, publicStream);
+				}
+
+				foreach (var key in Client.ConfigHandler.Keyring.Keys.Keys) {
+					using var stream = core.Open($"{prefix}-0x{BinaryPrimitives.ReverseEndianness(key):x16}.dat");
+					if (stream == null) {
+						continue;
+					}
+
+					LoadGlobalSno(GlobalSnoData, group, role, stream);
+				}
+			}
+		}
+	}
+
+	private static void LoadGlobalSno(Dictionary<SnoGroup, Dictionary<SnoManifestRole, List<GlobalSnoData>>> globals, SnoGroup group, SnoManifestRole role, Stream stream) {
+		var globalData = new GlobalSnoData(stream, group is SnoGroup.Texture or SnoGroup.Appearance or SnoGroup.Animation or SnoGroup.Animation2D or SnoGroup.WWiseSoundBank);
+		if (globalData.Buffers.Count == 0) {
+			return;
+		}
+
+		if (!globals.TryGetValue(group, out var groupData)) {
+			groupData = globals[group] = [];
+		}
+
+		if (!groupData.TryGetValue(role, out var roleData)) {
+			roleData = groupData[role] = [];
+		}
+
+		roleData.Add(globalData);
 	}
 
 	public Stream? OpenFile(object? key) {
@@ -160,6 +247,49 @@ public class ProductHandler_Fenris : IProductHandler {
 			}
 			default: return TOC.Files.Keys.FirstOrDefault(file => file.Id == id, SnoHandle.Invalid);
 		}
+	}
+
+	public ReadOnlyMemory<byte> OpenGlobalMeta(uint id, SnoGroup group) {
+		if (ReplacedSnos.Lookup.TryGetValue(id, out var replacedId)) {
+			id = replacedId;
+		}
+
+		if (id is 0 or uint.MaxValue) {
+			if (LogLevel >= 1) {
+				Logger.Debug("Fenris", $"meta {id} 0 is deleted");
+			}
+
+			return ReadOnlyMemory<byte>.Empty;
+		}
+
+		if (GlobalLocalizedSnoData.TryGetValue(group, out var localizedGroupData)) {
+			var buffer = OpenGlobalMeta(id, localizedGroupData);
+			if (buffer.Length > 0) {
+				return buffer;
+			}
+		}
+
+		// ReSharper disable once InvertIf
+		if (GlobalSnoData.TryGetValue(group, out var groupData)) {
+			var buffer = OpenGlobalMeta(id, groupData);
+			if (buffer.Length > 0) {
+				return buffer;
+			}
+		}
+
+		return ReadOnlyMemory<byte>.Empty;
+	}
+
+	private static ReadOnlyMemory<byte> OpenGlobalMeta(uint id, Dictionary<SnoManifestRole, List<GlobalSnoData>> groupData) {
+		foreach (var (_, datum) in groupData) {
+			foreach (var data in datum) {
+				if (data.Buffers.TryGetValue(id, out var buffer)) {
+					return buffer;
+				}
+			}
+		}
+
+		return ReadOnlyMemory<byte>.Empty;
 	}
 
 	// logLevel 2 = log reads, logLevel 1 = log missing.
@@ -205,16 +335,13 @@ public class ProductHandler_Fenris : IProductHandler {
 				continue;
 			}
 
-			if (type is SnoType.Child ? !manifest.ContainsChild(id, subId) : !manifest.Contains(id)) {
+			if (type is SnoType.Meta or SnoType.Child && (type is SnoType.Child ? !manifest.ContainsChild(id, subId) : !manifest.Contains(id))) {
 				continue;
 			}
 
 			value = vfs.Open(path);
-			if (value is null) {
-				if (LogLevel >= 1 && (!waterfall || type is not (SnoType.Payload or SnoType.Paymid))) {
-					Logger.Debug("Fenris", $"{id}{(type is SnoType.Child ? "-" + subId : "")} found in {manifest.Locale:G} ({manifest.Role}) but VFS returned null for type {type:G}");
-				}
 
+			if (value is null) {
 				continue;
 			}
 
@@ -244,6 +371,9 @@ public class ProductHandler_Fenris : IProductHandler {
 	public EncryptedSnos EncryptedSnos { get; }
 	public ReplacedSnos ReplacedSnos { get; }
 	public SharedPayloadsMapping SharedPayloads { get; }
+	// this is horribly inefficient
+	public Dictionary<SnoGroup, Dictionary<SnoManifestRole, List<GlobalSnoData>>> GlobalLocalizedSnoData { get; } = [];
+	public Dictionary<SnoGroup, Dictionary<SnoManifestRole, List<GlobalSnoData>>> GlobalSnoData { get; } = [];
 	public CoreTOC TOC { get; }
 	public Dictionary<ulong, EncryptedNameDict> EncryptedNameDicts = [];
 
