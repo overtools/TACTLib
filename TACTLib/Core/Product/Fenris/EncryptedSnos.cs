@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,29 +7,30 @@ using TACTLib.Helpers;
 namespace TACTLib.Core.Product.Fenris;
 
 public class EncryptedSnos {
-    [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 0x10)]
-    public record struct EncryptedSno {
-        public SnoHandle Sno;
-        public ulong KeyId;
-    }
+	public Dictionary<SnoHandle, ulong> Lookup = [];
 
-    public EncryptedSno[] Entries { get; }
-    public Dictionary<SnoHandle, ulong> Lookup = [];
+	public EncryptedSnos(Stream? stream) {
+		using var _ = new PerfCounter("EncryptedSnos::cctor`Stream");
+		if (stream == null) {
+			Entries = [];
+			return;
+		}
 
-    public EncryptedSnos(Stream? stream) {
-        using var _ = new PerfCounter("EncryptedSnos::cctor`Stream");
-        if (stream == null) {
-            Entries = [];
-            return;
-        }
+		var magic = stream.Read<uint>();
+		if (magic != 0x4CBF334D) {
+			throw new InvalidDataException("Not an EncryptedSNOs.dat file");
+		}
 
-        var magic = stream.Read<uint>();
-        if (magic != 0x4CBF334D) {
-            throw new InvalidDataException("Not an EncryptedSNOs.dat file");
-        }
+		var count = stream.Read<int>();
+		Entries = stream.ReadArray<EncryptedSno>(count);
+		Lookup = Entries.ToDictionary(x => x.Sno, x => x.KeyId);
+	}
 
-        var count = stream.Read<int>();
-        Entries = stream.ReadArray<EncryptedSno>(count);
-        Lookup = Entries.ToDictionary(x => x.Sno, x => x.KeyId);
-    }
+	public EncryptedSno[] Entries { get; }
+
+	[StructLayout(LayoutKind.Sequential, Pack = 1, Size = 0x10)]
+	public record struct EncryptedSno {
+		public SnoHandle Sno { get; set; }
+		public ulong KeyId { get; set; }
+	}
 }

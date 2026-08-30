@@ -4,6 +4,6 @@ namespace TACTLib.Core.Product.Fenris;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 0x8)]
 public record struct SnoChild {
-    public uint SnoId;
-    public uint SubId;
+	public uint SnoId { get; set; }
+	public uint SubId { get; set; }
 }
