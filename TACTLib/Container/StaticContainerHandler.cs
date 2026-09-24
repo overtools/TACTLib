@@ -19,7 +19,6 @@ namespace TACTLib.Container {
             public byte m_chunkBits;
             public byte m_archiveBits;
             public byte m_offsetBits;
-            public bool m_offsetShiftMode;
             public byte m_offsetShift;
         }
 
@@ -35,17 +34,12 @@ namespace TACTLib.Container {
                     .Where(static x => x.Key.StartsWith("key-layout-") && x.Key != "key-layout-index-bits")) {
 
                 var layoutIndex = byte.Parse(keyLayoutPair.Key.AsSpan("key-layout-".Length));
-                var shift = keyLayoutPair.Value.Count > 3 ? byte.Parse(keyLayoutPair.Value[3]) : (byte)1;
-                var pow2Shift = BitOperations.IsPow2(shift);
 
                 m_keyLayouts[layoutIndex] = new KeyLayout {
                     m_chunkBits = byte.Parse(keyLayoutPair.Value[0]),
                     m_archiveBits = byte.Parse(keyLayoutPair.Value[1]),
                     m_offsetBits = byte.Parse(keyLayoutPair.Value[2]),
-                    m_offsetShiftMode = pow2Shift,
-                    m_offsetShift = pow2Shift
-                                        ? (byte)BitOperations.TrailingZeroCount(shift)
-                                        : shift
+                    m_offsetShift = keyLayoutPair.Value.Count > 3 ? byte.Parse(keyLayoutPair.Value[3]) : (byte)1
                 };
             }
         }
@@ -75,11 +69,7 @@ namespace TACTLib.Container {
 
             var offsetBitCount = keyLayout.m_offsetBits;
             var offsetBitOffset = archiveBitOffset-offsetBitCount;
-            var offsetBase = BitHelper.ExtractRange(ekeyHiUl, (byte) offsetBitOffset, offsetBitCount);
-            offset = keyLayout.m_offsetShiftMode
-                         ? offsetBase << keyLayout.m_offsetShift
-                         : offsetBase * keyLayout.m_offsetShift;
-
+            offset = BitHelper.ExtractRange(ekeyHiUl, (byte) offsetBitOffset, offsetBitCount) * keyLayout.m_offsetShift;
         }
 
         private static string GetFileName(ulong chunk, ulong archive) {
