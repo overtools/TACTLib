@@ -2,6 +2,7 @@ using System;
 using System.Buffers.Binary;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using CommunityToolkit.HighPerformance.Helpers;
 using TACTLib.Client;
 using TACTLib.Helpers;
@@ -18,8 +19,9 @@ namespace TACTLib.Container {
             public byte m_chunkBits;
             public byte m_archiveBits;
             public byte m_offsetBits;
+            public byte m_offsetMultiplier;
         }
-        
+
         public StaticContainerHandler(ClientHandler client) {
             m_client = client;
             if (client.BasePath == null) throw new Exception("no 'BasePath' specified");
@@ -27,7 +29,7 @@ namespace TACTLib.Container {
 
             m_keyLayoutIndexBits = byte.Parse(client.ConfigHandler.BuildConfig.Values["key-layout-index-bits"][0]);
             m_keyLayouts = new KeyLayout[Math.Max((int)Math.Pow(2, m_keyLayoutIndexBits), 1)];
-            
+
             foreach (var keyLayoutPair in client.ConfigHandler.BuildConfig.Values
                     .Where(static x => x.Key.StartsWith("key-layout-") && x.Key != "key-layout-index-bits")) {
 
@@ -36,7 +38,8 @@ namespace TACTLib.Container {
                 m_keyLayouts[layoutIndex] = new KeyLayout {
                     m_chunkBits = byte.Parse(keyLayoutPair.Value[0]),
                     m_archiveBits = byte.Parse(keyLayoutPair.Value[1]),
-                    m_offsetBits = byte.Parse(keyLayoutPair.Value[2])
+                    m_offsetBits = byte.Parse(keyLayoutPair.Value[2]),
+                    m_offsetMultiplier = keyLayoutPair.Value.Count > 3 ? byte.Parse(keyLayoutPair.Value[3]) : (byte)1
                 };
             }
         }
@@ -55,7 +58,7 @@ namespace TACTLib.Container {
             var keyLayoutIndexBitOffset = 56-keyLayoutBitCount;
             var keyLayoutIndex = BitHelper.ExtractRange(ekeyHiUl, (byte)keyLayoutIndexBitOffset, keyLayoutBitCount);
             var keyLayout = m_keyLayouts[keyLayoutIndex];
-            
+
             var chunkBitCount = keyLayout.m_chunkBits;
             var chunkBitOffset = keyLayoutIndexBitOffset-chunkBitCount;
             chunk = BitHelper.ExtractRange(ekeyHiUl, (byte)chunkBitOffset, chunkBitCount);
@@ -66,7 +69,7 @@ namespace TACTLib.Container {
 
             var offsetBitCount = keyLayout.m_offsetBits;
             var offsetBitOffset = archiveBitOffset-offsetBitCount;
-            offset = BitHelper.ExtractRange(ekeyHiUl, (byte)offsetBitOffset, offsetBitCount);
+            offset = BitHelper.ExtractRange(ekeyHiUl, (byte) offsetBitOffset, offsetBitCount) * keyLayout.m_offsetMultiplier;
         }
 
         private static string GetFileName(ulong chunk, ulong archive) {
@@ -79,7 +82,7 @@ namespace TACTLib.Container {
 
         public ArraySegment<byte>? OpenEKey(FullEKey ekey, int eSize) {
             ExtractStorageLocation(ekey, out var chunk, out var archive, out var offset);
-            
+
             using var stream = File.OpenRead(GetFilePath(chunk, archive));
             stream.Position = (long)offset;
             var data = GC.AllocateUninitializedArray<byte>(eSize);
