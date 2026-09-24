@@ -19,7 +19,7 @@ namespace TACTLib.Container {
             public byte m_chunkBits;
             public byte m_archiveBits;
             public byte m_offsetBits;
-            public byte m_offsetShift;
+            public byte m_offsetMultiplier;
         }
 
         public StaticContainerHandler(ClientHandler client) {
@@ -39,7 +39,7 @@ namespace TACTLib.Container {
                     m_chunkBits = byte.Parse(keyLayoutPair.Value[0]),
                     m_archiveBits = byte.Parse(keyLayoutPair.Value[1]),
                     m_offsetBits = byte.Parse(keyLayoutPair.Value[2]),
-                    m_offsetShift = keyLayoutPair.Value.Count > 3 ? byte.Parse(keyLayoutPair.Value[3]) : (byte)1
+                    m_offsetMultiplier = keyLayoutPair.Value.Count > 3 ? byte.Parse(keyLayoutPair.Value[3]) : (byte)1
                 };
             }
         }
@@ -69,7 +69,7 @@ namespace TACTLib.Container {
 
             var offsetBitCount = keyLayout.m_offsetBits;
             var offsetBitOffset = archiveBitOffset-offsetBitCount;
-            offset = BitHelper.ExtractRange(ekeyHiUl, (byte) offsetBitOffset, offsetBitCount) * keyLayout.m_offsetShift;
+            offset = BitHelper.ExtractRange(ekeyHiUl, (byte) offsetBitOffset, offsetBitCount) * keyLayout.m_offsetMultiplier;
         }
 
         private static string GetFileName(ulong chunk, ulong archive) {
