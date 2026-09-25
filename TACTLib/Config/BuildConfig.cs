@@ -35,38 +35,42 @@ namespace TACTLib.Config {
             TryGetRecords("vfs-{0}-size", 1, out VFSManifestsSize);
         }
 
-        private void GetRecord<T>(string key, out T @out) where T : IBuildConfigRecord<T> {
-            if (!TryGetRecord(key, out @out!)) {
-                throw new NullReferenceException($"Failed to find \"{key}\" in the build config.");
+        private void GetRecord<T>(string key, out T record) where T : IBuildConfigRecord<T> {
+            if (!TryGetRecord(key, out T? res)) {
+                throw new KeyNotFoundException($"Failed to find \"{key}\" in the build config.");
             }
+
+            record = res;
         }
 
-        private bool TryGetRecord<T>(string key, [NotNullWhen(true)] out T? @out) where T : IBuildConfigRecord<T> {
+        private bool TryGetRecord<T>(string key, [NotNullWhen(true)] out T? record) where T : IBuildConfigRecord<T> {
             if (!Values.TryGetValue(key, out var vals)) {
-                @out = default;
+                record = default;
                 return false;
             }
 
-            @out = T.Decode(vals);
+            record = T.Decode(vals);
             return true;
         }
 
-        private void GetRecords<T>(string key, int baseIter, out IReadOnlyList<T> @out) where T : IBuildConfigRecord<T> {
-            if (!TryGetRecords(key, baseIter, out @out!)) {
-                throw new NullReferenceException($"Failed to find any \"{key}\" build config records.");
+        private void GetRecords<T>(string key, int baseIter, out IReadOnlyList<T> record) where T : IBuildConfigRecord<T> {
+            if (!TryGetRecords(key, baseIter, out IReadOnlyList<T>? res)) {
+                throw new KeyNotFoundException($"Failed to find any \"{key}\" build config records.");
             }
+
+            record = res;
         }
 
-        private bool TryGetRecords<T>(string key, int baseIter, [NotNullWhen(true)] out IReadOnlyList<T>? @out) where T : IBuildConfigRecord<T> {
+        private bool TryGetRecords<T>(string key, int baseIter, [MaybeNullWhen(false)] out IReadOnlyList<T> record) where T : IBuildConfigRecord<T> {
             Debug.Assert(key.Contains("{0}"));
 
             if (!Values.TryGetValue(string.Format(key, baseIter++), out var baseVals)) {
-                @out = null;
+                record = null;
                 return false;
             }
 
             var values = new List<T> { T.Decode(baseVals) };
-            @out = values;
+            record = values;
             while (true) {
                 if (!Values.TryGetValue(string.Format(key, baseIter++), out var vals)) {
                     break;
