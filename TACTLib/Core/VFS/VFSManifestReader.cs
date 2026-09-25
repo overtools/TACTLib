@@ -363,8 +363,10 @@ namespace TACTLib.Core.VFS {
 
             reader.BaseStream.Position = cftFileEntry;
             var eKey = reader.Read<CKey>();
+            var encSize = reader.ReadInt32BE();
             VFSFile file = new VFSFile {
                 Offset = fileOffset,
+                EncodedSize = encSize,
                 ContentSize = spanSize,
                 Name = null,
                 EKey = eKey
