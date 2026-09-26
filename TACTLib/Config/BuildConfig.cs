@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Text;
 
 namespace TACTLib.Config {
     public class BuildConfig : Config {
@@ -10,67 +13,108 @@ namespace TACTLib.Config {
         public FileRecord? Download;
         public FileRecord Encoding;
         public SizeRecord? EncodingSize;
+
         public FileRecord? VFSRoot;
-        
+        public SizeRecord? VFSRootSize;
+        public IReadOnlyList<FileRecord>? VFSManifests;
+        public IReadOnlyList<SizeRecord>? VFSManifestsSize;
+
         public string GetBuildName() => Values["build-name"][0];
-        
+
         public BuildConfig(Stream? stream) : base(stream) {
-            GetFileRecord("root", out var root);
-            GetFileRecord("install", out Install);
-            GetFileRecord("patch", out Patch);
-            GetFileRecord("download", out Download);
-            GetFileRecord("encoding", out var encoding);
-            GetSizeRecord("encoding-size", out EncodingSize);
-            GetFileRecord("vfs-root", out VFSRoot);
+            GetRecord("root", out Root);
+            TryGetRecord("install", out Install);
+            TryGetRecord("patch", out Patch);
+            TryGetRecord("download", out Download);
+            GetRecord("encoding", out Encoding);
+            TryGetRecord("encoding-size", out EncodingSize);
 
-            if (root == null) throw new NullReferenceException(nameof(root));
-            Root = root;
-            
-            if (encoding == null) throw new NullReferenceException(nameof(encoding));
-            Encoding = encoding;
+            TryGetRecord("vfs-root", out VFSRoot);
+            TryGetRecord("vfs-root-size", out VFSRootSize);
+            TryGetRecords("vfs-{0}", 1, out VFSManifests);
+            TryGetRecords("vfs-{0}-size", 1, out VFSManifestsSize);
         }
 
-        private void GetFileRecord(string key, out FileRecord? @out) {
-            if (!Values.TryGetValue(key, out var list)) {
-                @out = null;
-                return;
+        private void GetRecord<T>(string key, out T record) where T : IBuildConfigRecord<T> {
+            if (!TryGetRecord(key, out T? res)) {
+                throw new KeyNotFoundException($"Failed to find \"{key}\" in the build config.");
             }
-            @out = GetFileRecord(list);
-        }
-        
-        private void GetSizeRecord(string key, out SizeRecord? @out) {
-            if (!Values.TryGetValue(key, out var list)) {
-                @out = null;
-                return;
-            }
-            @out = new SizeRecord {
-                ContentSize = int.Parse(list[0]),
-                EncodedSize = int.Parse(list[1])
-            };
+
+            record = res;
         }
 
-        private static FileRecord GetFileRecord(IReadOnlyList<string> vals) {
-            FileRecord record = new FileRecord();
-
-            if (vals.Count > 0) {
-                record.ContentKey = CKey.FromString(vals[0]);
+        private bool TryGetRecord<T>(string key, [NotNullWhen(true)] out T? record) where T : IBuildConfigRecord<T> {
+            if (!Values.TryGetValue(key, out var vals)) {
+                record = default;
+                return false;
             }
 
-            if (vals.Count > 1) {
-                record.EncodingKey = FullEKey.FromString(vals[1]);
-            }
-            
-            return record;
+            record = T.Decode(vals);
+            return true;
         }
 
-        public class FileRecord {
+        private void GetRecords<T>(string key, int baseIter, out IReadOnlyList<T> record) where T : IBuildConfigRecord<T> {
+            if (!TryGetRecords(key, baseIter, out IReadOnlyList<T>? res)) {
+                throw new KeyNotFoundException($"Failed to find any \"{key}\" build config records.");
+            }
+
+            record = res;
+        }
+
+        private bool TryGetRecords<T>(string key, int baseIter, [MaybeNullWhen(false)] out IReadOnlyList<T> record) where T : IBuildConfigRecord<T> {
+            Debug.Assert(key.Contains("{0}"));
+
+            if (!Values.TryGetValue(string.Format(key, baseIter++), out var baseVals)) {
+                record = null;
+                return false;
+            }
+
+            var values = new List<T> { T.Decode(baseVals) };
+            record = values;
+            while (true) {
+                if (!Values.TryGetValue(string.Format(key, baseIter++), out var vals)) {
+                    break;
+                }
+
+                values.Add(T.Decode(vals));
+            }
+
+            return true;
+        }
+
+        private interface IBuildConfigRecord<out T> where T : IBuildConfigRecord<T> {
+            abstract static T Decode(List<string> vals);
+        }
+
+        public class FileRecord : IBuildConfigRecord<FileRecord> {
             public CKey ContentKey;
             public FullEKey EncodingKey;
+
+            public static FileRecord Decode(List<string> vals) {
+                FileRecord record = new FileRecord();
+
+                if (vals.Count > 0) {
+                    record.ContentKey = CKey.FromString(vals[0]);
+                }
+
+                if (vals.Count > 1) {
+                    record.EncodingKey = FullEKey.FromString(vals[1]);
+                }
+
+                return record;
+            }
         }
 
-        public class SizeRecord {
+        public class SizeRecord : IBuildConfigRecord<SizeRecord> {
             public int ContentSize;
             public int EncodedSize;
+
+            public static SizeRecord Decode(List<string> vals) {
+                return new SizeRecord {
+                    ContentSize = int.Parse(vals[0]),
+                    EncodedSize = int.Parse(vals[1])
+                };
+            }
         }
     }
 }
