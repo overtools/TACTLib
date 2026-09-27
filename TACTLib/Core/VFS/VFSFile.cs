@@ -1,8 +1,11 @@
 ﻿namespace TACTLib.Core.VFS {
-    public class VFSFile {
+    public record struct VFSFile {
         public string? Name;
-        public int ContentSize;
-        public CKey EKey;
-        public int Offset;
-    }
+		public int Offset;
+		public CKey EKey;
+		public string? ESpec;
+		public int ESize;
+		public CKey? CKey;
+        public int CSize;
+	}
 }

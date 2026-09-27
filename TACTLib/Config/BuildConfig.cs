@@ -1,33 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace TACTLib.Config {
     public class BuildConfig : Config {
-        public FileRecord Root;
+        public FileRecord? Root;
         public FileRecord? Install;
         public FileRecord? Patch;
         public FileRecord? Download;
-        public FileRecord Encoding;
+        public FileRecord? Encoding;
         public SizeRecord? EncodingSize;
         public FileRecord? VFSRoot;
-        
-        public string GetBuildName() => Values["build-name"][0];
-        
+		public SizeRecord? VFSRootSize;
+		public List<string>? VFSRootESpec;
+
+		public string GetBuildName() => (Values.TryGetValue("build-name", out var buildName) ? buildName.FirstOrDefault() : null) ?? "Unknown";
+
         public BuildConfig(Stream? stream) : base(stream) {
-            GetFileRecord("root", out var root);
+            GetFileRecord("root", out Root);
             GetFileRecord("install", out Install);
             GetFileRecord("patch", out Patch);
             GetFileRecord("download", out Download);
-            GetFileRecord("encoding", out var encoding);
+            GetFileRecord("encoding", out Encoding);
             GetSizeRecord("encoding-size", out EncodingSize);
-            GetFileRecord("vfs-root", out VFSRoot);
-
-            if (root == null) throw new NullReferenceException(nameof(root));
-            Root = root;
-            
-            if (encoding == null) throw new NullReferenceException(nameof(encoding));
-            Encoding = encoding;
+			GetFileRecord("vfs-root", out VFSRoot);
+			GetSizeRecord("vfs-root-size", out VFSRootSize);
+			Values.TryGetValue("vfs-root-espec", out VFSRootESpec);
         }
 
         private void GetFileRecord(string key, out FileRecord? @out) {
@@ -37,7 +35,7 @@ namespace TACTLib.Config {
             }
             @out = GetFileRecord(list);
         }
-        
+
         private void GetSizeRecord(string key, out SizeRecord? @out) {
             if (!Values.TryGetValue(key, out var list)) {
                 @out = null;
@@ -59,7 +57,7 @@ namespace TACTLib.Config {
             if (vals.Count > 1) {
                 record.EncodingKey = FullEKey.FromString(vals[1]);
             }
-            
+
             return record;
         }
 

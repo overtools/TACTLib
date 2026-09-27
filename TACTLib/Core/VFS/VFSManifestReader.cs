@@ -145,16 +145,18 @@ namespace TACTLib.Core.VFS {
             public readonly uint PathTableSize;
             public readonly uint VfsTableOffset;
             public readonly uint VfsTableSize;
-            public readonly uint CftTableOffset;
-            public readonly uint CftTableSize;
+			public readonly uint CftTableOffset;
+			public readonly uint CftTableSize;
+			public readonly uint EstTableOffset;
+			public readonly uint EstTableSize;
             public readonly ushort MaxDepth;
 
             public readonly int CftOffsSize;
-            //public readonly int EstOffsSize;
+            public readonly int EstOffsSize;
 
             public readonly List<VFSFile> Files;
 
-            public Manifest(ManifestHeader header) {
+            public Manifest(ManifestHeader header, BinaryReader reader) {
                 Header = header;
 
                 Flags = header.GetFlags();
@@ -165,11 +167,16 @@ namespace TACTLib.Core.VFS {
                 CftTableOffset = header.CftTableOffset.ToInt();
                 CftTableSize = header.CftTableSize.ToInt();
                 MaxDepth = header.MaxDepth.ToInt();
-                CftOffsSize = GetOffsetFieldSize(CftTableSize);
-                //EstOffsSize = GetOffsetFieldSize(header.EstTableSize);
 
-                Files = new List<VFSFile>();
-            }
+                CftOffsSize = GetOffsetFieldSize(CftTableSize);
+				if ((Flags & ManifestFlags.WRITE_SUPPORT) != 0) {
+					EstTableOffset = reader.ReadUInt32BE();
+					EstTableSize = reader.ReadUInt32BE();
+					EstOffsSize = GetOffsetFieldSize(EstTableSize);
+				}
+
+                Files = [];
+			}
 
             // Returns size of "container file table offset" files in the VFS.
             // - If the container file table is larger than 0xffffff bytes, it's 4 bytes
@@ -241,7 +248,7 @@ namespace TACTLib.Core.VFS {
 				throw new InvalidDataException();
 			}
 
-            Manifest manifest = new Manifest(header);
+            Manifest manifest = new Manifest(header, reader);
 
             ParseDirectoryData(manifest, reader);
 
@@ -346,16 +353,7 @@ namespace TACTLib.Core.VFS {
             var fileOffset = reader.ReadInt32BE();
             spanSize = reader.ReadInt32BE();
 
-            var cftOffset = 0;
-            if (manifest.CftOffsSize == 1) {
-                cftOffset = reader.ReadByte();
-            } else if (manifest.CftOffsSize == 2) {
-                cftOffset = reader.ReadInt16BE();
-            } else if (manifest.CftOffsSize == 3) {
-                cftOffset = reader.ReadInt24BE();
-            } else if (manifest.CftOffsSize == 4) {
-                cftOffset = reader.ReadInt32BE();
-            }
+			var cftOffset = ReadVarOfs(reader, manifest.CftOffsSize);
 
             var cftFileTable = manifest.CftTableOffset;
             var cftFileEntry = cftFileTable + cftOffset;
@@ -363,16 +361,39 @@ namespace TACTLib.Core.VFS {
 
             reader.BaseStream.Position = cftFileEntry;
             var eKey = reader.Read<CKey>();
-            VFSFile file = new VFSFile {
+			var encSize = reader.ReadInt32BE();
+			var eSpecOffset = ReadVarOfs(reader, manifest.EstOffsSize);
+			var cKey = (manifest.Flags & ManifestFlags.INCLUDE_CKEY) != 0 ? reader.Read<CKey>() : default;
+			// todo: patch support
+
+			var eSpec = default(string?);
+			if (eSpecOffset > -1) {
+				reader.BaseStream.Position = manifest.EstTableOffset + eSpecOffset;
+				eSpec = reader.ReadCString();
+			}
+            var file = new VFSFile {
+				Name = null,
                 Offset = fileOffset,
-                ContentSize = spanSize,
-                Name = null,
-                EKey = eKey
+                EKey = eKey,
+				ESpec = eSpec,
+				ESize = encSize,
+				CKey = cKey,
+				CSize = spanSize,
             };
             return file;
         }
 
-        private static string AppendNodeToPath(PathEntry entry, string path) {
+		private static int ReadVarOfs(BinaryReader reader, int size) =>
+			size switch {
+				0 => -1,
+				1 => reader.ReadByte(),
+				2 => reader.ReadInt16BE(),
+				3 => reader.ReadInt24BE(),
+				4 => reader.ReadInt32BE(),
+				_ => -1
+			};
+
+		private static string AppendNodeToPath(PathEntry entry, string path) {
             if ((entry.NodeFlags & PathEntryFlags.PATH_SEPARATOR_PRE) != 0)
                 path += "/";
 

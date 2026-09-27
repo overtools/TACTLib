@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using TACTLib.Agent;
 using TACTLib.Agent.Protobuf;
@@ -110,6 +111,11 @@ namespace TACTLib.Client {
 
             var staticBuildConfigPath = Path.Combine(BasePath, "data", ".build.config"); // todo: um
             IsStaticContainer = File.Exists(staticBuildConfigPath);
+			if (!IsStaticContainer) {
+				staticBuildConfigPath = Path.Combine(BasePath, "Data", ".build.config"); // todo: um x2 (thx fenris.)
+				IsStaticContainer = File.Exists(staticBuildConfigPath);
+			}
+
             if (IsStaticContainer) {
                 if (CreateArgs.VersionSource != ClientCreateArgs.InstallMode.Local) throw new Exception("only local version sources are supported for static containers (steam)");
                 CreateArgs.Online = false;
@@ -162,7 +168,7 @@ namespace TACTLib.Client {
             if (CreateArgs.OverrideVersionName != null) {
                 InstallationInfo.Values["Version"] = CreateArgs.OverrideVersionName;
             }
-            
+
             if (CreateArgs.Online) {
                 CDNClient = createArgs.CustomCDNClient ?? new HttpCDNClient(null);
                 CDNClient.SetClientHandler(this);
@@ -199,8 +205,8 @@ namespace TACTLib.Client {
             if (CreateArgs.UseContainer) {
                 Logger.Info("CASC", "Initializing...");
                 if (IsStaticContainer) {
-                    ContainerHandler = new StaticContainerHandler(this);
-                } else {
+					ContainerHandler = CreateStaticContainerHandler() ?? throw new NotImplementedException($"Product \"{Product}\" as static container is not supported.");
+				} else {
                     using var _ = new PerfCounter("ContainerHandler::ctor`ClientHandler");
                     ContainerHandler = new ContainerHandler(this);
                 }
@@ -224,16 +230,22 @@ namespace TACTLib.Client {
             // for testing local cdn index init but remote data:
             //ContainerHandler = null;
 
-            using (var _ = new PerfCounter("EncodingHandler::ctor`ClientHandler"))
-                EncodingHandler = new EncodingHandler(this);
+			if (ConfigHandler.BuildConfig.Encoding != null) {
+				using (var _ = new PerfCounter("EncodingHandler::ctor`ClientHandler"))
+					EncodingHandler = new EncodingHandler(this);
+			}
 
-            if (ConfigHandler.BuildConfig.VFSRoot != null && CreateArgs.LoadVFS) {
-                using var _ = new PerfCounter("VFSFileTree::ctor`ClientHandler");
-                using var vfsStream = OpenCKey(ConfigHandler.BuildConfig.VFSRoot!.ContentKey)!;
-                VFS = new VFSFileTree(this, vfsStream);
-            }
+			if (ConfigHandler.BuildConfig.VFSRoot != null && CreateArgs.LoadVFS) {
+				using var _ = new PerfCounter("VFSFileTree::ctor`ClientHandler");
+				using var vfsStream =
+					OpenCKey(ConfigHandler.BuildConfig.VFSRoot!.ContentKey) ??
+					OpenEKey(ConfigHandler.BuildConfig.VFSRoot!.EncodingKey, ConfigHandler.BuildConfig.VFSRootSize!.EncodedSize, ConfigHandler.BuildConfig.VFSRootESpec?.FirstOrDefault());
+				if (vfsStream != null) {
+					VFS = new VFSFileTree(this, vfsStream);
+				}
+			}
 
-            if (CreateArgs.LoadRoot)
+			if (CreateArgs.LoadRoot)
             {
                 ProductHandler = CreateProductHandler();
             }
@@ -241,10 +253,15 @@ namespace TACTLib.Client {
             Logger.Info("CASC", "Ready");
         }
 
-        public IProductHandler? CreateProductHandler() {
-            using var _ = new PerfCounter("ProductHandlerFactory::GetHandler`TACTProduct`ClientHandler`Stream");
-            return ProductHandlerFactory.GetHandler(Product, this, OpenCKey(ConfigHandler.BuildConfig.Root.ContentKey));
-        }
+		public IProductHandler? CreateProductHandler() {
+			using var _ = new PerfCounter("ProductHandlerFactory::GetHandler`TACTProduct`ClientHandler`Stream");
+			return ProductHandlerFactory.GetHandler(Product, this, ConfigHandler.BuildConfig.Root is {} root ? OpenCKey(root.ContentKey) : null);
+		}
+
+		public IContainerHandler? CreateStaticContainerHandler() {
+			using var _ = new PerfCounter("StaticContainerHandlerFactory::GetHandler`TACTProduct`ClientHandler");
+			return StaticContainerHandlerFactory.GetHandler(Product, this);
+		}
 
         private bool CanShareCDNData([NotNullWhen(true)] ClientHandler? other) {
             if (other?.CDNIndex == null) return false;
@@ -270,8 +287,8 @@ namespace TACTLib.Client {
             return true;
         }
 
-        public Stream? OpenEKey(FullEKey fullEKey, int eSize) {  // ekey = value of ckey in encoding table
-            var fromContainer = TryOpenEKeyFromContainer(fullEKey, eSize);
+        public Stream? OpenEKey(FullEKey fullEKey, int eSize, string? espec) {  // ekey = value of ckey in encoding table
+            var fromContainer = TryOpenEKeyFromContainer(fullEKey, eSize, espec);
             if (fromContainer != null) return fromContainer;
 
             return TryOpenEKeyFromRemote(fullEKey, eSize);
@@ -301,17 +318,17 @@ namespace TACTLib.Client {
             if (EncodingHandler == null) return null; // cant get here but okay
 
             foreach (var ekey in eKeys) {
-                var fromContainer = TryOpenEKeyFromContainer(ekey, EncodingHandler.GetEncodedSize(ekey));
+                var fromContainer = TryOpenEKeyFromContainer(ekey, EncodingHandler.GetEncodedSize(ekey), null);
                 if (fromContainer != null) return fromContainer;
             }
             return null;
         }
 
-        private Stream? TryOpenEKeyFromContainer(FullEKey fullEKey, int eSize) {
+        private Stream? TryOpenEKeyFromContainer(FullEKey fullEKey, int eSize, string? espec) {
             if (ContainerHandler == null) return null;
             if (!ContainerHandler.CheckResidency(fullEKey)) return null;
             try {
-                var cascBlte = OpenEKeyFromContainer(fullEKey, eSize);
+                var cascBlte = OpenEKeyFromContainer(fullEKey, eSize, espec);
                 if (cascBlte != null) return cascBlte;
             } catch (Exception e) {
                 if (e is BLTEKeyException) throw;
@@ -321,11 +338,11 @@ namespace TACTLib.Client {
             return null;
         }
 
-        private Stream? OpenEKeyFromContainer(FullEKey fullEKey, int eSize) {  // ekey = value of ckey in encoding table
+        private Stream? OpenEKeyFromContainer(FullEKey fullEKey, int eSize, string? espec) {  // ekey = value of ckey in encoding table
             if (ContainerHandler == null) return null;
             var fromContainer = ContainerHandler.OpenEKey(fullEKey, eSize);
             if (fromContainer == null) throw new Exception($"failed to load local file {fullEKey.ToHexString()} (it was marked resident)");
-            return TryDecodeToStream(fromContainer);
+            return TryDecodeToStream(fromContainer, espec);
         }
 
         private Stream? TryOpenEKeyFromRemote(FullEKey fullEKey, int eSize) {
@@ -346,7 +363,7 @@ namespace TACTLib.Client {
             if (!CDNIndex.TryGetIndexEntry(fullEKey, out var cdnIdx)) return null;
             var encodedData = CDNIndex.OpenIndexEntry(cdnIdx);
             if (encodedData == null) throw new Exception($"failed to fetch archived cdn file {fullEKey.ToHexString()}");
-            return TryDecodeToStream(encodedData);
+            return TryDecodeToStream(encodedData, null);
         }
 
         private Stream? TryOpenRemoteLooseFile(FullEKey fullKey) {
@@ -354,15 +371,37 @@ namespace TACTLib.Client {
             if (!CDNIndex.IsLooseFile(fullKey)) return null;
             var encodedData = CDNClient!.FetchLooseData(fullKey);
             if (encodedData == null) throw new Exception($"failed to fetch loose cdn file {fullKey.ToHexString()}");
-            return TryDecodeToStream(encodedData);
+            return TryDecodeToStream(encodedData, null);
         }
 
-        private MemoryStream? TryDecodeToStream(ArraySegment<byte>? data) {
-            if (data == null) return null;
-            return new MemoryStream(BLTEDecoder.Decode(this, data.Value.AsSpan()), false);
-        }
+		private MemoryStream? TryDecodeToStream(ArraySegment<byte>? data, string? espec) {
+			if (data == null) {
+				return null;
+			}
 
-        public Stream? OpenConfigKey(string key) {
+			espec ??= "b";
+			if (espec == "b" || espec.StartsWith("b:")) {
+				return new MemoryStream(BLTEDecoder.Decode(this, data.Value.AsSpan()), false);
+			}
+
+			if (espec == "z" || espec.StartsWith("z:")) {
+				var mem = data.Value.AsMemory();
+				using var pin = mem.Pin();
+				unsafe {
+					using var ums = new UnmanagedMemoryStream((byte*) pin.Pointer, mem.Length);
+					using var z = new ZLibStream(ums, CompressionMode.Decompress);
+					var stream = new MemoryStream();
+					z.CopyTo(stream);
+					stream.Position = 0;
+					return stream;
+				}
+			}
+
+			// todo: whag
+			return null;
+		}
+
+		public Stream? OpenConfigKey(string key) {
             if (ContainerHandler is StaticContainerHandler) {
                 throw new Exception("this method is not supported for static containers");
             }

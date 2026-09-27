@@ -23,11 +23,11 @@ namespace TACTLib.Core {
         private readonly byte[] ESpecBlock;
 
         public EncodingHandler(ClientHandler client) : this(client,
-            client.ConfigHandler.BuildConfig.Encoding.EncodingKey, client.ConfigHandler.BuildConfig.EncodingSize!.EncodedSize)
+            client.ConfigHandler.BuildConfig.Encoding!.EncodingKey, client.ConfigHandler.BuildConfig.EncodingSize!.EncodedSize)
         {
         }
 
-        public EncodingHandler(ClientHandler client, FullEKey eKey, int eSize) : this(client.OpenEKey(eKey, eSize))
+        public EncodingHandler(ClientHandler client, FullEKey eKey, int eSize) : this(client.OpenEKey(eKey, eSize, null))
         {
         }
 
@@ -184,7 +184,7 @@ namespace TACTLib.Core {
                 foundEntry = entries[foundIndex];
                 return true;
             }
-            
+
             NOT_FOUND:
             foundEntry = default;
             return false;
@@ -200,7 +200,7 @@ namespace TACTLib.Core {
 
             return checked((int)foundEntry.FileSize.ToInt());
         }
-        
+
         public int? GetESpecIndex(FullEKey ekey) {
             if (!TryGetEKeyESpecEntry(ekey, out var foundEntry))
             {
