@@ -73,9 +73,9 @@ namespace TACTLib.Core.VFS {
                 return stream;
             }
 
-            if (vfsFile is { CSize: 0, ESize: 0 }) {
-                if (_client.IsStaticContainer || _client.EncodingHandler == null) {
-                    throw new NotImplementedException("where esize?");
+            if (vfsFile.ESize == 0) {
+                if (_client.EncodingHandler == null) {
+                    throw new NotSupportedException("where esize?");
                 }
 
                 vfsFile.ESize = _client.EncodingHandler.GetEncodedSize(vfsFile.EKey);
