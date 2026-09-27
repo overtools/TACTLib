@@ -388,8 +388,7 @@ namespace TACTLib.Client {
                 return null;
             }
 
-            espec ??= "b";
-            if (espec == "b" || espec.StartsWith("b:")) {
+            if (espec is null or "b" || espec.StartsWith("b:")) {
                 return new MemoryStream(BLTEDecoder.Decode(this, data.Value.AsSpan()), false);
             }
 
