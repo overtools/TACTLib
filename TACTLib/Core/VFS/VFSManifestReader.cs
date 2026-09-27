@@ -367,33 +367,33 @@ namespace TACTLib.Core.VFS {
             // todo: patch support
 
             var eSpec = default(string?);
-    		if (eSpecOffset > -1) {
-				reader.BaseStream.Position = manifest.EstTableOffset + eSpecOffset;
-				eSpec = reader.ReadCString();
-			}
+            if (eSpecOffset > -1) {
+                reader.BaseStream.Position = manifest.EstTableOffset + eSpecOffset;
+                eSpec = reader.ReadCString();
+            }
             var file = new VFSFile {
-				Name = null,
+                Name = null,
                 Offset = fileOffset,
                 EKey = eKey,
-				ESpec = eSpec,
-				ESize = encSize,
-				CKey = cKey,
-				CSize = spanSize,
+                ESpec = eSpec,
+                ESize = encSize,
+                CKey = cKey,
+                CSize = spanSize,
             };
             return file;
         }
 
-		private static int ReadVarOfs(BinaryReader reader, int size) =>
-			size switch {
-				0 => -1,
-				1 => reader.ReadByte(),
-				2 => reader.ReadInt16BE(),
-				3 => reader.ReadInt24BE(),
-				4 => reader.ReadInt32BE(),
-				_ => -1
-			};
+        private static int ReadVarOfs(BinaryReader reader, int size) =>
+            size switch {
+                0 => -1,
+                1 => reader.ReadByte(),
+                2 => reader.ReadInt16BE(),
+                3 => reader.ReadInt24BE(),
+                4 => reader.ReadInt32BE(),
+                _ => -1
+            };
 
-		private static string AppendNodeToPath(PathEntry entry, string path) {
+        private static string AppendNodeToPath(PathEntry entry, string path) {
             if ((entry.NodeFlags & PathEntryFlags.PATH_SEPARATOR_PRE) != 0)
                 path += "/";
 
