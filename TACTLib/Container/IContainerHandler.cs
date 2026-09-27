@@ -2,7 +2,7 @@ using System;
 
 namespace TACTLib.Container {
     public interface IContainerHandler {
-        ArraySegment<byte>? OpenEKey(FullEKey ekey, int eSize, string? meta = null);
-        bool CheckResidency(FullEKey ekey, string? meta = null);
+        ArraySegment<byte>? OpenEKey(FullEKey ekey, int eSize);
+        bool CheckResidency(FullEKey ekey);
     }
 }

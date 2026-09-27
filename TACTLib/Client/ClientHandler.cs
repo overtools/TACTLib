@@ -231,21 +231,30 @@ namespace TACTLib.Client {
             //ContainerHandler = null;
 
             if (ConfigHandler.BuildConfig.Encoding != null) {
-                using (var _ = new PerfCounter("EncodingHandler::ctor`ClientHandler"))
-                    EncodingHandler = new EncodingHandler(this);
+                using var _ = new PerfCounter("EncodingHandler::ctor`ClientHandler");
+                EncodingHandler = new EncodingHandler(this);
             }
 
             if (ConfigHandler.BuildConfig.VFSRoot != null && CreateArgs.LoadVFS) {
-                using var _ = new PerfCounter("VFSFileTree::ctor`ClientHandler");
-                using var vfsStream =
-                    OpenCKey(ConfigHandler.BuildConfig.VFSRoot!.ContentKey) ??
-                    OpenEKey(ConfigHandler.BuildConfig.VFSRoot!.EncodingKey, ConfigHandler.BuildConfig.VFSRootSize!.EncodedSize, ConfigHandler.BuildConfig.VFSRootESpec?.FirstOrDefault());
-                if (vfsStream != null) {
-                    VFS = new VFSFileTree(this, vfsStream);
-				}
-			}
+                using (new PerfCounter("ClientHandler::ctor``VFS")) {
+                    VFS = new VFSFileTree(this);
+                    foreach (var vfs in ConfigHandler.BuildConfig.VFS) {
+                        using var _ = new PerfCounter("VFSFileTree::ctor`ClientHandler");
+                        using var vfsStream =
+                            OpenCKey(vfs.File.ContentKey) ??
+                            OpenEKey(vfs.File.EncodingKey, vfs.Size?.EncodedSize ?? 0, vfs.Spec);
+                        if (vfsStream != null) {
+                            VFS.Load(vfsStream);
+                        }
 
-			if (CreateArgs.LoadRoot)
+                        if (!CreateArgs.LoadAllVFS) {
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (CreateArgs.LoadRoot)
             {
                 ProductHandler = CreateProductHandler();
             }
@@ -253,15 +262,15 @@ namespace TACTLib.Client {
             Logger.Info("CASC", "Ready");
         }
 
-		public IProductHandler? CreateProductHandler() {
-			using var _ = new PerfCounter("ProductHandlerFactory::GetHandler`TACTProduct`ClientHandler`Stream");
-			return ProductHandlerFactory.GetHandler(Product, this, ConfigHandler.BuildConfig.Root is {} root ? OpenCKey(root.ContentKey) : null);
-		}
+        public IProductHandler? CreateProductHandler() {
+            using var _ = new PerfCounter("ProductHandlerFactory::GetHandler`TACTProduct`ClientHandler`Stream");
+            return ProductHandlerFactory.GetHandler(Product, this, ConfigHandler.BuildConfig.Root is {} root ? OpenCKey(root.ContentKey) : null);
+        }
 
-		public IContainerHandler? CreateStaticContainerHandler() {
-			using var _ = new PerfCounter("StaticContainerHandlerFactory::GetHandler`TACTProduct`ClientHandler");
-			return StaticContainerHandlerFactory.GetHandler(Product, this);
-		}
+        public IContainerHandler? CreateStaticContainerHandler() {
+            using var _ = new PerfCounter("StaticContainerHandlerFactory::GetHandler`TACTProduct`ClientHandler");
+            return StaticContainerHandlerFactory.GetHandler(Product, this);
+        }
 
         private bool CanShareCDNData([NotNullWhen(true)] ClientHandler? other) {
             if (other?.CDNIndex == null) return false;
@@ -374,34 +383,34 @@ namespace TACTLib.Client {
             return TryDecodeToStream(encodedData, null);
         }
 
-		private MemoryStream? TryDecodeToStream(ArraySegment<byte>? data, string? espec) {
-			if (data == null) {
-				return null;
-			}
+        private MemoryStream? TryDecodeToStream(ArraySegment<byte>? data, string? espec) {
+            if (data == null) {
+                return null;
+            }
 
-			espec ??= "b";
-			if (espec == "b" || espec.StartsWith("b:")) {
-				return new MemoryStream(BLTEDecoder.Decode(this, data.Value.AsSpan()), false);
-			}
+            espec ??= "b";
+            if (espec == "b" || espec.StartsWith("b:")) {
+                return new MemoryStream(BLTEDecoder.Decode(this, data.Value.AsSpan()), false);
+            }
 
-			if (espec == "z" || espec.StartsWith("z:")) {
-				var mem = data.Value.AsMemory();
-				using var pin = mem.Pin();
-				unsafe {
-					using var ums = new UnmanagedMemoryStream((byte*) pin.Pointer, mem.Length);
-					using var z = new ZLibStream(ums, CompressionMode.Decompress);
-					var stream = new MemoryStream();
-					z.CopyTo(stream);
-					stream.Position = 0;
-					return stream;
-				}
-			}
+            if (espec == "z" || espec.StartsWith("z:")) {
+                var mem = data.Value.AsMemory();
+                using var pin = mem.Pin();
+                unsafe {
+                    using var ums = new UnmanagedMemoryStream((byte*) pin.Pointer, mem.Length);
+                    using var z = new ZLibStream(ums, CompressionMode.Decompress);
+                    var stream = new MemoryStream();
+                    z.CopyTo(stream);
+                    stream.Position = 0;
+                    return stream;
+                }
+            }
 
-			// todo: whag
-			return null;
-		}
+            // todo: whag
+            return null;
+        }
 
-		public Stream? OpenConfigKey(string key) {
+        public Stream? OpenConfigKey(string key) {
             if (ContainerHandler is StaticContainerHandler) {
                 throw new Exception("this method is not supported for static containers");
             }

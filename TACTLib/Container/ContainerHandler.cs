@@ -154,11 +154,11 @@ namespace TACTLib.Container {
             return OpenIndexEntry(convertedEntry);
         }
 
-        public ArraySegment<byte>? OpenEKey(FullEKey ekey, int eSize, string? meta = null) {
+        public ArraySegment<byte>? OpenEKey(FullEKey ekey, int eSize) {
             return OpenEKey(ekey.AsTruncated());
         }
 
-        public bool CheckResidency(FullEKey ekey, string? meta = null) {
+        public bool CheckResidency(FullEKey ekey) {
             return TryFindIndexEntry(ekey.AsTruncated(), out _);
         }
 

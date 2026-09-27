@@ -1,8 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 
 namespace TACTLib.Config {
+
     public class BuildConfig : Config {
         public FileRecord? Root;
         public FileRecord? Install;
@@ -10,65 +13,93 @@ namespace TACTLib.Config {
         public FileRecord? Download;
         public FileRecord? Encoding;
         public SizeRecord? EncodingSize;
-        public FileRecord? VFSRoot;
-        public SizeRecord? VFSRootSize;
-        public List<string>? VFSRootESpec;
+        public VFSRecord? VFSRoot;
+        public List<VFSRecord> VFS;
 
         public string GetBuildName() => (Values.TryGetValue("build-name", out var buildName) ? buildName.FirstOrDefault() : null) ?? "Unknown";
 
         public BuildConfig(Stream? stream) : base(stream) {
-            GetFileRecord("root", out Root);
-            GetFileRecord("install", out Install);
-            GetFileRecord("patch", out Patch);
-            GetFileRecord("download", out Download);
-            GetFileRecord("encoding", out Encoding);
-            GetSizeRecord("encoding-size", out EncodingSize);
-            GetFileRecord("vfs-root", out VFSRoot);
-            GetSizeRecord("vfs-root-size", out VFSRootSize);
-            Values.TryGetValue("vfs-root-espec", out VFSRootESpec);
+            TryGetFileRecord("root", out Root);
+            TryGetFileRecord("install", out Install);
+            TryGetFileRecord("patch", out Patch);
+            TryGetFileRecord("download", out Download);
+            TryGetFileRecord("encoding", out Encoding);
+            TryGetSizeRecord("encoding-size", out EncodingSize);
+            BuildVFS();
         }
 
-        private void GetFileRecord(string key, out FileRecord? @out) {
-            if (!Values.TryGetValue(key, out var list)) {
-                @out = null;
+        private void BuildVFS() {
+            VFS = [];
+
+            if (!TryGetVFSRecord("vfs-root", out VFSRoot)) {
                 return;
             }
-            @out = GetFileRecord(list);
+
+            VFS.Add(VFSRoot);
+            var index = 1;
+            while (TryGetVFSRecord("vfs-" + index++, out var vfs)) {
+                VFS.Add(vfs);
+            }
         }
 
-        private void GetSizeRecord(string key, out SizeRecord? @out) {
+        private bool TryGetFileRecord(string key, [MaybeNullWhen(false)] out FileRecord record) {
             if (!Values.TryGetValue(key, out var list)) {
-                @out = null;
-                return;
+                record = null;
+                return false;
             }
-            @out = new SizeRecord {
-                ContentSize = int.Parse(list[0]),
-                EncodedSize = int.Parse(list[1])
+
+            record = GetFileRecord(list);
+            return true;
+        }
+
+        private bool TryGetSizeRecord(string key, [MaybeNullWhen(false)] out SizeRecord record) {
+            if (!Values.TryGetValue(key, out var list)) {
+                record = null;
+                return false;
+            }
+
+            record = GetSizeRecord(list);
+            return true;
+        }
+
+        private bool TryGetVFSRecord(string key, [MaybeNullWhen(false)] out VFSRecord record) {
+            if (!TryGetFileRecord(key, out var file)) {
+                record = null;
+                return false;
+            }
+
+            record = new VFSRecord {
+                File = file,
+                Size = TryGetSizeRecord(key + "-size", out var size) ? size : default,
+                Spec = Values.TryGetValue(key + "-espec", out var list) ? string.Join(" ", list) : default,
             };
+            return true;
         }
 
-        private static FileRecord GetFileRecord(IReadOnlyList<string> vals) {
-            FileRecord record = new FileRecord();
+        private static FileRecord GetFileRecord(List<string> vals) => new() {
+            ContentKey = vals.Count > 0 ? CKey.FromString(vals[0]) : default,
+            EncodingKey = vals.Count > 1 ? CKey.FromString(vals[1]) : default,
+        };
 
-            if (vals.Count > 0) {
-                record.ContentKey = CKey.FromString(vals[0]);
-            }
+        private static SizeRecord GetSizeRecord(List<string> vals) => new() {
+            ContentSize = vals.Count > 0 ? int.Parse(vals[0], NumberStyles.Integer, CultureInfo.InvariantCulture) : default,
+            EncodedSize = vals.Count > 1 ? int.Parse(vals[1], NumberStyles.Integer, CultureInfo.InvariantCulture) : default,
+        };
 
-            if (vals.Count > 1) {
-                record.EncodingKey = FullEKey.FromString(vals[1]);
-            }
-
-            return record;
+        public record FileRecord {
+            public CKey ContentKey { get; init; }
+            public FullEKey EncodingKey { get; init; }
         }
 
-        public class FileRecord {
-            public CKey ContentKey;
-            public FullEKey EncodingKey;
+        public record SizeRecord {
+            public int ContentSize { get; init; }
+            public int EncodedSize { get; init; }
         }
 
-        public class SizeRecord {
-            public int ContentSize;
-            public int EncodedSize;
+        public record VFSRecord {
+            public required FileRecord File { get; init; }
+            public SizeRecord? Size { get; init; }
+            public string? Spec { get; init; }
         }
     }
 }

@@ -7,34 +7,6 @@ using TACTLib.Client;
 using TACTLib.Helpers;
 
 namespace TACTLib.Container {
-    [StaticContainerHandler(TACTProduct.Overwatch)]
-    public class StaticContainerHandler_Tank : StaticContainerHandler {
-        public StaticContainerHandler_Tank(ClientHandler client) : base(client) { }
-
-        protected override string GetFileName(ulong chunk, ulong archive, string? meta = null, int index = 0) => $"data.{chunk:D3}.{archive:D3}";
-        protected override string ContainerDirectory => "data";
-    }
-
-    [StaticContainerHandler(TACTProduct.Diablo4)]
-    public class StaticContainerHandler_Fenris : StaticContainerHandler {
-        public StaticContainerHandler_Fenris(ClientHandler client) : base(client) { }
-
-        protected override string GetFileName(ulong chunk, ulong archive, string? meta = null, int index = 0) => index switch {
-            1 => $"{chunk:D3}/{archive}-{meta ?? "meta"}.dat",
-            _ => $"{chunk:D3}/0x{archive:X04}-{meta ?? "meta"}.dat",
-        };
-
-        protected override string ContainerDirectory => "Data";
-    }
-
-    [StaticContainerHandler(TACTProduct.Diablo2)]
-    public class StaticContainerHandler_Osi : StaticContainerHandler {
-        public StaticContainerHandler_Osi(ClientHandler client) : base(client) { }
-
-        protected override string GetFileName(ulong chunk, ulong archive, string? meta = null, int index = 0) => $"{chunk:D2}-{archive:x08}.data";
-        protected override string ContainerDirectory => "data";
-    }
-
     public abstract class StaticContainerHandler : IContainerHandler {
         protected readonly ClientHandler m_client;
         protected readonly string m_basePath;
@@ -46,7 +18,7 @@ namespace TACTLib.Container {
             public byte m_chunkBits;
             public byte m_archiveBits;
             public byte m_offsetBits;
-            public int m_offsetMultiplier;
+            public uint m_offsetMultiplier;
         }
 
         protected StaticContainerHandler(ClientHandler client) {
@@ -65,12 +37,12 @@ namespace TACTLib.Container {
                     m_chunkBits = byte.Parse(keyLayoutPair.Value[0]),
                     m_archiveBits = byte.Parse(keyLayoutPair.Value[1]),
                     m_offsetBits = byte.Parse(keyLayoutPair.Value[2]),
-                    m_offsetMultiplier = keyLayoutPair.Value.Count > 3 ? int.Parse(keyLayoutPair.Value[3]) : 1
+                    m_offsetMultiplier = Math.Max(1, keyLayoutPair.Value.Count > 3 ? uint.Parse(keyLayoutPair.Value[3]) : 1),
                 };
             }
         }
 
-        protected void ExtractStorageLocation(FullEKey ekey, out ulong chunk, out ulong archive, out ulong offset, out int keyLayoutIndex) {
+        public void ExtractStorageLocation(FullEKey ekey, out ulong chunk, out ulong archive, out ulong offset, out int keyLayoutIndex) {
             //var chunk = 0ul;
             //var archive = 0ul;
             //var offset = 0ul;
@@ -95,17 +67,22 @@ namespace TACTLib.Container {
 
             var offsetBitCount = keyLayout.m_offsetBits;
             var offsetBitOffset = archiveBitOffset-offsetBitCount;
-            offset = BitHelper.ExtractRange(ekeyHiUl, (byte) offsetBitOffset, offsetBitCount) * (ulong) keyLayout.m_offsetMultiplier;
+            offset = BitHelper.ExtractRange(ekeyHiUl, (byte) offsetBitOffset, offsetBitCount) * keyLayout.m_offsetMultiplier;
         }
 
         protected abstract string ContainerDirectory { get; }
-        protected abstract string GetFileName(ulong chunk, ulong archive, string? meta = null, int index = 0);
-        protected virtual string GetFilePath(ulong chunk, ulong archive, string? meta = null, int index = 0) => Path.Join(m_basePath, ContainerDirectory, GetFileName(chunk, archive, meta, index));
+        protected abstract string GetFileName(ulong chunk, ulong archive, int index = 0);
+        protected virtual string GetFilePath(ulong chunk, ulong archive, int index = 0) => Path.Join(m_basePath, ContainerDirectory, GetFileName(chunk, archive, index));
 
-        public ArraySegment<byte>? OpenEKey(FullEKey ekey, int eSize, string? meta = null) {
+        public string GetFilePath(FullEKey ekey) {
+            ExtractStorageLocation(ekey, out var chunk, out var archive, out var offset, out var index);
+            return GetFilePath(chunk, archive, index);
+        }
+
+        public ArraySegment<byte>? OpenEKey(FullEKey ekey, int eSize) {
             ExtractStorageLocation(ekey, out var chunk, out var archive, out var offset, out var index);
 
-            using var stream = File.OpenRead(GetFilePath(chunk, archive, meta, index));
+            using var stream = File.OpenRead(GetFilePath(chunk, archive, index));
             stream.Position = (long)offset;
             var data = GC.AllocateUninitializedArray<byte>(eSize);
             stream.DefinitelyRead(data);
@@ -113,9 +90,9 @@ namespace TACTLib.Container {
             return data;
         }
 
-        public bool CheckResidency(FullEKey ekey, string? meta = null) {
+        public bool CheckResidency(FullEKey ekey) {
             ExtractStorageLocation(ekey, out var chunk, out var archive, out _, out var index);
-            return File.Exists(GetFilePath(chunk, archive, meta, index));
+            return File.Exists(GetFilePath(chunk, archive, index));
         }
     }
 }
