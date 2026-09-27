@@ -11,10 +11,10 @@ namespace TACTLib.Config {
         public FileRecord? Encoding;
         public SizeRecord? EncodingSize;
         public FileRecord? VFSRoot;
-		public SizeRecord? VFSRootSize;
-		public List<string>? VFSRootESpec;
+        public SizeRecord? VFSRootSize;
+        public List<string>? VFSRootESpec;
 
-		public string GetBuildName() => (Values.TryGetValue("build-name", out var buildName) ? buildName.FirstOrDefault() : null) ?? "Unknown";
+        public string GetBuildName() => (Values.TryGetValue("build-name", out var buildName) ? buildName.FirstOrDefault() : null) ?? "Unknown";
 
         public BuildConfig(Stream? stream) : base(stream) {
             GetFileRecord("root", out Root);
@@ -23,9 +23,9 @@ namespace TACTLib.Config {
             GetFileRecord("download", out Download);
             GetFileRecord("encoding", out Encoding);
             GetSizeRecord("encoding-size", out EncodingSize);
-			GetFileRecord("vfs-root", out VFSRoot);
-			GetSizeRecord("vfs-root-size", out VFSRootSize);
-			Values.TryGetValue("vfs-root-espec", out VFSRootESpec);
+            GetFileRecord("vfs-root", out VFSRoot);
+            GetSizeRecord("vfs-root-size", out VFSRootSize);
+            Values.TryGetValue("vfs-root-espec", out VFSRootESpec);
         }
 
         private void GetFileRecord(string key, out FileRecord? @out) {

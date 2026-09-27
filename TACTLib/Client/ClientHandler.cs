@@ -111,10 +111,10 @@ namespace TACTLib.Client {
 
             var staticBuildConfigPath = Path.Combine(BasePath, "data", ".build.config"); // todo: um
             IsStaticContainer = File.Exists(staticBuildConfigPath);
-			if (!IsStaticContainer) {
-				staticBuildConfigPath = Path.Combine(BasePath, "Data", ".build.config"); // todo: um x2 (thx fenris.)
-				IsStaticContainer = File.Exists(staticBuildConfigPath);
-			}
+            if (!IsStaticContainer) {
+                staticBuildConfigPath = Path.Combine(BasePath, "Data", ".build.config"); // todo: um x2 (thx fenris.)
+                IsStaticContainer = File.Exists(staticBuildConfigPath);
+            }
 
             if (IsStaticContainer) {
                 if (CreateArgs.VersionSource != ClientCreateArgs.InstallMode.Local) throw new Exception("only local version sources are supported for static containers (steam)");
@@ -205,8 +205,8 @@ namespace TACTLib.Client {
             if (CreateArgs.UseContainer) {
                 Logger.Info("CASC", "Initializing...");
                 if (IsStaticContainer) {
-					ContainerHandler = CreateStaticContainerHandler() ?? throw new NotImplementedException($"Product \"{Product}\" as static container is not supported.");
-				} else {
+                    ContainerHandler = CreateStaticContainerHandler() ?? throw new NotImplementedException($"Product \"{Product}\" as static container is not supported.");
+                } else {
                     using var _ = new PerfCounter("ContainerHandler::ctor`ClientHandler");
                     ContainerHandler = new ContainerHandler(this);
                 }
@@ -230,18 +230,18 @@ namespace TACTLib.Client {
             // for testing local cdn index init but remote data:
             //ContainerHandler = null;
 
-			if (ConfigHandler.BuildConfig.Encoding != null) {
-				using (var _ = new PerfCounter("EncodingHandler::ctor`ClientHandler"))
-					EncodingHandler = new EncodingHandler(this);
-			}
+            if (ConfigHandler.BuildConfig.Encoding != null) {
+                using (var _ = new PerfCounter("EncodingHandler::ctor`ClientHandler"))
+                    EncodingHandler = new EncodingHandler(this);
+            }
 
-			if (ConfigHandler.BuildConfig.VFSRoot != null && CreateArgs.LoadVFS) {
-				using var _ = new PerfCounter("VFSFileTree::ctor`ClientHandler");
-				using var vfsStream =
-					OpenCKey(ConfigHandler.BuildConfig.VFSRoot!.ContentKey) ??
-					OpenEKey(ConfigHandler.BuildConfig.VFSRoot!.EncodingKey, ConfigHandler.BuildConfig.VFSRootSize!.EncodedSize, ConfigHandler.BuildConfig.VFSRootESpec?.FirstOrDefault());
-				if (vfsStream != null) {
-					VFS = new VFSFileTree(this, vfsStream);
+            if (ConfigHandler.BuildConfig.VFSRoot != null && CreateArgs.LoadVFS) {
+                using var _ = new PerfCounter("VFSFileTree::ctor`ClientHandler");
+                using var vfsStream =
+                    OpenCKey(ConfigHandler.BuildConfig.VFSRoot!.ContentKey) ??
+                    OpenEKey(ConfigHandler.BuildConfig.VFSRoot!.EncodingKey, ConfigHandler.BuildConfig.VFSRootSize!.EncodedSize, ConfigHandler.BuildConfig.VFSRootESpec?.FirstOrDefault());
+                if (vfsStream != null) {
+                    VFS = new VFSFileTree(this, vfsStream);
 				}
 			}
 

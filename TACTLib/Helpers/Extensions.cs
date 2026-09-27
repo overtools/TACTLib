@@ -95,13 +95,13 @@ namespace TACTLib.Helpers {
             return (short)ReadUInt16BE(reader);
         }
 
-		/// <summary>Read a big endian 16-bit uint</summary>
-		// ReSharper disable once InconsistentNaming
-		public static ushort ReadUInt16BE(this BinaryReader reader)
-		{
-			var s = reader.Read<UInt16BE>();
-			return s.ToInt();
-		}
+        /// <summary>Read a big endian 16-bit uint</summary>
+        // ReSharper disable once InconsistentNaming
+        public static ushort ReadUInt16BE(this BinaryReader reader)
+        {
+            var s = reader.Read<UInt16BE>();
+            return s.ToInt();
+        }
 
         /// <summary>Read a big-endian 24-bit int</summary>
         // ReSharper disable once InconsistentNaming
@@ -111,24 +111,24 @@ namespace TACTLib.Helpers {
             return s.ToInt();
         }
 
-		/// <summary>Read a big endian 32-bit uint</summary>
-		// ReSharper disable once InconsistentNaming
-		public static uint ReadUInt32BE(this BinaryReader reader)
-		{
-			var s = reader.Read<UInt32BE>();
-			return s.ToInt();
-		}
+        /// <summary>Read a big endian 32-bit uint</summary>
+        // ReSharper disable once InconsistentNaming
+        public static uint ReadUInt32BE(this BinaryReader reader)
+        {
+            var s = reader.Read<UInt32BE>();
+            return s.ToInt();
+        }
 
-		/// <summary>Read a big endian 32-bit uint</summary>
-		// ReSharper disable once InconsistentNaming
-		public static string ReadCString(this BinaryReader reader) {
-			var sb = new StringBuilder();
-			byte ch;
-			while((ch = reader.ReadByte()) != 0) {
-				sb.Append((char) ch);
-			}
-			return sb.ToString();
-		}
+        /// <summary>Read a big endian 32-bit uint</summary>
+        // ReSharper disable once InconsistentNaming
+        public static string ReadCString(this BinaryReader reader) {
+            var sb = new StringBuilder();
+            byte ch;
+            while((ch = reader.ReadByte()) != 0) {
+                sb.Append((char) ch);
+            }
+            return sb.ToString();
+        }
         #endregion
 
         /// <summary>Convert <see cref="Span{T}"/> to a hexadecimal string</summary>

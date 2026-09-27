@@ -37,20 +37,20 @@ namespace TACTLib.Core.VFS {
             Files = Array.AsReadOnly(_files.Keys.ToArray());
         }
 
-		/// <summary>
-		/// Checks if a stream is a VFS file
-		/// </summary>
-		/// <param name="stream"></param>
-		/// <returns></returns>
-		public static bool IsVFSFile(Stream stream) {
-			if (stream.Length - stream.Position < Unsafe.SizeOf<VFSManifestReader.ManifestHeader>()) {
-				return false;
-			}
+        /// <summary>
+        /// Checks if a stream is a VFS file
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <returns></returns>
+        public static bool IsVFSFile(Stream stream) {
+            if (stream.Length - stream.Position < Unsafe.SizeOf<VFSManifestReader.ManifestHeader>()) {
+                return false;
+            }
 
-			var magic = 0u;
-			stream.ReadExactly(MemoryMarshal.AsBytes(new Span<uint>(ref magic)));
-			return magic == 0x53465654;
-		}
+            var magic = 0u;
+            stream.ReadExactly(MemoryMarshal.AsBytes(new Span<uint>(ref magic)));
+            return magic == 0x53465654;
+        }
 
         /// <summary>
         /// Open file by path
@@ -59,23 +59,23 @@ namespace TACTLib.Core.VFS {
         /// <returns></returns>
         /// <exception cref="NotImplementedException">where esize?</exception>
         public Stream? Open(string file) {
-			if (!_files.TryGetValue(file, out var vfsFile)) {
-				return null;
-			}
+            if (!_files.TryGetValue(file, out var vfsFile)) {
+                return null;
+            }
 
-			if (vfsFile.CKey is {} cKey && _client.OpenCKey(cKey) is {} stream) {
-				return stream;
-			}
+            if (vfsFile.CKey is {} cKey && _client.OpenCKey(cKey) is {} stream) {
+                return stream;
+            }
 
-			if (vfsFile is { CSize: 0, ESize: 0 }) {
-				if (_client.IsStaticContainer || _client.EncodingHandler == null) {
-					throw new NotImplementedException("where esize?");
-				}
+            if (vfsFile is { CSize: 0, ESize: 0 }) {
+                if (_client.IsStaticContainer || _client.EncodingHandler == null) {
+                    throw new NotImplementedException("where esize?");
+                }
 
-				vfsFile.ESize = _client.EncodingHandler.GetEncodedSize(vfsFile.EKey);
-			}
+                vfsFile.ESize = _client.EncodingHandler.GetEncodedSize(vfsFile.EKey);
+            }
 
-			return _client.OpenEKey(vfsFile.EKey, vfsFile.CSize == 0 ?vfsFile.ESize  : vfsFile.CSize, vfsFile.ESpec);
-		}
+            return _client.OpenEKey(vfsFile.EKey, vfsFile.CSize == 0 ?vfsFile.ESize  : vfsFile.CSize, vfsFile.ESpec);
+        }
     }
 }

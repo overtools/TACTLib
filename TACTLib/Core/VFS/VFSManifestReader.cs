@@ -145,10 +145,10 @@ namespace TACTLib.Core.VFS {
             public readonly uint PathTableSize;
             public readonly uint VfsTableOffset;
             public readonly uint VfsTableSize;
-			public readonly uint CftTableOffset;
-			public readonly uint CftTableSize;
-			public readonly uint EstTableOffset;
-			public readonly uint EstTableSize;
+            public readonly uint CftTableOffset;
+            public readonly uint CftTableSize;
+            public readonly uint EstTableOffset;
+            public readonly uint EstTableSize;
             public readonly ushort MaxDepth;
 
             public readonly int CftOffsSize;
@@ -169,14 +169,14 @@ namespace TACTLib.Core.VFS {
                 MaxDepth = header.MaxDepth.ToInt();
 
                 CftOffsSize = GetOffsetFieldSize(CftTableSize);
-				if ((Flags & ManifestFlags.WRITE_SUPPORT) != 0) {
-					EstTableOffset = reader.ReadUInt32BE();
-					EstTableSize = reader.ReadUInt32BE();
-					EstOffsSize = GetOffsetFieldSize(EstTableSize);
-				}
+                if ((Flags & ManifestFlags.WRITE_SUPPORT) != 0) {
+                    EstTableOffset = reader.ReadUInt32BE();
+                    EstTableSize = reader.ReadUInt32BE();
+                    EstOffsSize = GetOffsetFieldSize(EstTableSize);
+                }
 
                 Files = [];
-			}
+            }
 
             // Returns size of "container file table offset" files in the VFS.
             // - If the container file table is larger than 0xffffff bytes, it's 4 bytes
@@ -244,9 +244,9 @@ namespace TACTLib.Core.VFS {
 
         public static Manifest Read(BinaryReader reader) {
             var header = reader.Read<ManifestHeader>();
-			if (header.Magic != 0x53465654) {
-				throw new InvalidDataException();
-			}
+            if (header.Magic != 0x53465654) {
+                throw new InvalidDataException();
+            }
 
             Manifest manifest = new Manifest(header, reader);
 
@@ -353,7 +353,7 @@ namespace TACTLib.Core.VFS {
             var fileOffset = reader.ReadInt32BE();
             spanSize = reader.ReadInt32BE();
 
-			var cftOffset = ReadVarOfs(reader, manifest.CftOffsSize);
+            var cftOffset = ReadVarOfs(reader, manifest.CftOffsSize);
 
             var cftFileTable = manifest.CftTableOffset;
             var cftFileEntry = cftFileTable + cftOffset;
@@ -361,13 +361,13 @@ namespace TACTLib.Core.VFS {
 
             reader.BaseStream.Position = cftFileEntry;
             var eKey = reader.Read<CKey>();
-			var encSize = reader.ReadInt32BE();
-			var eSpecOffset = ReadVarOfs(reader, manifest.EstOffsSize);
-			var cKey = (manifest.Flags & ManifestFlags.INCLUDE_CKEY) != 0 ? reader.Read<CKey>() : default;
-			// todo: patch support
+            var encSize = reader.ReadInt32BE();
+            var eSpecOffset = ReadVarOfs(reader, manifest.EstOffsSize);
+            var cKey = (manifest.Flags & ManifestFlags.INCLUDE_CKEY) != 0 ? reader.Read<CKey>() : default;
+            // todo: patch support
 
-			var eSpec = default(string?);
-			if (eSpecOffset > -1) {
+            var eSpec = default(string?);
+    		if (eSpecOffset > -1) {
 				reader.BaseStream.Position = manifest.EstTableOffset + eSpecOffset;
 				eSpec = reader.ReadCString();
 			}
