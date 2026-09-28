@@ -54,7 +54,12 @@ namespace TACTLib.Core.VFS {
             /// <summary>
             /// The NodeValue in path table entry is valid
             /// </summary>
-            NODE_VALUE = 0x0004
+            NODE_VALUE = 0x0004,
+
+            /// <summary>
+            /// Path is a byte sequence, not text
+            /// </summary>
+            PATH_IS_BYTES = 0x0008,
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -206,7 +211,7 @@ namespace TACTLib.Core.VFS {
             return value;
         }
 
-        private static PathEntry ReadPathEntry(BinaryReader reader, long pathTableEnd) {
+        private static PathEntry ReadPathEntry(BinaryReader reader, long pathTableEnd, bool isBytes) {
             var pathEntry = new PathEntry();
 
             var bBefore = PeekByte(reader);
@@ -217,7 +222,20 @@ namespace TACTLib.Core.VFS {
 
             if (reader.BaseStream.Position < pathTableEnd && bBefore != 0xFF) {
                 var length = reader.ReadByte();
-                pathEntry.Name = Encoding.UTF8.GetString(reader.ReadBytes(length));
+                if (length > 0) {
+                    var bBeforePath = PeekByte(reader);
+                    if (bBeforePath == 0xFF && !isBytes) {
+                        pathEntry.NodeFlags |= PathEntryFlags.PATH_IS_BYTES;
+                        isBytes = true;
+                        reader.BaseStream.Position++;
+                        length--;
+                    }
+
+                    if (length > 0) {
+                        var pathBytes = reader.ReadBytes(length);
+                        pathEntry.Name = isBytes ? Convert.ToHexString(pathBytes) : Encoding.UTF8.GetString(pathBytes);
+                    }
+                }
             }
 
             var bAfter = PeekByte(reader);
@@ -278,16 +296,17 @@ namespace TACTLib.Core.VFS {
                 }
             }
 
-            ParsePathFileTable(manifest, reader, rootDirPtr, rootDirEnd, "");
+            ParsePathFileTable(manifest, reader, rootDirPtr, rootDirEnd);
         }
 
-        private static void ParsePathFileTable(Manifest manifest, BinaryReader reader, long pathTablePtr, long pathTableEnd, string pathBuffer) {
+        private static void ParsePathFileTable(Manifest manifest, BinaryReader reader, long pathTablePtr, long pathTableEnd, string pathBuffer = "", bool isBytes = false) {
             reader.BaseStream.Position = pathTablePtr;
 
             string pathBufferBak = pathBuffer;
 
             while (reader.BaseStream.Position < pathTableEnd) {
-                var entry = ReadPathEntry(reader, pathTableEnd);
+                var entry = ReadPathEntry(reader, pathTableEnd, isBytes);
+                isBytes |= (entry.NodeFlags & PathEntryFlags.PATH_IS_BYTES) != 0;
 
                 pathBuffer = AppendNodeToPath(entry, pathBuffer);
 
@@ -303,7 +322,7 @@ namespace TACTLib.Core.VFS {
                         Debug.Assert((entry.NodeValue & TVFS_FOLDER_SIZE_MASK) >= sizeof(int));
 
                         // Recursively call the folder parser on the same file
-                        ParsePathFileTable(manifest, reader, reader.BaseStream.Position, directoryEnd, pathBuffer);
+                        ParsePathFileTable(manifest, reader, reader.BaseStream.Position, directoryEnd, pathBuffer, isBytes);
 
                         // skip directory data
                         reader.BaseStream.Position = directoryEnd;
