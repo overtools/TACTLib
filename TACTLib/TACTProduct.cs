@@ -16,7 +16,7 @@ namespace TACTLib {
         /// <summary>catalogs</summary>
         Catalog,
 
-        /// <summary>osib</summary>
+        /// <summary>osi, osib, osi_dev, osi_dev_2, osi_vendor_*</summary>
         Diablo2,
 
         /// <summary>d3, d3b, d3cn, d3t</summary>
@@ -51,7 +51,7 @@ namespace TACTLib {
 
         /// <summary>odin</summary>
         ModernWarfare,
-        
+
         /// <summary>fenris</summary>
         Diablo4,
     }

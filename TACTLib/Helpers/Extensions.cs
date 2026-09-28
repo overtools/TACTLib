@@ -1,12 +1,13 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using CommunityToolkit.HighPerformance;
 
 namespace TACTLib.Helpers {
     public static class Extensions {
         #region BinaryReader
-        
+
         public static void DefinitelyRead(this Stream stream, Span<byte> buffer)
         {
             stream.ReadExactly(buffer);
@@ -16,7 +17,7 @@ namespace TACTLib.Helpers {
         {
             DefinitelyRead(reader.BaseStream, buffer);
         }
-        
+
         /// <summary>
         /// Read struct from a BinaryReader
         /// </summary>
@@ -27,14 +28,14 @@ namespace TACTLib.Helpers {
         {
             return reader.BaseStream.Read<T>();
         }
-        
+
         public static unsafe T Read<T>(this Stream stream) where T : unmanaged
         {
             var result = default(T);
             stream.DefinitelyRead(new Span<byte>(&result, sizeof(T)));
             return result;
         }
-        
+
         /// <summary>
         /// Read array of structs from a reader
         /// </summary>
@@ -46,11 +47,11 @@ namespace TACTLib.Helpers {
         {
             return reader.BaseStream.ReadArray<T>(count);
         }
-        
+
         public static T[] ReadArray<T>(this Stream stream, int count) where T : unmanaged
         {
             if (count == 0) return Array.Empty<T>();
-            
+
             var result = new T[count];
             stream.DefinitelyRead(result.AsSpan().AsBytes());
             return result;
@@ -67,7 +68,7 @@ namespace TACTLib.Helpers {
             var bytes = MemoryMarshal.CreateReadOnlySpan(ref @struct, 1).AsBytes();
             writer.Write(bytes);
         }
-        
+
         /// <summary>
         /// Write an array of structs to a BinaryWriter
         /// </summary>
@@ -79,7 +80,7 @@ namespace TACTLib.Helpers {
             var bytes = @struct.AsSpan().AsBytes();
             writer.Write(bytes);
         }
-        
+
         /// <summary>Read a big endian 32-bit int</summary>
         // ReSharper disable once InconsistentNaming
         public static int ReadInt32BE(this BinaryReader reader)
@@ -93,7 +94,7 @@ namespace TACTLib.Helpers {
         {
             return (short)ReadUInt16BE(reader);
         }
-        
+
         /// <summary>Read a big endian 16-bit uint</summary>
         // ReSharper disable once InconsistentNaming
         public static ushort ReadUInt16BE(this BinaryReader reader)
@@ -109,8 +110,27 @@ namespace TACTLib.Helpers {
             var s = reader.Read<UInt24BE>();
             return s.ToInt();
         }
+
+        /// <summary>Read a big endian 32-bit uint</summary>
+        // ReSharper disable once InconsistentNaming
+        public static uint ReadUInt32BE(this BinaryReader reader)
+        {
+            var s = reader.Read<UInt32BE>();
+            return s.ToInt();
+        }
+
+        /// <summary>Read a big endian 32-bit uint</summary>
+        // ReSharper disable once InconsistentNaming
+        public static string ReadCString(this BinaryReader reader) {
+            var sb = new StringBuilder();
+            byte ch;
+            while((ch = reader.ReadByte()) != 0) {
+                sb.Append((char) ch);
+            }
+            return sb.ToString();
+        }
         #endregion
-        
+
         /// <summary>Convert <see cref="Span{T}"/> to a hexadecimal string</summary>
         public static string ToHexString(this ReadOnlySpan<byte> data)
         {
