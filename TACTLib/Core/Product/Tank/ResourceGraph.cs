@@ -284,7 +284,8 @@ namespace TACTLib.Core.Product.Tank {
             stream.Position = 0;
             header = readHeader(stream);
 
-            var magic = header.m_footerMagic >> 8;
+            // encrypted magic is byte-swapped, so the version byte is at the bottom instead of the top
+            var magic = header.IsEncrypted() ? header.m_footerMagic >> 8 : header.m_footerMagic & 0xFFFFFF;
             if (magic != TRGHeader.ENCRYPTED_MAGIC && magic != TRGHeader.UNENCRYPTED_MAGIC)
             {
                 // footer magic isn't in the right place, we can't check the version
@@ -334,8 +335,8 @@ namespace TACTLib.Core.Product.Tank {
                 m_header = ReadHeader(stream);
 
                 var version = m_header.GetVersion();
-                if (version is < 5 or > 13) {
-                    throw new UnsupportedBuildVersionException($"unable to parse TRG. invalid version {version}, expected 5, 6, 7, 8, 9, 10, 11, 12 or 13");
+                if (version is < 5 or > 14) {
+                    throw new UnsupportedBuildVersionException($"unable to parse TRG. invalid version {version}, expected 5, 6, 7, 8, 9, 10, 11, 12, 13 or 14");
                 }
 
                 // version 7: type bundle index added
