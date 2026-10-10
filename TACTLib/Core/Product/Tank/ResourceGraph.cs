@@ -131,7 +131,7 @@ namespace TACTLib.Core.Product.Tank {
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
-        public struct TRGHeader { // version 13
+        public struct TRGHeader { // versions 13 and 14
             public uint m_0; // 0
             public uint m_buildVersion; // 4
             public uint m_8; // 8
@@ -152,7 +152,7 @@ namespace TACTLib.Core.Product.Tank {
             public uint m_ver13_a; // new
             public uint m_ver13_b; // new
             public uint m_ver13_c; // new
-            public uint m_footerMagic; // 76
+            public uint m_footerMagic; // 80
             public uint m_ver13_d; // probably padding
 
             public const uint UNENCRYPTED_MAGIC = 0x747267;
@@ -284,7 +284,8 @@ namespace TACTLib.Core.Product.Tank {
             stream.Position = 0;
             header = readHeader(stream);
 
-            var magic = header.m_footerMagic >> 8;
+            // Encrypted magic is byte-swapped; unencrypted magic has the version in the high byte.
+            var magic = header.IsEncrypted() ? header.m_footerMagic >> 8 : header.m_footerMagic & 0xFFFFFF;
             if (magic != TRGHeader.ENCRYPTED_MAGIC && magic != TRGHeader.UNENCRYPTED_MAGIC)
             {
                 // footer magic isn't in the right place, we can't check the version
@@ -334,8 +335,8 @@ namespace TACTLib.Core.Product.Tank {
                 m_header = ReadHeader(stream);
 
                 var version = m_header.GetVersion();
-                if (version is < 5 or > 13) {
-                    throw new UnsupportedBuildVersionException($"unable to parse TRG. invalid version {version}, expected 5, 6, 7, 8, 9, 10, 11, 12 or 13");
+                if (version is < 5 or > 14) {
+                    throw new UnsupportedBuildVersionException($"unable to parse TRG. invalid version {version}, expected 5 through 14");
                 }
 
                 // version 7: type bundle index added
