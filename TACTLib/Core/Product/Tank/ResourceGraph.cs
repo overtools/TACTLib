@@ -284,9 +284,8 @@ namespace TACTLib.Core.Product.Tank {
             stream.Position = 0;
             header = readHeader(stream);
 
-            // Encrypted magic is byte-swapped; unencrypted magic has the version in the high byte.
-            var magic = header.IsEncrypted() ? header.m_footerMagic >> 8 : header.m_footerMagic & 0xFFFFFF;
-            if (magic != TRGHeader.ENCRYPTED_MAGIC && magic != TRGHeader.UNENCRYPTED_MAGIC)
+            var magic = header.GetNonEncryptedMagic() & 0xFFFFFF;
+            if (magic != TRGHeader.UNENCRYPTED_MAGIC)
             {
                 // footer magic isn't in the right place, we can't check the version
                 return false;
@@ -345,6 +344,7 @@ namespace TACTLib.Core.Product.Tank {
                 // s17: no version change but 1 bit was stolen from magic (shift for version number changed)...
                 // version 12(s18): shift change undone, graph changed to raise size limit
                 // version 13: 2 u32 (+1 u32, likely padding)
+                // version 14(s25): unknown
 
                 var isEnc = m_header.IsEncrypted();
 

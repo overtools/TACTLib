@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers.Binary;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -74,11 +75,12 @@ namespace TACTLib.Core.Product.Tank {
             public uint m_magic;
 
             public uint GetNonEncryptedMagic() {
-                return (uint) (0x00666D63u | (GetVersion() << 24));
+                if (!IsEncrypted()) return m_magic;
+                return BinaryPrimitives.ReverseEndianness(m_magic);
             }
 
             public byte GetVersion() {
-                return IsEncrypted() ? (byte) (m_magic & 0x000000FF) : (byte) ((m_magic & 0xFF000000) >> 24);
+                return (byte)(GetNonEncryptedMagic() >> 24);
             }
 
             public bool IsEncrypted() {
