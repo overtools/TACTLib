@@ -6,7 +6,7 @@ using CommunityToolkit.HighPerformance;
 namespace TACTLib.Helpers {
     public static class Extensions {
         #region BinaryReader
-        
+
         public static void DefinitelyRead(this Stream stream, Span<byte> buffer)
         {
             stream.ReadExactly(buffer);
@@ -16,7 +16,7 @@ namespace TACTLib.Helpers {
         {
             DefinitelyRead(reader.BaseStream, buffer);
         }
-        
+
         /// <summary>
         /// Read struct from a BinaryReader
         /// </summary>
@@ -27,14 +27,14 @@ namespace TACTLib.Helpers {
         {
             return reader.BaseStream.Read<T>();
         }
-        
+
         public static unsafe T Read<T>(this Stream stream) where T : unmanaged
         {
             var result = default(T);
             stream.DefinitelyRead(new Span<byte>(&result, sizeof(T)));
             return result;
         }
-        
+
         /// <summary>
         /// Read array of structs from a reader
         /// </summary>
@@ -46,14 +46,32 @@ namespace TACTLib.Helpers {
         {
             return reader.BaseStream.ReadArray<T>(count);
         }
-        
+
         public static T[] ReadArray<T>(this Stream stream, int count) where T : unmanaged
         {
             if (count == 0) return Array.Empty<T>();
-            
+
             var result = new T[count];
             stream.DefinitelyRead(result.AsSpan().AsBytes());
             return result;
+        }
+
+        /// <summary>
+        /// Peek a value from the stream without incrementing the position
+        /// </summary>
+        /// <param name="reader">Target reader</param>
+        /// <typeparam name="T">Struct to read</typeparam>
+        /// <returns>Read struct</returns>
+        public static T Peek<T>(this BinaryReader reader) where T : unmanaged
+        {
+            return reader.BaseStream.Peek<T>();
+        }
+
+        public static unsafe T Peek<T>(this Stream stream) where T : unmanaged
+        {
+            var value = stream.Read<T>();
+            stream.Position -= sizeof(T);
+            return value;
         }
 
         /// <summary>
@@ -67,7 +85,7 @@ namespace TACTLib.Helpers {
             var bytes = MemoryMarshal.CreateReadOnlySpan(ref @struct, 1).AsBytes();
             writer.Write(bytes);
         }
-        
+
         /// <summary>
         /// Write an array of structs to a BinaryWriter
         /// </summary>
@@ -79,7 +97,7 @@ namespace TACTLib.Helpers {
             var bytes = @struct.AsSpan().AsBytes();
             writer.Write(bytes);
         }
-        
+
         /// <summary>Read a big endian 32-bit int</summary>
         // ReSharper disable once InconsistentNaming
         public static int ReadInt32BE(this BinaryReader reader)
@@ -93,7 +111,7 @@ namespace TACTLib.Helpers {
         {
             return (short)ReadUInt16BE(reader);
         }
-        
+
         /// <summary>Read a big endian 16-bit uint</summary>
         // ReSharper disable once InconsistentNaming
         public static ushort ReadUInt16BE(this BinaryReader reader)
@@ -110,7 +128,7 @@ namespace TACTLib.Helpers {
             return s.ToInt();
         }
         #endregion
-        
+
         /// <summary>Convert <see cref="Span{T}"/> to a hexadecimal string</summary>
         public static string ToHexString(this ReadOnlySpan<byte> data)
         {
