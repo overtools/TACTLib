@@ -77,8 +77,10 @@ public class ProductHandler_Fenris : IProductHandler {
 			return null;
 		}
 
-		using var locStream = Client.VFS.Open(path);
-		return new VFSFileTree(Client, locStream!);
+		using var stream = Client.VFS.Open(path);
+		var vfs = new VFSFileTree(Client);
+		vfs.Load(stream);
+		return vfs;
 	}
 
 	private SnoManifest? LoadManifest(string path, Locale locale, SnoManifestRole role) {
@@ -370,7 +372,9 @@ public class ProductHandler_Fenris : IProductHandler {
 
 	public EncryptedSnos EncryptedSnos { get; }
 	public ReplacedSnos ReplacedSnos { get; }
+
 	public SharedPayloadsMapping SharedPayloads { get; }
+
 	// this is horribly inefficient
 	public Dictionary<SnoGroup, Dictionary<SnoManifestRole, List<GlobalSnoData>>> GlobalLocalizedSnoData { get; } = [];
 	public Dictionary<SnoGroup, Dictionary<SnoManifestRole, List<GlobalSnoData>>> GlobalSnoData { get; } = [];

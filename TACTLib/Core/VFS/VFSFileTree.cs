@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -13,44 +12,51 @@ namespace TACTLib.Core.VFS {
         private readonly ClientHandler _client;
 
         private readonly Dictionary<string, VFSFile> _files;
-        private readonly VFSManifestReader.Manifest _manifest;
+        private readonly List<VFSManifestReader.Manifest> _manifests;
 
-        public readonly ReadOnlyCollection<string> Files;
+        public IEnumerable<string> Files => _files.Keys;
 
-        public VFSFileTree(ClientHandler client, Stream stream) {
+        public VFSFileTree(ClientHandler client) {
             _client = client;
-            using BinaryReader reader = new BinaryReader(stream, Encoding.ASCII);
-            //using (Stream file = File.OpenWrite("vfs.hex")) {
-            //    stream.CopyTo(file);
-            //    stream.Position = 0;
-            //}
+            _files = [];
+            _manifests = [];
+        }
 
-            _manifest = VFSManifestReader.Read(reader);
+        public bool Load(Stream? stream) {
+            if (!IsVFSFile(stream)) {
+                return false;
+            }
 
-            _files = new Dictionary<string, VFSFile>(_manifest.Files.Count);
-            foreach (VFSFile file in _manifest.Files) {
+            using var reader = new BinaryReader(stream, Encoding.ASCII);
+
+            var manifest = VFSManifestReader.Read(reader);
+            _manifests.Add(manifest);
+
+            _files.EnsureCapacity(_files.Count + manifest.Files.Count);
+            foreach (var file in manifest.Files) {
                 if (file.Name != null) {
-                    _files[file.Name] = file;
+                    _files.Add(file.Name, file);
                 }
             }
 
-            Files = Array.AsReadOnly(_files.Keys.ToArray());
+            return true;
         }
 
-		/// <summary>
-		/// Checks if a stream is a VFS file
-		/// </summary>
-		/// <param name="stream"></param>
-		/// <returns></returns>
-		public static bool IsVFSFile(Stream stream) {
-			if (stream.Length - stream.Position < Unsafe.SizeOf<VFSManifestReader.ManifestHeader>()) {
-				return false;
-			}
+        /// <summary>
+        /// Checks if a stream is a VFS file
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <returns></returns>
+        public static bool IsVFSFile([NotNullWhen(true)] Stream? stream) {
+            if (stream == null || stream.Length - stream.Position < Unsafe.SizeOf<VFSManifestReader.ManifestHeader>()) {
+                return false;
+            }
 
-			var magic = 0u;
-			stream.ReadExactly(MemoryMarshal.AsBytes(new Span<uint>(ref magic)));
-			return magic == 0x53465654;
-		}
+            var magic = 0u;
+            stream.ReadExactly(MemoryMarshal.AsBytes(new Span<uint>(ref magic)));
+            stream.Position -= sizeof(uint);
+            return magic == 0x53465654;
+        }
 
         /// <summary>
         /// Open file by path
@@ -59,19 +65,23 @@ namespace TACTLib.Core.VFS {
         /// <returns></returns>
         /// <exception cref="NotImplementedException">where esize?</exception>
         public Stream? Open(string file) {
-			if (!_files.TryGetValue(file, out var vfsFile)) {
-				return null;
-			}
+            if (!_files.TryGetValue(file, out var vfsFile)) {
+                return null;
+            }
 
-			if (vfsFile is VFSCFile cFile) {
-				return _client.OpenCKey(cFile.CKey);
-			}
+            if (vfsFile.CKey is {} cKey && _client.OpenCKey(cKey) is {} stream) {
+                return stream;
+            }
 
-			if (_client.IsStaticContainer && vfsFile.ContentSize == 0) {
-				throw new NotImplementedException("where esize?");
-			}
+            if (vfsFile.ESize == 0) {
+                if (_client.EncodingHandler == null) {
+                    throw new NotSupportedException("where esize?");
+                }
 
-			return _client.OpenEKey(vfsFile.EKey, vfsFile.ContentSize == 0 ? _client.EncodingHandler!.GetEncodedSize(vfsFile.EKey) : vfsFile.ContentSize);
-		}
+                vfsFile.ESize = _client.EncodingHandler.GetEncodedSize(vfsFile.EKey);
+            }
+
+            return _client.OpenEKey(vfsFile.EKey, vfsFile.ESize, vfsFile.ESpec);
+        }
     }
 }

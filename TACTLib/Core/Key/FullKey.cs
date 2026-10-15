@@ -13,7 +13,6 @@ namespace TACTLib.Core.Key {
     /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     [InlineArray(CASC_FULL_KEY_SIZE)]
-    [DebuggerDisplay("{ToHexString()}")]
     [SuppressMessage("ReSharper", "UseSymbolAlias")]
     public struct FullKey : IComparable<FullKey>, IEquatable<FullKey> {
         // ReSharper disable once InconsistentNaming
@@ -29,6 +28,8 @@ namespace TACTLib.Core.Key {
         public readonly string ToHexString() {
             return Extensions.ToHexString(this);
         }
+
+        public override string ToString() => ToHexString();
 
         /// <summary>
         /// Create from a hex string
