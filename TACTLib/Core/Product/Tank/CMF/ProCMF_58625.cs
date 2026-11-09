@@ -10,7 +10,8 @@ namespace TACTLib.Core.Product.Tank.CMF
         {
             byte[] buffer = new byte[length];
 
-            uint kidx = Keytable[header.m_buildVersion & 511];
+            uint kidx, okidx;
+            kidx = okidx =  Keytable[header.m_buildVersion & 511];
             for (uint i = 0; i != length; ++i)
             {
                 buffer[i] = Keytable[SignedMod(kidx, 512)];
@@ -24,16 +25,12 @@ namespace TACTLib.Core.Product.Tank.CMF
         {
             byte[] buffer = new byte[length];
 
-            uint kidx = (uint)length * header.m_buildVersion;
-            uint okidx = kidx;
+            uint kidx, okidx;
+            kidx = okidx = (uint)length * header.m_buildVersion;
             for (int i = 0; i != length; ++i)
             {
                 buffer[i] = Keytable[SignedMod(kidx, 512)];
-                if ((digest[6] & 1) != 0)
-                    kidx += 37;
-                else
-                    kidx += okidx & 61;
-
+                kidx += ((digest[6] & 1) != 0) ? 37 : (okidx % 61);
                 buffer[i] ^= digest[SignedMod(kidx - i, SHA1_DIGESTSIZE)];
             }
 
