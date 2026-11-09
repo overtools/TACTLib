@@ -9,7 +9,7 @@ using TACTLib.Helpers;
 namespace TACTLib.Core.Product.Tank {
     public class ContentManifestFile {
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct HashData : IComparable<HashData> { // version 25?
+        public struct HashData : IComparable<HashData> { // version 24+
             public ulong GUID;
             public uint Size;
             public byte Unknown;
@@ -21,7 +21,7 @@ namespace TACTLib.Core.Product.Tank {
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct HashData24 { // version 24?
+        public struct HashData23 { // version 23
             public ulong GUID;
             public uint Size;
             public CKey ContentKey;
@@ -121,10 +121,10 @@ namespace TACTLib.Core.Product.Tank {
 
         private void ParseEntries(BinaryReader reader) {
             m_entries = reader.ReadArray<AssetPackageManifest.Entry>(m_header.m_entryCount);
-            if (m_header.m_buildVersion >= 57230) { // 1.35+
+            if (m_header.GetVersion() >= 24) { // 1.35+
                 m_hashList = reader.ReadArray<HashData>(m_header.m_dataCount);
             } else {
-                m_hashList = reader.ReadArray<HashData24>(m_header.m_dataCount).Select(x => x.ToHashData()).ToArray();
+                m_hashList = reader.ReadArray<HashData23>(m_header.m_dataCount).Select(x => x.ToHashData()).ToArray();
             }
 
             if (m_entries.Length >= 1 && m_entries[0].m_index != 1) {
