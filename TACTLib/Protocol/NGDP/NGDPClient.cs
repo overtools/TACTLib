@@ -19,6 +19,7 @@ namespace TACTLib.Protocol.NGDP {
         {
             Logger.Info(nameof(NGDPClient), $"Fetching NGDP {query}");
             using var response = m_httpClient.Send(new HttpRequestMessage(HttpMethod.Get, $"{m_host}/{query}"));
+            response.EnsureSuccessStatusCode();
             return response.Content.ReadAsStringAsync().Result; // todo: async over sync
         }
 
@@ -26,6 +27,7 @@ namespace TACTLib.Protocol.NGDP {
         {
             Logger.Info(nameof(NGDPClient), $"Fetching NGDP {query}");
             using var response = await m_httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Get, $"{m_host}/{query}"), cancellationToken);
+            response.EnsureSuccessStatusCode();
             return await response.Content.ReadAsStringAsync(cancellationToken);
         }
         
